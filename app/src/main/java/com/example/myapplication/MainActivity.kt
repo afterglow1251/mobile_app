@@ -5,7 +5,6 @@ import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -13,10 +12,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import com.example.myapplication.api.dto.user.LoginDto
-import com.example.myapplication.api.dto.user.UserDto
+import com.example.myapplication.api.dto.user.RegisterDto
 import com.example.myapplication.api.network.NetworkModule
 import com.example.myapplication.ui.theme.MyApplicationTheme
 import com.example.myapplication.utils.TokenManager
@@ -27,176 +24,141 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             MyApplicationTheme {
-                // Створення станів для email та пароля
+                // Стан для форми та токену
+                var username by remember { mutableStateOf("") }
                 var email by remember { mutableStateOf("") }
                 var password by remember { mutableStateOf("") }
                 var errorState by remember { mutableStateOf<String?>(null) }
                 var isLoading by remember { mutableStateOf(false) }
-                var usersList by remember { mutableStateOf<List<UserDto>?>(null) }
-                var userProfile by remember { mutableStateOf<UserDto?>(null) }  // Стан для профілю
+                var token by remember { mutableStateOf<String?>(TokenManager.getToken(applicationContext)) } // Токен
                 val scope = rememberCoroutineScope()
 
-                // Отримуємо контролер клавіатури
-                val keyboardController = LocalSoftwareKeyboardController.current
-
-                // Функція для логіну
-                fun login() {
+                // Логіка для реєстрації або входу
+                fun registerOrLogin() {
                     scope.launch {
+                        isLoading = true
+                        val userService = NetworkModule.getUserService(applicationContext)
+
                         try {
-                            isLoading = true
-                            val userService = NetworkModule.getUserService(applicationContext)
+                            // Спроба реєстрації
+                            val registerDto = RegisterDto(username = username, email = email, password = password)
+                            userService.registerUser(registerDto) // Реєструємо користувача
+                            Toast.makeText(applicationContext, "User registered successfully", Toast.LENGTH_SHORT).show()
 
-                            // Створюємо LoginDto замість UserDto
+                            // Після успішної реєстрації виконуємо логін
                             val loginDto = LoginDto(email = email, password = password)
+                            val loggedInUser = userService.loginUser(loginDto) // Логін користувача
+                            TokenManager.saveToken(applicationContext, loggedInUser.token) // Зберігаємо токен
+                            token = loggedInUser.token // Оновлюємо стан токену
+                            Toast.makeText(applicationContext, "Logged in successfully", Toast.LENGTH_SHORT).show()
 
-                            // Викликаємо API для логіну
-                            val loggedInUser = userService.loginUser(loginDto)
+                            // Скидаємо errorState після успішної операції
+                            errorState = null
 
-                            TokenManager.saveToken(applicationContext, loggedInUser.token)
-
-                            // При успішному логіні, зберігаємо токен та продовжуємо роботу
-                            Toast.makeText(applicationContext, "Welcome, ${loggedInUser.token}!", Toast.LENGTH_LONG).show()
                         } catch (e: Exception) {
-                            errorState = "Error: ${e.message}"
-                            Log.e("Login", "Error during login", e)
+                            // Якщо сталася помилка, перевіряємо код помилки
+                            if (e is retrofit2.HttpException && e.code() == 409) {
+                                // Якщо email вже існує (код 409), пробуємо виконати логін
+                                try {
+                                    val loginDto = LoginDto(email = email, password = password)
+                                    val loggedInUser = userService.loginUser(loginDto) // Логін користувача
+                                    TokenManager.saveToken(applicationContext, loggedInUser.token) // Зберігаємо токен
+                                    token = loggedInUser.token // Оновлюємо стан токену
+                                    Toast.makeText(applicationContext, "Logged in successfully", Toast.LENGTH_SHORT).show()
+
+                                    // Скидаємо errorState після успішного логіну
+                                    errorState = null
+                                } catch (loginException: Exception) {
+                                    // Якщо не вдалося залогінитись
+                                    errorState = "Login failed: ${loginException.message}"
+                                    Log.e("AuthError", "Login failed", loginException)
+                                }
+                            } else {
+                                // Якщо помилка не з кодом 409
+                                errorState = "Error: ${e.message}"
+                                Log.e("AuthError", "Error during register or login", e)
+                            }
                         } finally {
                             isLoading = false
                         }
                     }
                 }
 
-                // Функція для отримання користувачів
-                fun getUsers() {
-                    val token = TokenManager.getToken(applicationContext) // Отримуємо токен
-
-                    if (token != null) {
-                        scope.launch {
-                            try {
-                                val userService = NetworkModule.getUserService(applicationContext)
-                                val users = userService.getUsers(authHeader = "Bearer $token")
-                                usersList = users
-                            } catch (e: Exception) {
-                                errorState = "Error: ${e.message}"
-                                Log.e("GetUsers", "Error during get users", e)
-                            }
-                        }
-                    } else {
-                        errorState = "Token not found. Please log in first."
-                        Log.e("GetUsers", "Token not found")
-                    }
+                // Логіка для виходу
+                fun logout() {
+                    TokenManager.removeToken(applicationContext) // Видаляємо токен
+                    token = null // Оновлюємо стан токену
+                    Toast.makeText(applicationContext, "Logged out successfully", Toast.LENGTH_SHORT).show()
                 }
 
-                // Функція для отримання профілю користувача
-                fun getProfile() {
-                    val token = TokenManager.getToken(applicationContext) // Отримуємо токен
-
-                    if (token != null) {
-                        scope.launch {
-                            try {
-                                val userService = NetworkModule.getUserService(applicationContext)
-                                val profile = userService.getUserProfile(authHeader = "Bearer $token")
-                                userProfile = profile // Зберігаємо профіль у стані
-                            } catch (e: Exception) {
-                                errorState = "Error: ${e.message}"
-                                Log.e("GetProfile", "Error during get profile", e)
-                            }
-                        }
-                    } else {
-                        errorState = "Token not found. Please log in first."
-                        Log.e("GetProfile", "Token not found")
-                    }
-                }
-
+                // Відображення інтерфейсу
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    // Додаємо клік для приховування клавіатури при натисканні на порожнє місце
-                    Box(modifier = Modifier
-                        .fillMaxSize()
-                        .padding(innerPadding)
-                        .pointerInput(Unit) {
-                            detectTapGestures {
-                                keyboardController?.hide() // При натисканні приховуємо клавіатуру
-                            }
-                        }) {
+                    Box(modifier = Modifier.fillMaxSize().padding(innerPadding)) {
                         Column(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .padding(16.dp),
+                            modifier = Modifier.fillMaxSize().padding(16.dp),
                             verticalArrangement = Arrangement.Center,
                         ) {
-                            // Форма для логіну
-                            TextField(
-                                value = email,
-                                onValueChange = { email = it },
-                                label = { Text("Email") },
-                                modifier = Modifier.fillMaxWidth(),
-                            )
+                            // Якщо є токен, показуємо кнопку "Вийти"
+                            if (token != null) {
+                                Button(
+                                    onClick = { logout() },
+                                    modifier = Modifier.fillMaxWidth(),
+                                    enabled = !isLoading
+                                ) {
+                                    Text("Logout")
+                                }
+                            } else {
+                                // Якщо токен відсутній, показуємо форму для реєстрації/логіну
+                                TextField(
+                                    value = username,
+                                    onValueChange = { username = it },
+                                    label = { Text("Username") },
+                                    modifier = Modifier.fillMaxWidth(),
+                                    enabled = !isLoading
+                                )
 
-                            Spacer(modifier = Modifier.height(8.dp))
+                                Spacer(modifier = Modifier.height(8.dp))
 
-                            TextField(
-                                value = password,
-                                onValueChange = { password = it },
-                                label = { Text("Password") },
-                                modifier = Modifier.fillMaxWidth(),
-                                visualTransformation = PasswordVisualTransformation(),
-                                singleLine = true
-                            )
+                                TextField(
+                                    value = email,
+                                    onValueChange = { email = it },
+                                    label = { Text("Email") },
+                                    modifier = Modifier.fillMaxWidth(),
+                                    enabled = !isLoading
+                                )
 
-                            Spacer(modifier = Modifier.height(16.dp))
+                                Spacer(modifier = Modifier.height(8.dp))
 
-                            // Кнопка логіну
-                            Button(
-                                onClick = { login() },
-                                modifier = Modifier.fillMaxWidth(),
-                                enabled = !isLoading
-                            ) {
-                                Text("Login")
+                                TextField(
+                                    value = password,
+                                    onValueChange = { password = it },
+                                    label = { Text("Password") },
+                                    modifier = Modifier.fillMaxWidth(),
+                                    visualTransformation = PasswordVisualTransformation(),
+                                    singleLine = true,
+                                    enabled = !isLoading
+                                )
+
+                                Spacer(modifier = Modifier.height(16.dp))
+
+                                Button(
+                                    onClick = { registerOrLogin() },
+                                    modifier = Modifier.fillMaxWidth(),
+                                    enabled = !isLoading
+                                ) {
+                                    Text("Register / Login")
+                                }
                             }
 
-                            Spacer(modifier = Modifier.height(16.dp))
-
-                            // Кнопка для отримання користувачів
-                            Button(
-                                onClick = { getUsers() },
-                                modifier = Modifier.fillMaxWidth(),
-                                enabled = !isLoading
-                            ) {
-                                Text("Get Users")
-                            }
-
-                            // Кнопка для отримання профілю
-                            Button(
-                                onClick = { getProfile() },
-                                modifier = Modifier.fillMaxWidth(),
-                                enabled = !isLoading
-                            ) {
-                                Text("Get Profile")
-                            }
-
-                            // Показуємо статус
+                            // Показуємо індикатор завантаження
                             if (isLoading) {
                                 CircularProgressIndicator(modifier = Modifier.padding(top = 16.dp))
                             }
 
+                            // Показуємо помилку, якщо є
                             errorState?.let {
                                 Spacer(modifier = Modifier.height(8.dp))
                                 Text("Error: $it", color = MaterialTheme.colorScheme.error)
-                            }
-
-                            // Показуємо список користувачів
-                            usersList?.let {
-                                Spacer(modifier = Modifier.height(16.dp))
-                                it.forEach { user ->
-                                    Text("User: ${user.username} - ${user.email}")
-                                }
-                            }
-
-                            // Показуємо профіль користувача
-                            userProfile?.let {
-                                Spacer(modifier = Modifier.height(16.dp))
-                                Text("Profile Username: ${it.username}")
-                                Text("Profile Email: ${it.email}")
-                                // Додаткові поля профілю
                             }
                         }
                     }
@@ -210,7 +172,6 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun LoginPreview() {
     MyApplicationTheme {
-        // Попередній перегляд форми
         MainActivity()
     }
 }
