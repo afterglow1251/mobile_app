@@ -2,21 +2,34 @@ package com.example.myapplication
 
 import android.os.Bundle
 import android.util.Log
-import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.example.myapplication.api.dto.user.LoginDto
 import com.example.myapplication.api.dto.user.RegisterDto
-import com.example.myapplication.api.network.NetworkModule
 import com.example.myapplication.ui.theme.MyApplicationTheme
-import com.example.myapplication.utils.TokenManager
+import com.example.myapplication.api.network.NetworkModule
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
@@ -24,157 +37,232 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             MyApplicationTheme {
-                // Стан для форми та токену
+                // Стан для форми
                 var email by remember { mutableStateOf("") }
+                var emailError by remember { mutableStateOf<String?>(null) }
+                var isEmailChecked by remember { mutableStateOf(false) }
+                var userExists by remember { mutableStateOf(false) }
                 var password by remember { mutableStateOf("") }
                 var confirmPassword by remember { mutableStateOf("") }
-                var errorState by remember { mutableStateOf<String?>(null) }
-                var isLoading by remember { mutableStateOf(false) }
-                var token by remember { mutableStateOf<String?>(TokenManager.getToken(applicationContext)) } // Токен
-                val scope = rememberCoroutineScope()
+                var passwordVisible by remember { mutableStateOf(false) }
+                var confirmPasswordVisible by remember { mutableStateOf(false) }
+                var passwordError by remember { mutableStateOf<String?>(null) }
 
-                // Перевірка на співпадіння паролів
-                val passwordsMatch = password == confirmPassword
-
-                // Логіка для реєстрації або входу
-                fun registerOrLogin() {
-                    scope.launch {
-                        isLoading = true
-                        val userService = NetworkModule.getUserService(applicationContext)
-
-                        // Перевірка чи паролі співпадають
-                        if (!passwordsMatch) {
-                            errorState = "Passwords do not match"
-                            isLoading = false
-                            return@launch
-                        }
-
-                        try {
-                            // Спроба реєстрації
-                            val registerDto = RegisterDto(email = email, password = password)
-                            userService.registerUser(registerDto) // Реєструємо користувача
-                            Toast.makeText(applicationContext, "User registered successfully", Toast.LENGTH_SHORT).show()
-
-                            // Після успішної реєстрації виконуємо логін
-                            val loginDto = LoginDto(email = email, password = password)
-                            val loggedInUser = userService.loginUser(loginDto) // Логін користувача
-                            TokenManager.saveToken(applicationContext, loggedInUser.token) // Зберігаємо токен
-                            token = loggedInUser.token // Оновлюємо стан токену
-                            Toast.makeText(applicationContext, "Logged in successfully", Toast.LENGTH_SHORT).show()
-
-                            // Скидаємо errorState після успішної операції
-                            errorState = null
-
-                        } catch (e: Exception) {
-                            // Якщо сталася помилка, перевіряємо код помилки
-                            if (e is retrofit2.HttpException && e.code() == 409) {
-                                // Якщо email вже існує (код 409), пробуємо виконати логін
-                                try {
-                                    val loginDto = LoginDto(email = email, password = password)
-                                    val loggedInUser = userService.loginUser(loginDto) // Логін користувача
-                                    TokenManager.saveToken(applicationContext, loggedInUser.token) // Зберігаємо токен
-                                    token = loggedInUser.token // Оновлюємо стан токену
-                                    Toast.makeText(applicationContext, "Logged in successfully", Toast.LENGTH_SHORT).show()
-
-                                    // Скидаємо errorState після успішного логіну
-                                    errorState = null
-                                } catch (loginException: Exception) {
-                                    // Якщо не вдалося залогінитись
-                                    if (loginException is retrofit2.HttpException && loginException.code() == 401) {
-                                        errorState = "Invalid credentials: ${loginException.message()}"
-                                    } else {
-                                        errorState = "Login failed: ${loginException.message}"
-                                    }
-                                    Log.e("AuthError", "Login failed", loginException)
-                                }
-                            } else {
-                                // Якщо помилка не з кодом 409
-                                errorState = "Error: ${e.message}"
-                                Log.e("AuthError", "Error during register or login", e)
-                            }
-                        } finally {
-                            isLoading = false
-                        }
-                    }
-                }
-
-                // Логіка для виходу
-                fun logout() {
-                    TokenManager.removeToken(applicationContext) // Видаляємо токен
-                    token = null // Оновлюємо стан токену
-                    Toast.makeText(applicationContext, "Logged out successfully", Toast.LENGTH_SHORT).show()
+                // Перевірка валідності email
+                fun isValidEmail(email: String): Boolean {
+                    return android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()
                 }
 
                 // Відображення інтерфейсу
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
                     Box(modifier = Modifier.fillMaxSize().padding(innerPadding)) {
                         Column(
-                            modifier = Modifier.fillMaxSize().padding(16.dp),
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(16.dp),
                             verticalArrangement = Arrangement.Center,
+                            horizontalAlignment = Alignment.CenterHorizontally
                         ) {
-                            // Якщо є токен, показуємо кнопку "Вийти"
-                            if (token != null) {
-                                Button(
-                                    onClick = { logout() },
-                                    modifier = Modifier.fillMaxWidth(),
-                                    enabled = !isLoading
-                                ) {
-                                    Text("Logout")
-                                }
-                            } else {
-                                // Якщо токен відсутній, показуємо форму для реєстрації/логіну
-                                TextField(
+                            // Логотип
+                            Image(
+                                painter = painterResource(id = R.drawable.ic_launcher_foreground),
+                                contentDescription = null,
+                                modifier = Modifier.size(100.dp)
+                            )
+
+                            Spacer(modifier = Modifier.height(16.dp))
+
+                            // Привітання
+                            Text(
+                                text = "Вітаємо у Пивному Чемпіоні",
+                                fontSize = 24.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.primary,
+                                textAlign = TextAlign.Center
+                            )
+
+                            Spacer(modifier = Modifier.height(32.dp))
+
+                            // Початкове поле для вводу email
+                            if (!isEmailChecked) {
+                                OutlinedTextField(
                                     value = email,
-                                    onValueChange = { email = it },
-                                    label = { Text("Email") },
+                                    onValueChange = {
+                                        email = it
+                                        emailError = if (isValidEmail(it)) null else "Некоректний формат пошти"
+                                    },
+                                    label = { Text("Введіть вашу пошту") },
                                     modifier = Modifier.fillMaxWidth(),
-                                    enabled = !isLoading
+                                    isError = emailError != null
                                 )
 
-                                Spacer(modifier = Modifier.height(8.dp))
-
-                                TextField(
-                                    value = password,
-                                    onValueChange = { password = it },
-                                    label = { Text("Password") },
-                                    modifier = Modifier.fillMaxWidth(),
-                                    visualTransformation = PasswordVisualTransformation(),
-                                    singleLine = true,
-                                    enabled = !isLoading
-                                )
-
-                                Spacer(modifier = Modifier.height(8.dp))
-
-                                TextField(
-                                    value = confirmPassword,
-                                    onValueChange = { confirmPassword = it },
-                                    label = { Text("Confirm Password") },
-                                    modifier = Modifier.fillMaxWidth(),
-                                    visualTransformation = PasswordVisualTransformation(),
-                                    singleLine = true,
-                                    enabled = !isLoading
-                                )
+                                emailError?.let {
+                                    Text(
+                                        text = it,
+                                        color = MaterialTheme.colorScheme.error,
+                                        style = MaterialTheme.typography.bodySmall,
+                                        modifier = Modifier.align(Alignment.Start)
+                                    )
+                                }
 
                                 Spacer(modifier = Modifier.height(16.dp))
 
                                 Button(
-                                    onClick = { registerOrLogin() },
+                                    onClick = {
+                                        if (emailError == null) {
+                                            CoroutineScope(Dispatchers.IO).launch {
+                                                try {
+                                                    val service = NetworkModule.getUserService(applicationContext)
+                                                    val result = try {
+                                                        service.getUserByEmail(email)
+                                                    } catch (e: retrofit2.HttpException) {
+                                                        if (e.code() == 400) {
+                                                            null // User not found
+                                                        } else {
+                                                            throw e
+                                                        }
+                                                    }
+                                                    isEmailChecked = true
+                                                    userExists = result != null
+                                                } catch (e: Exception) {
+                                                    isEmailChecked = true // Ensure UI updates to show result
+                                                    userExists = false
+                                                }
+                                            }
+                                        }
+                                    },
                                     modifier = Modifier.fillMaxWidth(),
-                                    enabled = !isLoading
+                                    shape = RoundedCornerShape(8.dp),
+                                    enabled = emailError == null
                                 ) {
-                                    Text("Register / Login")
+                                    Text("Далі")
                                 }
-                            }
+                            } else {
+                                IconButton(
+                                    onClick = { isEmailChecked = false },
+                                    modifier = Modifier.align(Alignment.Start)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Filled.ArrowBack,
+                                        contentDescription = "Назад до пошти"
+                                    )
+                                }
 
-                            // Показуємо індикатор завантаження
-                            if (isLoading) {
-                                CircularProgressIndicator(modifier = Modifier.padding(top = 16.dp))
-                            }
+                                if (userExists) {
+                                    OutlinedTextField(
+                                        value = password,
+                                        onValueChange = { password = it },
+                                        label = { Text("Пароль") },
+                                        modifier = Modifier.fillMaxWidth(),
+                                        visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                                        trailingIcon = {
+                                            IconButton(onClick = { passwordVisible = !passwordVisible }) {
+                                                Icon(
+                                                    imageVector = if (passwordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff,
+                                                    contentDescription = if (passwordVisible) "Приховати пароль" else "Показати пароль"
+                                                )
+                                            }
+                                        },
+                                        singleLine = true
+                                    )
 
-                            // Показуємо помилку, якщо є
-                            errorState?.let {
-                                Spacer(modifier = Modifier.height(8.dp))
-                                Text("Error: $it", color = MaterialTheme.colorScheme.error)
+                                    Spacer(modifier = Modifier.height(16.dp))
+
+                                    Button(
+                                        onClick = {
+                                            CoroutineScope(Dispatchers.IO).launch {
+                                                try {
+                                                    val service = NetworkModule.getUserService(applicationContext)
+                                                    service.loginUser(LoginDto(email = email, password = password))
+                                                } catch (e: retrofit2.HttpException) {
+                                                    if (e.code() == 401) {
+                                                    } else {
+                                                        throw e
+                                                    }
+                                                } catch (e: Exception) {
+                                                }
+                                            }
+                                        },
+                                        modifier = Modifier.fillMaxWidth(),
+                                        shape = RoundedCornerShape(8.dp)
+                                    ) {
+                                        Text("Увійти")
+                                    }
+                                } else {
+                                    OutlinedTextField(
+                                        value = password,
+                                        onValueChange = {
+                                            password = it
+                                            passwordError = if (password == confirmPassword) null else "Паролі не співпадають"
+                                        },
+                                        label = { Text("Пароль") },
+                                        modifier = Modifier.fillMaxWidth(),
+                                        visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                                        trailingIcon = {
+                                            IconButton(onClick = { passwordVisible = !passwordVisible }) {
+                                                Icon(
+                                                    imageVector = if (passwordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff,
+                                                    contentDescription = if (passwordVisible) "Приховати пароль" else "Показати пароль"
+                                                )
+                                            }
+                                        },
+                                        isError = passwordError != null,
+                                        singleLine = true
+                                    )
+
+                                    Spacer(modifier = Modifier.height(8.dp))
+
+                                    OutlinedTextField(
+                                        value = confirmPassword,
+                                        onValueChange = {
+                                            confirmPassword = it
+                                            passwordError = if (password == confirmPassword) null else "Паролі не співпадають"
+                                        },
+                                        label = { Text("Підтвердіть пароль") },
+                                        modifier = Modifier.fillMaxWidth(),
+                                        visualTransformation = if (confirmPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                                        trailingIcon = {
+                                            IconButton(onClick = { confirmPasswordVisible = !confirmPasswordVisible }) {
+                                                Icon(
+                                                    imageVector = if (confirmPasswordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff,
+                                                    contentDescription = if (confirmPasswordVisible) "Приховати пароль" else "Показати пароль"
+                                                )
+                                            }
+                                        },
+                                        isError = passwordError != null,
+                                        singleLine = true
+                                    )
+
+                                    passwordError?.let {
+                                        Text(
+                                            text = it,
+                                            color = MaterialTheme.colorScheme.error,
+                                            style = MaterialTheme.typography.bodySmall,
+                                            modifier = Modifier.align(Alignment.Start)
+                                        )
+                                    }
+
+                                    Spacer(modifier = Modifier.height(16.dp))
+
+                                    Button(
+                                        onClick = {
+                                            CoroutineScope(Dispatchers.IO).launch {
+                                                try {
+                                                    val service = NetworkModule.getUserService(applicationContext)
+                                                    service.registerUser(RegisterDto(email = email, password = password))
+
+                                                    service.loginUser(LoginDto(email = email, password = password))
+                                                } catch (e: Exception) {
+                                                }
+                                            }
+                                        },
+                                        modifier = Modifier.fillMaxWidth(),
+                                        shape = RoundedCornerShape(8.dp),
+                                        enabled = passwordError == null
+                                    ) {
+                                        Text("Зареєструватись")
+                                    }
+                                }
                             }
                         }
                     }
@@ -188,6 +276,15 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun LoginPreview() {
     MyApplicationTheme {
-        MainActivity()
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text("Preview of Initial Screen", fontSize = 20.sp, fontWeight = FontWeight.Bold)
+        }
     }
 }
+

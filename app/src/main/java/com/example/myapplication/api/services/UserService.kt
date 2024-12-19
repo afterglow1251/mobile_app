@@ -19,4 +19,7 @@ interface UserService {
 
     @POST("users/login")
     suspend fun loginUser(@Body loginDto: LoginDto): LoginResponseDto
+
+    @GET("users/by-email")
+    suspend fun getUserByEmail(@Query("email") email: String): UserDto?
 }
