@@ -11,12 +11,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.myapplication.ui.theme.MyApplicationTheme
-import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
-import retrofit2.http.GET
-import retrofit2.http.Header
-import okhttp3.OkHttpClient
-import retrofit2.create
+import com.example.myapplication.network.RetrofitInstance
+import retrofit2.http.*
 
 // Модель для користувача (User)
 data class User(
@@ -31,28 +27,6 @@ interface ApiService {
     suspend fun getUsers(@Header("Authorization") authHeader: String): List<User>
 }
 
-// Налаштування Retrofit з Bearer токеном
-object RetrofitInstance {
-    private const val BASE_URL = "http://10.0.2.2:3000/"
-
-    val apiService: ApiService by lazy {
-        val client = OkHttpClient.Builder().addInterceptor { chain ->
-            val originalRequest = chain.request()
-            val newRequest = originalRequest.newBuilder()
-                .header("Authorization", "Bearer <<<token>>>")  // Замініть на свій токен
-                .build()
-            chain.proceed(newRequest)
-        }.build()
-
-        Retrofit.Builder()
-            .baseUrl(BASE_URL)
-            .addConverterFactory(GsonConverterFactory.create())
-            .client(client)
-            .build()
-            .create(ApiService::class.java)
-    }
-}
-
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -63,10 +37,10 @@ class MainActivity : ComponentActivity() {
                 val errorState = remember { mutableStateOf<String?>(null) }
                 val isLoading = remember { mutableStateOf(true) }
 
-                // Логіка запиту при запуску
                 LaunchedEffect(Unit) {
                     try {
-                        val token = "YOUR_BEARER_TOKEN"  // Тут задайте свій токен
+                        val token = "<token>"  // Тут задайте свій токен
+                        // Передаємо токен через заголовок запиту
                         val users = RetrofitInstance.apiService.getUsers("Bearer $token")
                         usersState.value = users
                     } catch (e: Exception) {
