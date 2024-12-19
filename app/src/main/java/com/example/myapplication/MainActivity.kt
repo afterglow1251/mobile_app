@@ -14,29 +14,40 @@ import com.example.myapplication.ui.theme.MyApplicationTheme
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.GET
+import retrofit2.http.Header
+import okhttp3.OkHttpClient
+import retrofit2.create
 
-// Модель для завдання (Todo)
-data class Todo(
-    val userId: Int,
+// Модель для користувача (User)
+data class User(
     val id: Int,
-    val title: String,
-    val completed: Boolean
+    val email: String,
+    val username: String
 )
 
 // Інтерфейс API
 interface ApiService {
-    @GET("todos/1")  // Отримуємо перше завдання для тесту
-    suspend fun getTodo(): Todo
+    @GET("users")  // Отримуємо список користувачів
+    suspend fun getUsers(@Header("Authorization") authHeader: String): List<User>
 }
 
-// Налаштування Retrofit
+// Налаштування Retrofit з Bearer токеном
 object RetrofitInstance {
-    private const val BASE_URL = "https://jsonplaceholder.typicode.com/"
+    private const val BASE_URL = "http://10.0.2.2:3000/"
 
     val apiService: ApiService by lazy {
+        val client = OkHttpClient.Builder().addInterceptor { chain ->
+            val originalRequest = chain.request()
+            val newRequest = originalRequest.newBuilder()
+                .header("Authorization", "Bearer <<<token>>>")  // Замініть на свій токен
+                .build()
+            chain.proceed(newRequest)
+        }.build()
+
         Retrofit.Builder()
             .baseUrl(BASE_URL)
             .addConverterFactory(GsonConverterFactory.create())
+            .client(client)
             .build()
             .create(ApiService::class.java)
     }
@@ -47,27 +58,28 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             MyApplicationTheme {
-                // Створення стану для завдання
-                val todoState = remember { mutableStateOf<Todo?>(null) }
+                // Створення стану для списку користувачів
+                val usersState = remember { mutableStateOf<List<User>?>(null) }
                 val errorState = remember { mutableStateOf<String?>(null) }
                 val isLoading = remember { mutableStateOf(true) }
 
                 // Логіка запиту при запуску
                 LaunchedEffect(Unit) {
                     try {
-                        val todo = RetrofitInstance.apiService.getTodo()
-                        todoState.value = todo
+                        val token = "YOUR_BEARER_TOKEN"  // Тут задайте свій токен
+                        val users = RetrofitInstance.apiService.getUsers("Bearer $token")
+                        usersState.value = users
                     } catch (e: Exception) {
-                        errorState.value = "Error fetching todo: ${e.message}"
-                        Log.e("MainActivity", "Error fetching todo", e)
+                        errorState.value = "Error fetching users: ${e.message}"
+                        Log.e("MainActivity", "Error fetching users", e)
                     } finally {
                         isLoading.value = false
                     }
                 }
 
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    TodoDetails(
-                        todo = todoState.value,
+                    UsersList(
+                        users = usersState.value,
                         error = errorState.value,
                         isLoading = isLoading.value,
                         modifier = Modifier.padding(innerPadding)
@@ -78,18 +90,21 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-// Компонент для відображення завдання
+// Компонент для відображення списку користувачів
 @Composable
-fun TodoDetails(todo: Todo?, error: String?, isLoading: Boolean, modifier: Modifier = Modifier) {
+fun UsersList(users: List<User>?, error: String?, isLoading: Boolean, modifier: Modifier = Modifier) {
     Column(modifier = modifier.padding(16.dp)) {
         when {
             isLoading -> Text("Loading...", modifier = modifier)
             error != null -> Text("Error: $error", color = MaterialTheme.colorScheme.error, modifier = modifier)
-            todo == null -> Text("No data available", modifier = modifier)
+            users.isNullOrEmpty() -> Text("No data available", modifier = modifier)
             else -> {
-                Text(text = "Todo ID: ${todo.id}", style = MaterialTheme.typography.bodyLarge)
-                Text(text = "Title: ${todo.title}", style = MaterialTheme.typography.headlineSmall)
-                Text(text = "Completed: ${if (todo.completed) "Yes" else "No"}", style = MaterialTheme.typography.bodyMedium)
+                users.forEach { user ->
+                    Text(text = "User ID: ${user.id}", style = MaterialTheme.typography.bodyLarge)
+                    Text(text = "Username: ${user.username}", style = MaterialTheme.typography.headlineSmall)
+                    Text(text = "Email: ${user.email}", style = MaterialTheme.typography.bodyMedium)
+                    Spacer(modifier = Modifier.height(8.dp))
+                }
             }
         }
     }
@@ -99,6 +114,6 @@ fun TodoDetails(todo: Todo?, error: String?, isLoading: Boolean, modifier: Modif
 @Composable
 fun GreetingPreview() {
     MyApplicationTheme {
-        TodoDetails(todo = null, error = null, isLoading = false)
+        UsersList(users = null, error = null, isLoading = false)
     }
 }
