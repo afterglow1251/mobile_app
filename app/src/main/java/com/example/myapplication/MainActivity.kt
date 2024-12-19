@@ -25,13 +25,16 @@ class MainActivity : ComponentActivity() {
         setContent {
             MyApplicationTheme {
                 // Стан для форми та токену
-                var username by remember { mutableStateOf("") }
                 var email by remember { mutableStateOf("") }
                 var password by remember { mutableStateOf("") }
+                var confirmPassword by remember { mutableStateOf("") }
                 var errorState by remember { mutableStateOf<String?>(null) }
                 var isLoading by remember { mutableStateOf(false) }
                 var token by remember { mutableStateOf<String?>(TokenManager.getToken(applicationContext)) } // Токен
                 val scope = rememberCoroutineScope()
+
+                // Перевірка на співпадіння паролів
+                val passwordsMatch = password == confirmPassword
 
                 // Логіка для реєстрації або входу
                 fun registerOrLogin() {
@@ -39,9 +42,16 @@ class MainActivity : ComponentActivity() {
                         isLoading = true
                         val userService = NetworkModule.getUserService(applicationContext)
 
+                        // Перевірка чи паролі співпадають
+                        if (!passwordsMatch) {
+                            errorState = "Passwords do not match"
+                            isLoading = false
+                            return@launch
+                        }
+
                         try {
                             // Спроба реєстрації
-                            val registerDto = RegisterDto(username = username, email = email, password = password)
+                            val registerDto = RegisterDto(email = email, password = password)
                             userService.registerUser(registerDto) // Реєструємо користувача
                             Toast.makeText(applicationContext, "User registered successfully", Toast.LENGTH_SHORT).show()
 
@@ -70,7 +80,11 @@ class MainActivity : ComponentActivity() {
                                     errorState = null
                                 } catch (loginException: Exception) {
                                     // Якщо не вдалося залогінитись
-                                    errorState = "Login failed: ${loginException.message}"
+                                    if (loginException is retrofit2.HttpException && loginException.code() == 401) {
+                                        errorState = "Invalid credentials: ${loginException.message()}"
+                                    } else {
+                                        errorState = "Login failed: ${loginException.message}"
+                                    }
                                     Log.e("AuthError", "Login failed", loginException)
                                 }
                             } else {
@@ -110,16 +124,6 @@ class MainActivity : ComponentActivity() {
                             } else {
                                 // Якщо токен відсутній, показуємо форму для реєстрації/логіну
                                 TextField(
-                                    value = username,
-                                    onValueChange = { username = it },
-                                    label = { Text("Username") },
-                                    modifier = Modifier.fillMaxWidth(),
-                                    enabled = !isLoading
-                                )
-
-                                Spacer(modifier = Modifier.height(8.dp))
-
-                                TextField(
                                     value = email,
                                     onValueChange = { email = it },
                                     label = { Text("Email") },
@@ -133,6 +137,18 @@ class MainActivity : ComponentActivity() {
                                     value = password,
                                     onValueChange = { password = it },
                                     label = { Text("Password") },
+                                    modifier = Modifier.fillMaxWidth(),
+                                    visualTransformation = PasswordVisualTransformation(),
+                                    singleLine = true,
+                                    enabled = !isLoading
+                                )
+
+                                Spacer(modifier = Modifier.height(8.dp))
+
+                                TextField(
+                                    value = confirmPassword,
+                                    onValueChange = { confirmPassword = it },
+                                    label = { Text("Confirm Password") },
                                     modifier = Modifier.fillMaxWidth(),
                                     visualTransformation = PasswordVisualTransformation(),
                                     singleLine = true,
