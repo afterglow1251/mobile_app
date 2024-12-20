@@ -5,6 +5,7 @@ import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import android.content.Context
+import com.example.myapplication.api.services.ProductService
 
 object NetworkModule {
 
@@ -26,5 +27,9 @@ object NetworkModule {
 
     fun getUserService(context: Context): UserService {
         return createRetrofit(context).create(UserService::class.java)
+    }
+
+    fun getProductService(context: Context): ProductService {
+        return createRetrofit(context).create(ProductService::class.java)
     }
 }
