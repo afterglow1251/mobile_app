@@ -1,5 +1,6 @@
 package com.example.myapplication
 
+import android.widget.ImageView
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -9,21 +10,18 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.*
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.*
 import com.example.myapplication.api.dto.product.ProductDto
 import com.example.myapplication.api.network.NetworkModule
 import androidx.compose.ui.platform.LocalContext
-import coil3.compose.rememberAsyncImagePainter
-import coil3.request.ImageRequest
-import coil3.size.Size
+import androidx.compose.ui.viewinterop.AndroidView
+import com.squareup.picasso.Picasso
 
 @Composable
 fun ProductListScreen() {
   val context = LocalContext.current
   val snackbarHostState = remember { SnackbarHostState() }
-  val coroutineScope = rememberCoroutineScope()
 
   // Стан для продуктів
   var products by remember { mutableStateOf<List<ProductDto>>(emptyList()) }
@@ -75,6 +73,20 @@ fun ProductListScreen() {
 }
 
 @Composable
+fun PicassoImage(url: String, modifier: Modifier = Modifier) {
+  AndroidView(
+    modifier = modifier,
+    factory = { context ->
+      ImageView(context).apply {
+        Picasso.get()
+          .load(url)
+          .into(this) // Завантажуємо зображення за допомогою Picasso
+      }
+    }
+  )
+}
+
+@Composable
 fun ProductCard(product: ProductDto) {
   Column(
     modifier = Modifier
@@ -84,21 +96,12 @@ fun ProductCard(product: ProductDto) {
       .padding(16.dp)
   ) {
     if (product.images.isNotEmpty()) {
-      val painter = rememberAsyncImagePainter(
-        model = ImageRequest.Builder(LocalContext.current)
-          .data(product.images.first().imageUrl) // Use the first image URL from your product
-          .size(Size.ORIGINAL) // Optionally, you can set the target size here
-          .build()
-      )
-
-      Image(
-        painter = painter,
-        contentDescription = product.name,
+      PicassoImage(
+        url = product.images.first().imageUrl,
         modifier = Modifier
           .fillMaxWidth()
           .height(200.dp)
-          .padding(bottom = 8.dp),
-        contentScale = ContentScale.Crop
+          .padding(bottom = 8.dp)
       )
     }
 
