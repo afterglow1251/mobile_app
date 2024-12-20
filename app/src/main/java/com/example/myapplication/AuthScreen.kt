@@ -18,12 +18,10 @@ import com.example.myapplication.api.network.NetworkModule
 import com.example.myapplication.utils.TokenManager
 import kotlinx.coroutines.*
 import androidx.compose.ui.platform.LocalContext
-import androidx.navigation.NavController
-import com.example.myapplication.navigation.NavigationScreens
 
 
 @Composable
-fun AuthScreen(navController: NavController) {
+fun AuthScreen(onNavigateToProductsList: () -> Unit) {
   var email by remember { mutableStateOf("") }
   var emailError by remember { mutableStateOf<String?>(null) }
   var isEmailChecked by remember { mutableStateOf(false) }
@@ -77,7 +75,8 @@ fun AuthScreen(navController: NavController) {
 
         if (!isEmailChecked) {
           // Поле вводу для email
-          OutlinedTextField(value = email,
+          OutlinedTextField(
+            value = email,
             onValueChange = {
               email = it
               emailError = if (isValidEmail(it)) null else "Некоректний формат пошти"
@@ -167,10 +166,8 @@ fun AuthScreen(navController: NavController) {
                       )
                     )
 
-                    snackbarHostState.showSnackbar("Ви успішно залогінені!")
-
-                    navController.navigate(route = NavigationScreens.PRODUCTS_LIST.name) {
-                      popUpTo(NavigationScreens.AUTH.name) { inclusive = true }
+                    withContext(Dispatchers.Main) {
+                      onNavigateToProductsList()
                     }
 
                   } catch (e: retrofit2.HttpException) {
@@ -180,7 +177,7 @@ fun AuthScreen(navController: NavController) {
                       throw e
                     }
                   } catch (e: Exception) {
-                    snackbarHostState.showSnackbar("Сталася помилка!")
+                    snackbarHostState.showSnackbar("Сталася помилка: ${e.localizedMessage}")
                   }
                 }
               }, modifier = Modifier.fillMaxWidth()
@@ -189,7 +186,8 @@ fun AuthScreen(navController: NavController) {
             }
           } else {
             // Реєстрація
-            OutlinedTextField(value = password,
+            OutlinedTextField(
+              value = password,
               onValueChange = {
                 password = it
                 passwordError = if (password == confirmPassword) null else "Паролі не співпадають"
@@ -211,7 +209,8 @@ fun AuthScreen(navController: NavController) {
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            OutlinedTextField(value = confirmPassword,
+            OutlinedTextField(
+              value = confirmPassword,
               onValueChange = {
                 confirmPassword = it
                 passwordError = if (password == confirmPassword) null else "Паролі не співпадають"
@@ -249,9 +248,6 @@ fun AuthScreen(navController: NavController) {
                     val service = NetworkModule.getUserService(context)
                     service.registerUser(RegisterDto(email = email, password = password))
 
-                    // Показуємо сповіщення про успішну реєстрацію
-                    snackbarHostState.showSnackbar("Ви успішно зареєстровані!")
-
                     val loginResponse = service.loginUser(LoginDto(email, password))
                     TokenManager.saveToken(context, loginResponse.token)
 
@@ -263,14 +259,12 @@ fun AuthScreen(navController: NavController) {
                       )
                     )
 
-                    snackbarHostState.showSnackbar("Ви успішно залогінені!")
-
-                    navController.navigate(NavigationScreens.PRODUCTS_LIST.name) {
-                      popUpTo(NavigationScreens.AUTH.name) { inclusive = true }
+                    withContext(Dispatchers.Main) {
+                      onNavigateToProductsList()
                     }
 
                   } catch (e: Exception) {
-                    snackbarHostState.showSnackbar("Сталася помилка!")
+                    snackbarHostState.showSnackbar("Сталася помилка: ${e.localizedMessage}")
                   }
                 }
               },
