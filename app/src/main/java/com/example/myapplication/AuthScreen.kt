@@ -19,6 +19,7 @@ import com.example.myapplication.utils.TokenManager
 import kotlinx.coroutines.*
 import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavController
+import com.example.myapplication.navigation.NavigationScreens
 
 
 @Composable
@@ -168,8 +169,8 @@ fun AuthScreen(navController: NavController) {
 
                     snackbarHostState.showSnackbar("Ви успішно залогінені!")
 
-                    navController.navigate("product_list_screen") {
-                      popUpTo("auth_screen") { inclusive = true }
+                    navController.navigate(route = NavigationScreens.PRODUCTS_LIST.name) {
+                      popUpTo(NavigationScreens.AUTH.name) { inclusive = true }
                     }
 
                   } catch (e: retrofit2.HttpException) {
@@ -264,9 +265,10 @@ fun AuthScreen(navController: NavController) {
 
                     snackbarHostState.showSnackbar("Ви успішно залогінені!")
 
-                    navController.navigate("product_list_screen") {
-                      popUpTo("auth_screen") { inclusive = true }
+                    navController.navigate(NavigationScreens.PRODUCTS_LIST.name) {
+                      popUpTo(NavigationScreens.AUTH.name) { inclusive = true }
                     }
+
                   } catch (e: Exception) {
                     snackbarHostState.showSnackbar("Сталася помилка!")
                   }
