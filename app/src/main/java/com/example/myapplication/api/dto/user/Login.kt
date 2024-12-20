@@ -6,5 +6,6 @@ data class LoginDto(
 )
 
 data class LoginResponseDto(
-    val token: String
+    val token: String,
+    val user: UserDto
 )
