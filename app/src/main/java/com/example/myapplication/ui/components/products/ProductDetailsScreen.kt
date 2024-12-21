@@ -2,9 +2,12 @@ package com.example.myapplication.ui.components.products
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -15,15 +18,11 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.google.accompanist.pager.ExperimentalPagerApi
-import com.google.accompanist.pager.HorizontalPager
-import com.google.accompanist.pager.rememberPagerState
 import com.example.myapplication.ui.components.ui.PicassoImage
 import com.example.myapplication.api.dto.product.ProductDto
 import com.example.myapplication.api.network.NetworkModule
-import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalPagerApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProductDetailsScreen(productId: Int, onBack: () -> Unit) {
   val context = LocalContext.current
@@ -49,7 +48,7 @@ fun ProductDetailsScreen(productId: Int, onBack: () -> Unit) {
         title = { Text("Деталі продукту") },
         navigationIcon = {
           IconButton(onClick = { onBack() }) {
-            Icon(Icons.Default.ArrowBack, contentDescription = "Назад")
+            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Назад")
           }
         }
       )
@@ -75,10 +74,12 @@ fun ProductDetailsScreen(productId: Int, onBack: () -> Unit) {
           horizontalAlignment = Alignment.Start
         ) {
           if (it.images.isNotEmpty()) {
-            val pagerState = rememberPagerState(initialPage = 0)
+            val pagerState = rememberPagerState(
+              initialPageOffsetFraction = 0f,
+              pageCount = { it.images.size }
+            )
             Box(modifier = Modifier.fillMaxWidth().height(250.dp)) {
               HorizontalPager(
-                count = it.images.size,
                 state = pagerState,
                 modifier = Modifier.fillMaxSize()
               ) { page ->
@@ -87,29 +88,35 @@ fun ProductDetailsScreen(productId: Int, onBack: () -> Unit) {
                   modifier = Modifier.fillMaxSize()
                 )
               }
-              if (it.images.size > 1) {
-                Row(
-                  Modifier
-                    .wrapContentHeight()
-                    .fillMaxWidth()
-                    .align(Alignment.BottomCenter)
-                    .padding(bottom = 8.dp),
-                  horizontalArrangement = Arrangement.Center
-                ) {
-                  repeat(it.images.size) { iteration ->
-                    val color =
-                      if (pagerState.currentPage == iteration) Color.DarkGray else Color.LightGray
-                    Box(
-                      modifier = Modifier
-                        .padding(2.dp)
-                        .clip(CircleShape)
-                        .background(color)
-                        .size(16.dp)
-                    )
-                  }
+            }
+
+            if (it.images.size > 1) {
+              Spacer(modifier = Modifier.height(8.dp))
+
+              Row(
+                Modifier
+                  .fillMaxWidth()
+                  .wrapContentHeight()
+                  .padding(top = 8.dp),
+                horizontalArrangement = Arrangement.Center
+              ) {
+                repeat(it.images.size) { iteration ->
+                  val color =
+                    if (pagerState.currentPage == iteration) Color.DarkGray else Color.LightGray
+                  Box(
+                    modifier = Modifier
+                      .padding(4.dp)
+                      .clip(if (pagerState.currentPage == iteration) RoundedCornerShape(25.dp) else CircleShape)
+                      .background(color)
+                      .width(if (pagerState.currentPage == iteration) 16.dp else 10.dp)
+                      .height(10.dp)
+                  )
                 }
               }
-              Spacer(modifier = Modifier.height(8.dp))
+
+              Spacer(modifier = Modifier.height(16.dp))
+            } else {
+              Spacer(modifier = Modifier.height(24.dp))
             }
 
             Text(
@@ -141,13 +148,6 @@ fun ProductDetailsScreen(productId: Int, onBack: () -> Unit) {
               Text("Додати в кошик")
             }
           }
-        } ?: Box(
-          modifier = Modifier
-            .fillMaxSize()
-            .padding(innerPadding),
-          contentAlignment = Alignment.Center
-        ) {
-          Text("Продукт не знайдено", fontSize = 20.sp, color = MaterialTheme.colorScheme.error)
         }
       }
     }
