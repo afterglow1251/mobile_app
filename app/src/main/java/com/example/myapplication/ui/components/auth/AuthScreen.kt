@@ -1,4 +1,4 @@
-package com.example.myapplication.components.auth
+package com.example.myapplication.ui.components.auth
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*

@@ -4,11 +4,11 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.example.myapplication.components.products.ProductListScreen
+import com.example.myapplication.ui.components.products.ProductListScreen
 import com.example.myapplication.utils.LocalStorage
 import androidx.compose.ui.platform.LocalContext
-import com.example.myapplication.components.auth.AuthScreen
-import com.example.myapplication.components.profile.ProfileScreen
+import com.example.myapplication.ui.components.auth.AuthScreen
+import com.example.myapplication.ui.components.profile.ProfileScreen
 
 @Composable
 fun MainNavigation() {
@@ -57,7 +57,5 @@ fun MainNavigation() {
     composable(route = NavigationScreens.PROFILE.name) {
       ProfileScreen(onBack = { navController.popBackStack() }, onLogout = onLogout)
     }
-
-
   }
 }

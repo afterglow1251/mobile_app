@@ -1,4 +1,4 @@
-package com.example.myapplication.components.profile
+package com.example.myapplication.ui.components.profile
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*

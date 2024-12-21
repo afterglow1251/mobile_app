@@ -1,4 +1,4 @@
-package com.example.myapplication.components.products
+package com.example.myapplication.ui.components.products
 
 import android.widget.ImageView
 import androidx.compose.foundation.background
