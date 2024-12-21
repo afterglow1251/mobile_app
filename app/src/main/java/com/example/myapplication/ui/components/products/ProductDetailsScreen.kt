@@ -1,5 +1,6 @@
 package com.example.myapplication.ui.components.products
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.pager.HorizontalPager
@@ -20,7 +21,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.myapplication.ui.components.ui.PicassoImage
 import com.example.myapplication.api.dto.product.ProductDto
+import com.example.myapplication.api.dto.product.CartItem
 import com.example.myapplication.api.network.NetworkModule
+import com.example.myapplication.utils.LocalStorage
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -142,7 +145,21 @@ fun ProductDetailsScreen(productId: Int, onBack: () -> Unit) {
             )
 
             Button(
-              onClick = { /* Add to cart logic */ },
+              onClick = {
+                val userId = LocalStorage.getUser(context)?.id
+                val cartItem = CartItem(
+                  userId = userId!!,
+                  productId = it.id,
+                  name = it.name,
+                  description = it.description,
+                  price = it.price,
+                  category = it.category,
+                  imageUrl = it.images.firstOrNull()?.imageUrl.orEmpty(),
+                  quantity = 1
+                )
+                Log.d("CartScreen", "CartItem: $cartItem")
+                LocalStorage.addToCart(context, cartItem)
+              },
               modifier = Modifier.fillMaxWidth()
             ) {
               Text("Додати в кошик")

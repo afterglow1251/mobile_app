@@ -6,4 +6,5 @@ enum class NavigationScreens {
   PROFILE,
   PROFILE_EDIT,
   PRODUCT_DETAIL,
+  CART,
 }
