@@ -164,7 +164,9 @@ fun AuthScreen(onNavigateToProductsList: () -> Unit) {
                       context, UserDto(
                         id = loginResponse.user.id,
                         email = loginResponse.user.email,
-                        username = loginResponse.user.username
+                        username = loginResponse.user.username,
+                        phoneNumber = null, // або відповідне значення
+                        address = null      // або відповідне значення
                       )
                     )
 
@@ -257,7 +259,9 @@ fun AuthScreen(onNavigateToProductsList: () -> Unit) {
                       context, UserDto(
                         id = loginResponse.user.id,
                         email = loginResponse.user.email,
-                        username = loginResponse.user.username
+                        username = loginResponse.user.username,
+                        phoneNumber = null, // або відповідне значення
+                        address = null      // або відповідне значення
                       )
                     )
 

@@ -2,6 +2,7 @@ package com.example.myapplication.ui.components.products
 
 import android.widget.ImageView
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -18,13 +19,15 @@ import androidx.compose.ui.viewinterop.AndroidView
 import com.squareup.picasso.Picasso
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Person
+import com.example.myapplication.ui.components.ui.PicassoImage
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ProductListScreen(showProfile: () -> Unit) {
+fun ProductListScreen(showProfile: () -> Unit, showProductDetails: (Int) -> Unit) {
   val context = LocalContext.current
   val snackbarHostState = remember { SnackbarHostState() }
-
+  val scope = rememberCoroutineScope()
 
   // Стан для продуктів
   var products by remember { mutableStateOf<List<ProductDto>>(emptyList()) }
@@ -37,7 +40,7 @@ fun ProductListScreen(showProfile: () -> Unit) {
       val productService = NetworkModule.getProductService(context)
       products = productService.getAllProducts()
     } catch (e: Exception) {
-      snackbarHostState.showSnackbar("Сталася помилка: ${e.localizedMessage}")
+      scope.launch { snackbarHostState.showSnackbar("Сталася помилка: ${e.localizedMessage}") }
     } finally {
       isLoading = false
     }
@@ -86,7 +89,7 @@ fun ProductListScreen(showProfile: () -> Unit) {
               horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
               itemsIndexed(beerProducts) { _, product ->
-                ProductCard(product)
+                ProductCard(product = product, onClick = { showProductDetails(product.id) })
               }
             }
           }
@@ -106,7 +109,7 @@ fun ProductListScreen(showProfile: () -> Unit) {
               horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
               itemsIndexed(snackProducts) { _, product ->
-                ProductCard(product)
+                ProductCard(product = product, onClick = { showProductDetails(product.id) })
               }
             }
           }
@@ -116,26 +119,14 @@ fun ProductListScreen(showProfile: () -> Unit) {
   )
 }
 
-@Composable
-fun PicassoImage(url: String, modifier: Modifier = Modifier) {
-  AndroidView(
-    modifier = modifier,
-    factory = { context ->
-      ImageView(context).apply {
-        Picasso.get()
-          .load(url)
-          .into(this) // Завантажуємо зображення за допомогою Picasso
-      }
-    }
-  )
-}
 
 @Composable
-fun ProductCard(product: ProductDto) {
+fun ProductCard(product: ProductDto, onClick: () -> Unit) {
   Column(
     modifier = Modifier
-      .width(200.dp)  // Встановлюємо фіксовану ширину для картки
+      .width(200.dp)
       .padding(8.dp)
+      .clickable(onClick = onClick) // Додаємо клікабельність
       .background(MaterialTheme.colorScheme.surface, shape = MaterialTheme.shapes.medium)
       .padding(16.dp)
   ) {

@@ -3,6 +3,7 @@ package com.example.myapplication.api.services
 import com.example.myapplication.api.dto.user.LoginDto
 import com.example.myapplication.api.dto.user.LoginResponseDto
 import com.example.myapplication.api.dto.user.RegisterDto
+import com.example.myapplication.api.dto.user.UpdateDto
 import com.example.myapplication.api.dto.user.UserDto
 import retrofit2.http.*
 
@@ -22,4 +23,10 @@ interface UserService {
 
     @GET("users/by-email")
     suspend fun getUserByEmail(@Query("email") email: String): UserDto?
+
+    @PATCH("users/update")
+    suspend fun updateProfile(
+        @Header("Authorization") authHeader: String,
+        @Body updateDto: UpdateDto
+    ): UserDto
 }
