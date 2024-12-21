@@ -5,6 +5,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -40,6 +41,10 @@ fun ProductListScreen() {
     }
   }
 
+  // Розділяємо продукти на категорії
+  val beerProducts = products.filter { it.category.name == "beer" }
+  val snackProducts = products.filter { it.category.name == "snack" }
+
   Column(
     modifier = Modifier
       .fillMaxSize()
@@ -61,12 +66,43 @@ fun ProductListScreen() {
       CircularProgressIndicator()
     }
 
-    // Виводимо продукти
-    LazyColumn(
-      modifier = Modifier.fillMaxSize()
-    ) {
-      itemsIndexed(products) { _, product ->
-        ProductCard(product)
+    // Горизонтальна прокрутка для пива
+    if (beerProducts.isNotEmpty()) {
+      Text(
+        text = "Пиво",
+        fontSize = 20.sp,
+        fontWeight = FontWeight.Bold,
+        color = MaterialTheme.colorScheme.primary,
+        modifier = Modifier.padding(bottom = 8.dp)
+      )
+      LazyRow(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+      ) {
+        itemsIndexed(beerProducts) { _, product ->
+          ProductCard(product)
+        }
+      }
+    }
+
+    Spacer(modifier = Modifier.height(16.dp))
+
+    // Горизонтальна прокрутка для снеків
+    if (snackProducts.isNotEmpty()) {
+      Text(
+        text = "Снеки",
+        fontSize = 20.sp,
+        fontWeight = FontWeight.Bold,
+        color = MaterialTheme.colorScheme.primary,
+        modifier = Modifier.padding(bottom = 8.dp)
+      )
+      LazyRow(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+      ) {
+        itemsIndexed(snackProducts) { _, product ->
+          ProductCard(product)
+        }
       }
     }
   }
@@ -90,7 +126,7 @@ fun PicassoImage(url: String, modifier: Modifier = Modifier) {
 fun ProductCard(product: ProductDto) {
   Column(
     modifier = Modifier
-      .fillMaxWidth()
+      .width(200.dp)  // Встановлюємо фіксовану ширину для картки
       .padding(8.dp)
       .background(MaterialTheme.colorScheme.surface, shape = MaterialTheme.shapes.medium)
       .padding(16.dp)
@@ -121,12 +157,6 @@ fun ProductCard(product: ProductDto) {
       text = "Ціна: ${product.price} грн.",
       style = MaterialTheme.typography.bodyMedium,
       color = MaterialTheme.colorScheme.primary
-    )
-    Text(
-      text = product.images.first().imageUrl,
-      style = MaterialTheme.typography.bodyLarge,
-      fontWeight = FontWeight.Bold,
-      modifier = Modifier.padding(bottom = 4.dp)
     )
   }
 }

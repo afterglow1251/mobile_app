@@ -1,6 +1,6 @@
 package com.example.myapplication.api.dto.product
 
-data class ProductImageDto(
+data class CategoryDto(
   val id: Int,
-  val imageUrl: String,
+  val name: String,
 )

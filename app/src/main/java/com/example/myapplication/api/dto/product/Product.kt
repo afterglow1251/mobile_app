@@ -6,6 +6,6 @@ data class ProductDto(
   val description: String,
   val price: Double,
   val quantity: Int,
-  val categoryId: Int,
-  val images: List<ProductImageDto>
+  val category: CategoryDto,
+  val images: List<ProductImageDto>,
 )
