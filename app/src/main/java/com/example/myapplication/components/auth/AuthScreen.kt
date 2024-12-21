@@ -1,9 +1,10 @@
-package com.example.myapplication
+package com.example.myapplication.components.auth
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -15,9 +16,10 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.*
 import com.example.myapplication.api.dto.user.*
 import com.example.myapplication.api.network.NetworkModule
-import com.example.myapplication.utils.TokenManager
+import com.example.myapplication.utils.LocalStorage
 import kotlinx.coroutines.*
 import androidx.compose.ui.platform.LocalContext
+import com.example.myapplication.R.*
 
 
 @Composable
@@ -55,7 +57,7 @@ fun AuthScreen(onNavigateToProductsList: () -> Unit) {
       ) {
         // Логотип
         Image(
-          painter = painterResource(id = R.drawable.ic_launcher_foreground),
+          painter = painterResource(id = drawable.ic_launcher_foreground),
           contentDescription = null,
           modifier = Modifier.size(100.dp)
         )
@@ -128,7 +130,7 @@ fun AuthScreen(onNavigateToProductsList: () -> Unit) {
             onClick = { isEmailChecked = false }, modifier = Modifier.align(Alignment.Start)
           ) {
             Icon(
-              imageVector = Icons.Filled.ArrowBack, contentDescription = "Назад до пошти"
+              imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Назад до пошти"
             )
           }
 
@@ -156,9 +158,9 @@ fun AuthScreen(onNavigateToProductsList: () -> Unit) {
                   try {
                     val service = NetworkModule.getUserService(context)
                     val loginResponse = service.loginUser(LoginDto(email, password))
-                    TokenManager.saveToken(context, loginResponse.token)
+                    LocalStorage.saveToken(context, loginResponse.token)
 
-                    TokenManager.saveUser(
+                    LocalStorage.saveUser(
                       context, UserDto(
                         id = loginResponse.user.id,
                         email = loginResponse.user.email,
@@ -249,9 +251,9 @@ fun AuthScreen(onNavigateToProductsList: () -> Unit) {
                     service.registerUser(RegisterDto(email = email, password = password))
 
                     val loginResponse = service.loginUser(LoginDto(email, password))
-                    TokenManager.saveToken(context, loginResponse.token)
+                    LocalStorage.saveToken(context, loginResponse.token)
 
-                    TokenManager.saveUser(
+                    LocalStorage.saveUser(
                       context, UserDto(
                         id = loginResponse.user.id,
                         email = loginResponse.user.email,

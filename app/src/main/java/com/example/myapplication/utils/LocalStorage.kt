@@ -5,7 +5,7 @@ import android.content.SharedPreferences
 import com.example.myapplication.api.dto.user.UserDto
 import com.google.gson.Gson
 
-object TokenManager {
+object LocalStorage {
 
     private const val PREF_NAME = "user_prefs"
     private const val TOKEN_KEY = "auth_token"

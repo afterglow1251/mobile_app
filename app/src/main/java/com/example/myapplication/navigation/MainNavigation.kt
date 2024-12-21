@@ -1,22 +1,21 @@
 package com.example.myapplication.navigation
 
-import android.content.Context
 import androidx.compose.runtime.Composable
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.example.myapplication.AuthScreen
-import com.example.myapplication.ProductListScreen
-import com.example.myapplication.utils.TokenManager
+import com.example.myapplication.components.products.ProductListScreen
+import com.example.myapplication.utils.LocalStorage
 import androidx.compose.ui.platform.LocalContext
-import com.example.myapplication.ProfileScreen
+import com.example.myapplication.components.auth.AuthScreen
+import com.example.myapplication.components.profile.ProfileScreen
 
 @Composable
 fun MainNavigation() {
   val context = LocalContext.current
   val navController = rememberNavController()
 
-  val token = TokenManager.getToken(context)
+  val token = LocalStorage.getToken(context)
   val startDestination = if (token != null) {
     NavigationScreens.PRODUCTS_LIST.name
   } else {
@@ -37,8 +36,8 @@ fun MainNavigation() {
 
   val onLogout: () -> Unit = {
     navController.navigate(NavigationScreens.AUTH.name) {
-      TokenManager.removeToken(context = context)
-      TokenManager.removeUser(context = context)
+      LocalStorage.removeToken(context)
+      LocalStorage.removeUser(context)
       popUpTo(0) // Очищення всього стека
     }
   }

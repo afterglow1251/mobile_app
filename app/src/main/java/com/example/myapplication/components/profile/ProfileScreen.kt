@@ -1,4 +1,4 @@
-package com.example.myapplication
+package com.example.myapplication.components.profile
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
@@ -8,8 +8,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.myapplication.utils.TokenManager
-import androidx.compose.ui.platform.LocalContext
 
 @Composable
 fun ProfileScreen(onBack: () -> Unit, onLogout: () -> Unit) {
