@@ -13,22 +13,28 @@ import androidx.compose.ui.*
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.*
+import androidx.navigation.NavController
 import com.example.myapplication.api.dto.product.ProductDto
 import com.example.myapplication.api.network.NetworkModule
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.viewinterop.AndroidView
 import com.squareup.picasso.Picasso
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Person
+import com.example.myapplication.navigation.NavigationScreens
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ProductListScreen() {
+fun ProductListScreen(showProfile: () -> Unit) {
   val context = LocalContext.current
   val snackbarHostState = remember { SnackbarHostState() }
+
 
   // Стан для продуктів
   var products by remember { mutableStateOf<List<ProductDto>>(emptyList()) }
   var isLoading by remember { mutableStateOf(false) }
 
-  // Завантажуємо продукти з API
+  // Завантаження продуктів
   LaunchedEffect(Unit) {
     isLoading = true
     try {
@@ -41,71 +47,77 @@ fun ProductListScreen() {
     }
   }
 
-  // Розділяємо продукти на категорії
-  val beerProducts = products.filter { it.category.name == "beer" }
-  val snackProducts = products.filter { it.category.name == "snack" }
-
-  Column(
-    modifier = Modifier
-      .fillMaxSize()
-      .padding(16.dp),
-    verticalArrangement = Arrangement.Top,
-    horizontalAlignment = Alignment.Start
-  ) {
-    Text(
-      text = "СПИСОК ПРОДУКТІВ",
-      fontSize = 24.sp,
-      fontWeight = FontWeight.Bold,
-      color = MaterialTheme.colorScheme.primary
-    )
-
-    Spacer(modifier = Modifier.height(16.dp))
-
-    // Показуємо індикатор завантаження, поки продукти завантажуються
-    if (isLoading) {
-      CircularProgressIndicator()
-    }
-
-    // Горизонтальна прокрутка для пива
-    if (beerProducts.isNotEmpty()) {
-      Text(
-        text = "Пиво",
-        fontSize = 20.sp,
-        fontWeight = FontWeight.Bold,
-        color = MaterialTheme.colorScheme.primary,
-        modifier = Modifier.padding(bottom = 8.dp)
+  Scaffold(
+    topBar = {
+      TopAppBar(
+        title = { Text("СПИСОК ПРОДУКТІВ") },
+        actions = {
+          IconButton(onClick = {
+            showProfile()
+          }) {
+            Icon(imageVector = Icons.Default.Person, contentDescription = "Профіль")
+          }
+        }
       )
-      LazyRow(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    },
+    content = { innerPadding ->
+      Column(
+        modifier = Modifier
+          .fillMaxSize()
+          .padding(innerPadding)
+          .padding(16.dp),
+        verticalArrangement = Arrangement.Top,
+        horizontalAlignment = Alignment.Start
       ) {
-        itemsIndexed(beerProducts) { _, product ->
-          ProductCard(product)
+        // Вміст екрану з продуктами
+        if (isLoading) {
+          CircularProgressIndicator()
+        } else {
+          // Горизонтальна прокрутка для продуктів (наприклад, Пиво, Снеки)
+          val beerProducts = products.filter { it.category.name == "beer" }
+          val snackProducts = products.filter { it.category.name == "snack" }
+
+          if (beerProducts.isNotEmpty()) {
+            Text(
+              text = "Пиво",
+              fontSize = 20.sp,
+              fontWeight = FontWeight.Bold,
+              color = MaterialTheme.colorScheme.primary,
+              modifier = Modifier.padding(bottom = 8.dp)
+            )
+            LazyRow(
+              modifier = Modifier.fillMaxWidth(),
+              horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+              itemsIndexed(beerProducts) { _, product ->
+                ProductCard(product)
+              }
+            }
+          }
+
+          Spacer(modifier = Modifier.height(16.dp))
+
+          if (snackProducts.isNotEmpty()) {
+            Text(
+              text = "Снеки",
+              fontSize = 20.sp,
+              fontWeight = FontWeight.Bold,
+              color = MaterialTheme.colorScheme.primary,
+              modifier = Modifier.padding(bottom = 8.dp)
+            )
+            LazyRow(
+              modifier = Modifier.fillMaxWidth(),
+              horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+              itemsIndexed(snackProducts) { _, product ->
+                ProductCard(product)
+              }
+            }
+          }
         }
       }
     }
-
-    Spacer(modifier = Modifier.height(16.dp))
-
-    // Горизонтальна прокрутка для снеків
-    if (snackProducts.isNotEmpty()) {
-      Text(
-        text = "Снеки",
-        fontSize = 20.sp,
-        fontWeight = FontWeight.Bold,
-        color = MaterialTheme.colorScheme.primary,
-        modifier = Modifier.padding(bottom = 8.dp)
-      )
-      LazyRow(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
-      ) {
-        itemsIndexed(snackProducts) { _, product ->
-          ProductCard(product)
-        }
-      }
-    }
-  }
+  )
 }
 
 @Composable

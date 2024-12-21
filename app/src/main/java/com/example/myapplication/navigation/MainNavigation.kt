@@ -9,6 +9,7 @@ import com.example.myapplication.AuthScreen
 import com.example.myapplication.ProductListScreen
 import com.example.myapplication.utils.TokenManager
 import androidx.compose.ui.platform.LocalContext
+import com.example.myapplication.ProfileScreen
 
 @Composable
 fun MainNavigation() {
@@ -22,9 +23,23 @@ fun MainNavigation() {
     NavigationScreens.AUTH.name
   }
 
+  val showProfile: () -> Unit = {
+    navController.navigate(NavigationScreens.PROFILE.name) {
+      launchSingleTop = true // Запобігаємо дублюванню екрану
+    }
+  }
+
   val navigateToProductsList: () -> Unit = {
     navController.navigate(NavigationScreens.PRODUCTS_LIST.name) {
       popUpTo(NavigationScreens.AUTH.name) { inclusive = true }
+    }
+  }
+
+  val onLogout: () -> Unit = {
+    navController.navigate(NavigationScreens.AUTH.name) {
+      TokenManager.removeToken(context = context)
+      TokenManager.removeUser(context = context)
+      popUpTo(0) // Очищення всього стека
     }
   }
 
@@ -37,7 +52,13 @@ fun MainNavigation() {
     }
 
     composable(route = NavigationScreens.PRODUCTS_LIST.name) {
-      ProductListScreen()
+      ProductListScreen(showProfile = showProfile)
     }
+
+    composable(route = NavigationScreens.PROFILE.name) {
+      ProfileScreen(onBack = { navController.popBackStack() }, onLogout = onLogout)
+    }
+
+
   }
 }
