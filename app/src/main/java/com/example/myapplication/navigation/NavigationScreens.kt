@@ -8,4 +8,5 @@ enum class NavigationScreens {
   PRODUCT_DETAIL,
   CART,
   ORDERS,
+  CRM_MAIN,
 }

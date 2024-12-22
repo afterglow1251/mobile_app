@@ -8,7 +8,12 @@ import com.example.myapplication.ui.components.products.ProductListScreen
 import com.example.myapplication.utils.LocalStorage
 import androidx.compose.ui.platform.LocalContext
 import com.example.myapplication.ui.components.auth.AuthScreen
+<<<<<<< Updated upstream
 import com.example.myapplication.ui.components.products.CartScreen
+=======
+import com.example.myapplication.ui.components.cart.CartScreen
+import com.example.myapplication.ui.components.crm.CrmMainScreen
+>>>>>>> Stashed changes
 import com.example.myapplication.ui.components.orders.OrderListScreen
 import com.example.myapplication.ui.components.products.ProductDetailsScreen
 import com.example.myapplication.ui.components.profile.EditProfileScreen
@@ -71,6 +76,12 @@ fun MainNavigation() {
     }
   }
 
+  val navigateToCrmMain: () -> Unit = {
+    navController.navigate(NavigationScreens.CRM_MAIN.name) {
+      launchSingleTop = true // Запобігаємо дублюванню екрану
+    }
+  }
+
   NavHost(
     navController = navController,
     startDestination = startDestination
@@ -84,7 +95,7 @@ fun MainNavigation() {
     }
 
     composable(route = NavigationScreens.PROFILE.name) {
-      ProfileScreen(onBack = { navController.popBackStack() }, onLogout = onLogout, editProfile = editProfile)
+      ProfileScreen(onBack = { navController.popBackStack() }, onLogout = onLogout, editProfile = editProfile, navigateToCrmMain = navigateToCrmMain)
     }
 
     composable(route = NavigationScreens.ORDERS.name) {
@@ -107,6 +118,10 @@ fun MainNavigation() {
       if (userId != null) {
         CartScreen(userId = userId, onBack = { navController.popBackStack() })
       }
+    }
+
+    composable(route = NavigationScreens.CRM_MAIN.name) {
+      CrmMainScreen(onBack = { navController.popBackStack() })
     }
   }
 }

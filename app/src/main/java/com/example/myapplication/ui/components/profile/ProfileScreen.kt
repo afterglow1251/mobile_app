@@ -10,7 +10,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 @Composable
-fun ProfileScreen(onBack: () -> Unit, onLogout: () -> Unit, editProfile: () -> Unit) {
+fun ProfileScreen(onBack: () -> Unit, onLogout: () -> Unit, navigateToCrmMain : () -> Unit, editProfile: () -> Unit) {
 
   Column(
     modifier = Modifier
@@ -29,6 +29,12 @@ fun ProfileScreen(onBack: () -> Unit, onLogout: () -> Unit, editProfile: () -> U
       onLogout()
     }) {
       Text("Вийти")
+    }
+    Spacer(modifier = Modifier.height(16.dp))
+    Button(onClick = {
+      navigateToCrmMain()
+    }) {
+      Text("До CRM")
     }
     Spacer(modifier = Modifier.height(8.dp))
     Button(onClick = {
