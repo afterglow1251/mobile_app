@@ -13,6 +13,7 @@ import com.example.myapplication.ui.components.products.CartScreen
 
 // import com.example.myapplication.ui.components.cart.CartScreen
 import com.example.myapplication.ui.components.crm.CrmMainScreen
+import com.example.myapplication.ui.components.crm.CrmStatsScreen
 
 import com.example.myapplication.ui.components.orders.OrderListScreen
 import com.example.myapplication.ui.components.products.ProductDetailsScreen
@@ -82,6 +83,12 @@ fun MainNavigation() {
     }
   }
 
+  val navigateToCrmStats: () -> Unit = {
+    navController.navigate(NavigationScreens.CRM_STATS.name) {
+      launchSingleTop = true // Запобігаємо дублюванню екрану
+    }
+  }
+
   NavHost(
     navController = navController,
     startDestination = startDestination
@@ -121,7 +128,11 @@ fun MainNavigation() {
     }
 
     composable(route = NavigationScreens.CRM_MAIN.name) {
-      CrmMainScreen(onBack = { navController.popBackStack() })
+      CrmMainScreen(onBack = { navController.popBackStack() }, navigateToCrmStats = navigateToCrmStats)
+    }
+
+    composable(route = NavigationScreens.CRM_STATS.name) {
+      CrmStatsScreen(onBack = { navController.popBackStack() })
     }
   }
 }
