@@ -8,12 +8,12 @@ import com.example.myapplication.ui.components.products.ProductListScreen
 import com.example.myapplication.utils.LocalStorage
 import androidx.compose.ui.platform.LocalContext
 import com.example.myapplication.ui.components.auth.AuthScreen
-<<<<<<< Updated upstream
+
 import com.example.myapplication.ui.components.products.CartScreen
-=======
-import com.example.myapplication.ui.components.cart.CartScreen
+
+// import com.example.myapplication.ui.components.cart.CartScreen
 import com.example.myapplication.ui.components.crm.CrmMainScreen
->>>>>>> Stashed changes
+
 import com.example.myapplication.ui.components.orders.OrderListScreen
 import com.example.myapplication.ui.components.products.ProductDetailsScreen
 import com.example.myapplication.ui.components.profile.EditProfileScreen

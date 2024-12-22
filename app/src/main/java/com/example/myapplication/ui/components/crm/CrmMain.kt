@@ -47,19 +47,19 @@ fun CrmMainScreen(
 
     Text(
       text = "Активних клієнтів: 3",
-      style = MaterialTheme.typography.bodyLarge,
+      style = MaterialTheme.typography.bodyMedium,
       modifier = Modifier.padding(bottom = 8.dp)
     )
 
     Text(
       text = "Обсяг продажів: 33000 грн",
-      style = MaterialTheme.typography.bodyLarge,
+      style = MaterialTheme.typography.bodyMedium,
       modifier = Modifier.padding(bottom = 16.dp)
     )
 
     SalesChart()
 
-    Spacer(modifier = Modifier.height(26.dp))
+    Spacer(modifier = Modifier.height(32.dp))
 
     Button(
       onClick = onBack,
@@ -68,7 +68,7 @@ fun CrmMainScreen(
       Text("Перейти до клієнтів")
     }
 
-    Spacer(modifier = Modifier.height(8.dp))
+    Spacer(modifier = Modifier.height(16.dp))
 
     Button(
       onClick = onBack,
@@ -100,7 +100,8 @@ fun SalesChart() {
 
     Canvas(modifier = Modifier.fillMaxSize()) {
       val maxSales = salesData.maxOrNull() ?: 1
-      val horizontalSpacing = (size.width - 32.dp.toPx()) / (salesData.size - 1)
+      val horizontalSpacing = (size.width - 48.dp.toPx()) / (salesData.size - 1) // Adjusted spacing
+      val offsetStart = 32.dp.toPx() // Increased offset from the vertical line
       val verticalStep = size.height / 5
 
       // Draw vertical scale
@@ -132,9 +133,9 @@ fun SalesChart() {
 
       // Draw line chart
       for (i in 0 until salesData.size - 1) {
-        val startX = 16.dp.toPx() + i * horizontalSpacing
+        val startX = offsetStart + i * horizontalSpacing
         val startY = size.height - (salesData[i].toFloat() / maxSales) * size.height
-        val endX = 16.dp.toPx() + (i + 1) * horizontalSpacing
+        val endX = offsetStart + (i + 1) * horizontalSpacing
         val endY = size.height - (salesData[i + 1].toFloat() / maxSales) * size.height
 
         drawLine(
@@ -162,7 +163,7 @@ fun SalesChart() {
 
       // Draw horizontal labels
       days.forEachIndexed { index, day ->
-        val x = 16.dp.toPx() + index * horizontalSpacing
+        val x = offsetStart + index * horizontalSpacing
         val y = size.height + 20.dp.toPx()
         drawContext.canvas.nativeCanvas.drawText(
           day,
@@ -178,6 +179,7 @@ fun SalesChart() {
     }
   }
 }
+
 
 
 
