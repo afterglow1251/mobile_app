@@ -26,7 +26,7 @@ interface UserService {
 
     @PATCH("users/update")
     suspend fun updateProfile(
-        @Header("Authorization") authHeader: String,
+       // @Header("Authorization") authHeader: String,
         @Body updateDto: UpdateDto
     ): UserDto
 }

@@ -9,6 +9,7 @@ import com.example.myapplication.utils.LocalStorage
 import androidx.compose.ui.platform.LocalContext
 import com.example.myapplication.ui.components.auth.AuthScreen
 import com.example.myapplication.ui.components.cart.CartScreen
+import com.example.myapplication.ui.components.orders.OrderListScreen
 import com.example.myapplication.ui.components.products.ProductDetailsScreen
 import com.example.myapplication.ui.components.profile.EditProfileScreen
 import com.example.myapplication.ui.components.profile.ProfileScreen
@@ -27,6 +28,12 @@ fun MainNavigation() {
 
   val editProfile: () -> Unit = {
     navController.navigate(NavigationScreens.PROFILE_EDIT.name) {
+      launchSingleTop = true // Запобігаємо дублюванню екрану
+    }
+  }
+
+  val showOrders: () -> Unit = {
+    navController.navigate(NavigationScreens.ORDERS.name) {
       launchSingleTop = true // Запобігаємо дублюванню екрану
     }
   }
@@ -73,11 +80,15 @@ fun MainNavigation() {
     }
 
     composable(route = NavigationScreens.PRODUCTS_LIST.name) {
-      ProductListScreen(showProfile = showProfile, showProductDetails = showProductDetails, cartDetails = cartDetails)
+      ProductListScreen(showProfile = showProfile, showProductDetails = showProductDetails, cartDetails = cartDetails, showOrders = showOrders)
     }
 
     composable(route = NavigationScreens.PROFILE.name) {
       ProfileScreen(onBack = { navController.popBackStack() }, onLogout = onLogout, editProfile = editProfile)
+    }
+
+    composable(route = NavigationScreens.ORDERS.name) {
+      OrderListScreen(onBack = { navController.popBackStack() }, cartDetails = cartDetails, showMain = navigateToProductsList)
     }
 
     composable(route = NavigationScreens.PROFILE_EDIT.name) {

@@ -131,7 +131,7 @@ fun EditProfileScreen(
           CoroutineScope(Dispatchers.IO).launch {
             try {
               val updatedUser = userService.updateProfile(
-                authHeader = "Bearer ${LocalStorage.getToken(context)}",
+                // authHeader = "Bearer ${LocalStorage.getToken(context)}",
                 updateDto = UpdateDto(
                   username = username,
                   phoneNumber = phoneNumber,

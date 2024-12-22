@@ -26,7 +26,7 @@ import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ProductListScreen(showProfile: () -> Unit, showProductDetails: (Int) -> Unit, cartDetails: (Int) -> Unit) {
+fun ProductListScreen(showProfile: () -> Unit, showProductDetails: (Int) -> Unit, cartDetails: (Int) -> Unit, showOrders: () -> Unit) {
   val context = LocalContext.current
   val snackbarHostState = remember { SnackbarHostState() }
   val scope = rememberCoroutineScope()
@@ -79,7 +79,7 @@ fun ProductListScreen(showProfile: () -> Unit, showProductDetails: (Int) -> Unit
           icon = { Icon(Icons.Default.Person, contentDescription = "Мої покупки") },
           label = { Text("Покупки") },
           selected = false,
-          onClick = { showProfile() }
+          onClick = { showOrders() }
         )
       }
     },

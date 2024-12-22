@@ -2,6 +2,7 @@ package com.example.myapplication.utils
 
 import android.content.Context
 import android.content.SharedPreferences
+import com.example.myapplication.api.dto.order.CartItemBackend
 import com.example.myapplication.api.dto.user.UserDto
 import com.example.myapplication.api.dto.product.CartItem
 import com.example.myapplication.api.dto.product.CategoryDto
@@ -114,5 +115,29 @@ object LocalStorage {
         val cartJson = Gson().toJson(cartItems)
         editor.putString(CART_KEY, cartJson)
         editor.apply()
+    }
+
+    fun clearCartForUser(context: Context) {
+        val user = getUser(context)
+        if (user != null) {
+            val cartItems = getCart(context).toMutableList()
+
+            val updatedCartItems = cartItems.filter { it.userId != user.id }
+            saveCart(context, updatedCartItems)
+        }
+    }
+
+    fun getCartForBackend(context: Context): List<CartItemBackend> {
+        val user = getUser(context)
+        return if (user != null) {
+            getCart(context).filter { it.userId == user.id }.map { cartItem ->
+                CartItemBackend(
+                    quantity = cartItem.quantity,
+                    productId = cartItem.productId
+                )
+            }
+        } else {
+            emptyList()
+        }
     }
 }
