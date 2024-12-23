@@ -10,11 +10,21 @@ import retrofit2.http.GET
 import retrofit2.http.Header
 import retrofit2.http.POST
 import retrofit2.http.Path
+import retrofit2.http.Query
 
 interface ProductService {
 
   @GET("products")
-  suspend fun getAllProducts(): List<ProductDto>
+  suspend fun getAllProducts(
+    @Query("name") name: String? = null,
+    @Query("minPrice") minPrice: Double? = null,
+    @Query("maxPrice") maxPrice: Double? = null,
+    @Query("unitSize") unitSize: String? = null,
+    @Query("beerType") beerType: String? = null,
+    @Query("manufacturerName") manufacturerName: String? = null,
+    @Query("manufacturerCountry") manufacturerCountry: String? = null,
+    @Query("category") category: String? = null,
+  ): List<ProductDto>
 
   @GET("products/{id}")
   suspend fun getProductById(@Path("id") id: Int): ProductDto

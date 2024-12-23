@@ -8,6 +8,7 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material.icons.filled.ShoppingBag
 import androidx.compose.material3.*
@@ -27,16 +28,20 @@ import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ProductListScreen(showProfile: () -> Unit, showProductDetails: (Int) -> Unit, cartDetails: (Int) -> Unit, showOrders: () -> Unit) {
+fun ProductListScreen(
+  showProfile: () -> Unit,
+  showProductDetails: (Int) -> Unit,
+  cartDetails: (Int) -> Unit,
+  showOrders: () -> Unit,
+  navigateToSearch: () -> Unit
+) {
   val context = LocalContext.current
   val snackbarHostState = remember { SnackbarHostState() }
   val scope = rememberCoroutineScope()
 
-  // Стан для продуктів
   var products by remember { mutableStateOf<List<ProductDto>>(emptyList()) }
   var isLoading by remember { mutableStateOf(false) }
 
-  // Завантаження продуктів
   LaunchedEffect(Unit) {
     isLoading = true
     try {
@@ -54,9 +59,7 @@ fun ProductListScreen(showProfile: () -> Unit, showProductDetails: (Int) -> Unit
       TopAppBar(
         title = { Text("СПИСОК ПРОДУКТІВ") },
         actions = {
-          IconButton(onClick = {
-            showProfile()
-          }) {
+          IconButton(onClick = { showProfile() }) {
             Icon(imageVector = Icons.Default.Person, contentDescription = "Профіль")
           }
         }
@@ -68,7 +71,7 @@ fun ProductListScreen(showProfile: () -> Unit, showProductDetails: (Int) -> Unit
         NavigationBarItem(
           icon = { Icon(Icons.Default.ShoppingCart, contentDescription = "Список продуктів") },
           label = { Text("Продукти") },
-          selected = true, // Поточна сторінка
+          selected = true,
           onClick = {}
         )
         NavigationBarItem(
@@ -91,6 +94,25 @@ fun ProductListScreen(showProfile: () -> Unit, showProductDetails: (Int) -> Unit
           .fillMaxSize()
           .padding(innerPadding)
       ) {
+        Box(
+          modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp)
+            .clickable { navigateToSearch() } // Реалізація кліка
+        ) {
+          OutlinedTextField(
+            value = "",
+            onValueChange = { },
+            placeholder = { Text("Пошук продуктів...") },
+            leadingIcon = {
+              Icon(imageVector = Icons.Default.Search, contentDescription = "Пошук")
+            },
+            readOnly = false, // Заборона введення тексту
+            enabled = false, // Заборона інтерактивності
+            modifier = Modifier.fillMaxWidth()
+          )
+        }
+
         if (isLoading) {
           CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally))
         } else {
@@ -158,6 +180,7 @@ fun ProductListScreen(showProfile: () -> Unit, showProductDetails: (Int) -> Unit
     }
   )
 }
+
 
 @Composable
 fun ProductCard(product: ProductDto, onClick: () -> Unit, snackbarHostState: SnackbarHostState) {

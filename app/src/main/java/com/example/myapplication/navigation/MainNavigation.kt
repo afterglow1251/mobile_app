@@ -1,5 +1,6 @@
 package com.example.myapplication.navigation
 
+import SearchScreen
 import ClientListScreen
 import androidx.compose.runtime.Composable
 import androidx.navigation.compose.NavHost
@@ -51,6 +52,12 @@ fun MainNavigation() {
 
   val showProfile: () -> Unit = {
     navController.navigate(NavigationScreens.PROFILE.name) {
+      launchSingleTop = true // Запобігаємо дублюванню екрану
+    }
+  }
+
+  val navigateToSearch: () -> Unit = {
+    navController.navigate(NavigationScreens.SEARCH_SCREEN.name) {
       launchSingleTop = true // Запобігаємо дублюванню екрану
     }
   }
@@ -133,7 +140,13 @@ fun MainNavigation() {
     }
 
     composable(route = NavigationScreens.PRODUCTS_LIST.name) {
-      ProductListScreen(showProfile = showProfile, showProductDetails = showProductDetails, cartDetails = cartDetails, showOrders = showOrders)
+      ProductListScreen(
+        showProfile = showProfile,
+        showProductDetails = showProductDetails,
+        cartDetails = cartDetails,
+        showOrders = showOrders,
+        navigateToSearch = navigateToSearch
+      )
     }
 
     composable(route = NavigationScreens.PROFILE.name) {
@@ -146,6 +159,12 @@ fun MainNavigation() {
 
     composable(route = NavigationScreens.PROFILE_EDIT.name) {
       EditProfileScreen(onBack = { navController.popBackStack() })
+    }
+
+    composable(route = NavigationScreens.SEARCH_SCREEN.name) {
+      SearchScreen(
+        onBack = { navController.popBackStack() },
+        showProductDetails = showProductDetails,)
     }
 
     composable(route = "${NavigationScreens.PRODUCT_DETAIL.name}/{productId}") { backStackEntry ->
