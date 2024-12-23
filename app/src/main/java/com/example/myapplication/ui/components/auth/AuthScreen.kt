@@ -167,6 +167,7 @@ fun AuthScreen(onNavigateToProductsList: () -> Unit) {
                         username = loginResponse.user.username,
                         phoneNumber = loginResponse.user.phoneNumber, // або відповідне значення
                         address = loginResponse.user.address,      // або відповідне значення
+                        isEmployee = loginResponse.user.isEmployee,
                       )
                     )
 
@@ -262,6 +263,7 @@ fun AuthScreen(onNavigateToProductsList: () -> Unit) {
                         username = loginResponse.user.username,
                         phoneNumber = loginResponse.user.phoneNumber,
                         address = loginResponse.user.address,
+                        isEmployee = loginResponse.user.isEmployee,
                       )
                     )
 
