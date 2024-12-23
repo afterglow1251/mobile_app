@@ -1,6 +1,5 @@
 package com.example.myapplication.navigation
 
-import SearchScreen
 import ClientListScreen
 import androidx.compose.runtime.Composable
 import androidx.navigation.compose.NavHost
@@ -23,6 +22,7 @@ import com.example.myapplication.ui.components.order.OrderDetailsScreen
 
 import com.example.myapplication.ui.components.order.OrderListScreen
 import com.example.myapplication.ui.components.products.ProductDetailsScreen
+import com.example.myapplication.ui.components.products.SearchScreen
 import com.example.myapplication.ui.components.profile.EditProfileScreen
 import com.example.myapplication.ui.components.profile.ProfileScreen
 
