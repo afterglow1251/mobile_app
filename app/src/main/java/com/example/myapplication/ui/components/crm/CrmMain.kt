@@ -17,7 +17,7 @@ import androidx.compose.ui.unit.*
 @Composable
 fun CrmMainScreen(
   onBack: () -> Unit,
-  // onNavigateToClients: () -> Unit,
+  navigateToCrmClientList: () -> Unit,
   navigateToCrmStats: () -> Unit
 ) {
   Scaffold(
@@ -25,7 +25,7 @@ fun CrmMainScreen(
       TopAppBar(
         title = { Text("Система CRM") },
         navigationIcon = {
-          IconButton(onClick = { onBack() }) {
+          IconButton(onClick = { navigateToCrmClientList() }) {
             Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Назад")
           }
         }

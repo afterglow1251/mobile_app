@@ -1,5 +1,6 @@
 package com.example.myapplication.navigation
 
+import ClientListScreen
 import androidx.compose.runtime.Composable
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -117,6 +118,12 @@ fun MainNavigation() {
     }
   }
 
+  val navigateToCrmClientList: () -> Unit = {
+    navController.navigate(NavigationScreens.CRM_CLIENT_LIST.name) {
+      launchSingleTop = true // Запобігаємо дублюванню екрану
+    }
+  }
+
   NavHost(
     navController = navController,
     startDestination = startDestination
@@ -164,7 +171,7 @@ fun MainNavigation() {
 
 
     composable(route = NavigationScreens.CRM_MAIN.name) {
-      CrmMainScreen(onBack = { navController.popBackStack() }, navigateToCrmStats = navigateToCrmStats)
+      CrmMainScreen(onBack = { navController.popBackStack() }, navigateToCrmStats = navigateToCrmStats, navigateToCrmClientList = navigateToCrmClientList)
     }
 
     composable(route = NavigationScreens.CRM_STATS.name) {
@@ -181,6 +188,10 @@ fun MainNavigation() {
 
     composable(route = NavigationScreens.CRM_YEAR.name) {
       CrmArchiveYearScreen(onBack = { navController.popBackStack() })
+    }
+
+    composable(route = NavigationScreens.CRM_CLIENT_LIST.name) {
+      ClientListScreen(onBack = { navController.popBackStack() })
     }
   }
 }
