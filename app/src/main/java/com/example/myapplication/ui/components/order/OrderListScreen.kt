@@ -1,9 +1,10 @@
-package com.example.myapplication.ui.components.orders
+package com.example.myapplication.ui.components.order
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.ShoppingCart
@@ -26,13 +27,13 @@ import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
 import java.util.*
 
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun OrderListScreen(onBack: () -> Unit, cartDetails: (Int) -> Unit, showMain: () -> Unit) {
+fun OrderListScreen(cartDetails: (Int) -> Unit, showMain: () -> Unit, onShowOrderDetails: (Int) -> Unit) {
   val snackbarHostState = remember { SnackbarHostState() }
   val scope = rememberCoroutineScope()
   val context = LocalContext.current
-  // Стан для замовлень
   var orders by remember { mutableStateOf<List<GetOrdersResponse>>(emptyList()) }
   var isLoading by remember { mutableStateOf(false) }
 
@@ -97,8 +98,29 @@ fun OrderListScreen(onBack: () -> Unit, cartDetails: (Int) -> Unit, showMain: ()
               .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
           ) {
-            itemsIndexed(orders) { index, order ->
-              OrderCard(order = order, index = index)
+            val groupedOrders = orders.groupBy { order ->
+              SimpleDateFormat("EEEE, dd MMMM", Locale("uk"))
+                .format(
+                  SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.getDefault())
+                    .apply { timeZone = TimeZone.getTimeZone("UTC") }
+                    .parse(order.createdAt)!!
+                )
+            }
+
+            groupedOrders.forEach { (date, ordersForDate) ->
+              item {
+                Text(
+                  text = date,
+                  fontSize = 20.sp,
+                  fontWeight = FontWeight.Bold,
+                  color = MaterialTheme.colorScheme.primary,
+                  modifier = Modifier.padding(vertical = 8.dp)
+                )
+              }
+
+              items(ordersForDate) { order ->
+                OrderSummaryCard(order = order, onShowOrderDetails = { onShowOrderDetails(order.id) })
+              }
             }
           }
         }
@@ -108,66 +130,42 @@ fun OrderListScreen(onBack: () -> Unit, cartDetails: (Int) -> Unit, showMain: ()
 }
 
 @Composable
-fun OrderCard(order: GetOrdersResponse, index: Int) {
-  val dateFormatter = SimpleDateFormat("dd.MM.yyyy HH:mm", Locale.getDefault())
-  val formattedDate = try {
-    val utcDateFormatter = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.getDefault()).apply {
-      timeZone = TimeZone.getTimeZone("UTC")
-    }
+fun OrderSummaryCard(order: GetOrdersResponse, onShowOrderDetails: () -> Unit) {
+  val dateFormatter = SimpleDateFormat("HH:mm", Locale("uk"))
+  val formattedTime = try {
+    val utcDateFormatter =
+      SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale("uk")).apply {
+        timeZone = TimeZone.getTimeZone("UTC")
+      }
     val date = utcDateFormatter.parse(order.createdAt)
 
-    // Конвертуємо дату в київський час
+    // Конвертуємо час в київський час
     dateFormatter.timeZone = TimeZone.getTimeZone("Europe/Kyiv")
-    dateFormatter.format(date)
+    dateFormatter.format(date!!)
   } catch (e: Exception) {
-    "Невідома дата"
+    "Невідомий час"
   }
 
-  Column(
+  Row(
     modifier = Modifier
       .fillMaxWidth()
+      .clickable(onClick = onShowOrderDetails)
       .background(MaterialTheme.colorScheme.surface, shape = MaterialTheme.shapes.medium)
-      .padding(16.dp)
+      .padding(16.dp),
+    horizontalArrangement = Arrangement.SpaceBetween
   ) {
     Text(
-      text = "Замовлення №${index + 1}",
-      fontSize = 18.sp,
-      fontWeight = FontWeight.Bold,
-      modifier = Modifier.padding(bottom = 8.dp)
-    )
-    Text(
-      text = "Дата створення: $formattedDate",
-      style = MaterialTheme.typography.bodyMedium,
-      color = Color.Gray,
-      modifier = Modifier.padding(bottom = 4.dp)
-    )
-    Text(
-      text = "Загальна сума: ${order.totalPrice} грн.",
-      style = MaterialTheme.typography.bodyMedium,
-      color = MaterialTheme.colorScheme.primary,
-      modifier = Modifier.padding(bottom = 8.dp)
-    )
-    Text(
-      text = "Адреса доставки: ${order.shippingAddress}",
-      style = MaterialTheme.typography.bodyMedium,
-      color = Color.Gray,
-      modifier = Modifier.padding(bottom = 4.dp)
+      text = "Сума: ${order.totalPrice} грн.",
+      style = MaterialTheme.typography.bodyLarge,
+      fontWeight = FontWeight.Bold
     )
 
-    Column(modifier = Modifier.padding(top = 8.dp)) {
-      Text(
-        text = "Товари:",
-        fontSize = 16.sp,
-        fontWeight = FontWeight.Bold,
-        modifier = Modifier.padding(bottom = 4.dp)
-      )
-      order.orderItems.forEach { item ->
-        Text(
-          text = "- ${item.product.name} (x${item.quantity}): ${item.price} грн.",
-          style = MaterialTheme.typography.bodyMedium,
-          modifier = Modifier.padding(bottom = 4.dp)
-        )
-      }
-    }
+    Text(
+      text = "Час: $formattedTime",
+      style = MaterialTheme.typography.bodyMedium,
+      color = Color.Gray
+    )
   }
 }
+
+

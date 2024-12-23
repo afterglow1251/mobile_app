@@ -9,13 +9,14 @@ import com.example.myapplication.utils.LocalStorage
 import androidx.compose.ui.platform.LocalContext
 import com.example.myapplication.ui.components.auth.AuthScreen
 
-import com.example.myapplication.ui.components.products.CartScreen
+import com.example.myapplication.ui.components.cart.CartScreen
 
 // import com.example.myapplication.ui.components.cart.CartScreen
 import com.example.myapplication.ui.components.crm.CrmMainScreen
 import com.example.myapplication.ui.components.crm.CrmStatsScreen
+import com.example.myapplication.ui.components.order.OrderDetailsScreen
 
-import com.example.myapplication.ui.components.orders.OrderListScreen
+import com.example.myapplication.ui.components.order.OrderListScreen
 import com.example.myapplication.ui.components.products.ProductDetailsScreen
 import com.example.myapplication.ui.components.profile.EditProfileScreen
 import com.example.myapplication.ui.components.profile.ProfileScreen
@@ -53,6 +54,12 @@ fun MainNavigation() {
   val showProductDetails: (Int) -> Unit = { productId ->
     navController.navigate("${NavigationScreens.PRODUCT_DETAIL.name}/$productId") {
       launchSingleTop = true // Запобігаємо дублюванню екрану
+    }
+  }
+
+  val showOrderDetails: (Int) -> Unit = { orderId ->
+    navController.navigate("${NavigationScreens.ORDER_DETAILS.name}/$orderId") {
+      launchSingleTop = true
     }
   }
 
@@ -106,7 +113,7 @@ fun MainNavigation() {
     }
 
     composable(route = NavigationScreens.ORDERS.name) {
-      OrderListScreen(onBack = { navController.popBackStack() }, cartDetails = cartDetails, showMain = navigateToProductsList)
+      OrderListScreen(cartDetails = cartDetails, showMain = navigateToProductsList, onShowOrderDetails = showOrderDetails)
     }
 
     composable(route = NavigationScreens.PROFILE_EDIT.name) {
@@ -126,6 +133,14 @@ fun MainNavigation() {
         CartScreen(userId = userId, onBack = { navController.popBackStack() }, showProductDetails = showProductDetails)
       }
     }
+
+    composable(route = "${NavigationScreens.ORDER_DETAILS.name}/{orderId}") { backStackEntry ->
+      val orderId = backStackEntry.arguments?.getString("orderId")?.toIntOrNull()
+      if (orderId != null) {
+        OrderDetailsScreen(orderId = orderId, onBack = { navController.popBackStack() })
+      }
+    }
+
 
     composable(route = NavigationScreens.CRM_MAIN.name) {
       CrmMainScreen(onBack = { navController.popBackStack() }, navigateToCrmStats = navigateToCrmStats)

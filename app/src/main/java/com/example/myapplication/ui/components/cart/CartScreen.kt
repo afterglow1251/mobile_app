@@ -1,4 +1,4 @@
-package com.example.myapplication.ui.components.products
+package com.example.myapplication.ui.components.cart
 
 import android.content.Context
 import androidx.compose.foundation.clickable
@@ -28,6 +28,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
+import retrofit2.HttpException
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -73,7 +74,7 @@ fun CartScreen(userId: Int, onBack: () -> Unit, showProductDetails: (Int) -> Uni
               loadCart()
               onBack()
             }
-          } catch (e: retrofit2.HttpException) {
+          } catch (e: HttpException) {
             // Перевіряємо на статус код 400
             if (e.code() == 400) {
               // Якщо статус 400, обробляємо помилку
