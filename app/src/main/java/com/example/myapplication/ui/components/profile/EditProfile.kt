@@ -16,6 +16,7 @@ import com.example.myapplication.utils.LocalStorage
 import androidx.compose.ui.platform.LocalContext
 import com.example.myapplication.api.network.NetworkModule
 import com.example.myapplication.api.dto.user.UpdateDto
+import com.example.myapplication.validators.isValidPhoneNumber
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -123,7 +124,7 @@ fun EditProfileScreen(
           value = phoneNumber,
           onValueChange = {
             phoneNumber = it
-            isPhoneValid = it.isEmpty() || it.matches("^\\+?\\d{10,15}\$".toRegex())
+            isPhoneValid = it.isEmpty() || isValidPhoneNumber(it)
           },
           label = { Text("Номер телефону") },
           isError = !isPhoneValid,
