@@ -123,7 +123,7 @@ fun MainNavigation() {
     composable(route = "${NavigationScreens.CART.name}/{userId}") { backStackEntry ->
       val userId = backStackEntry.arguments?.getString("userId")?.toIntOrNull()
       if (userId != null) {
-        CartScreen(userId = userId, onBack = { navController.popBackStack() })
+        CartScreen(userId = userId, onBack = { navController.popBackStack() }, showProductDetails = showProductDetails)
       }
     }
 

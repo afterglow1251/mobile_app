@@ -5,7 +5,6 @@ import android.content.SharedPreferences
 import com.example.myapplication.api.dto.order.CartItemBackend
 import com.example.myapplication.api.dto.user.UserDto
 import com.example.myapplication.api.dto.product.CartItem
-import com.example.myapplication.api.dto.product.CategoryDto
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 

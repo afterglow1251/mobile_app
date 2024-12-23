@@ -1,6 +1,7 @@
 package com.example.myapplication.ui.components.products
 
 import android.content.Context
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -30,7 +31,7 @@ import org.json.JSONObject
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CartScreen(userId: Int, onBack: () -> Unit) {
+fun CartScreen(userId: Int, onBack: () -> Unit, showProductDetails: (Int) -> Unit) {
   val context = LocalContext.current
   var cartItems by remember { mutableStateOf<List<CartItem>>(emptyList()) }
   var totalPrice by remember { mutableDoubleStateOf(0.0) }
@@ -169,7 +170,8 @@ fun CartScreen(userId: Int, onBack: () -> Unit) {
             },
             onQuantityChange = {
               loadCart() // Оновлення даних після зміни кількості
-            }
+            },
+            onShowProductDetails = { showProductDetails(cartItem.productId) }
           )
         }
       }
@@ -198,12 +200,14 @@ fun CartItemRow(
   context: Context,
   cartItem: CartItem,
   onRemove: () -> Unit,
-  onQuantityChange: () -> Unit
+  onQuantityChange: () -> Unit,
+  onShowProductDetails: () -> Unit
 ) {
   Card(
     modifier = Modifier
       .fillMaxWidth()
-      .padding(8.dp),
+      .padding(8.dp)
+      .clickable(onClick = onShowProductDetails),
     elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
   ) {
     Row(
