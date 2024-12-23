@@ -2,6 +2,8 @@ package com.example.myapplication.ui.components.crm
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.*
@@ -10,80 +12,90 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.unit.*
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CrmStatsScreen(
   onBack: () -> Unit,
-  // onNavigateToClients: () -> Unit,
+   navigateToCrmArchive: () -> Unit,
 ) {
-  Column(
-    modifier = Modifier
-      .fillMaxSize()
-      .padding(16.dp)
-  ) {
-    Text(
-      text = "Ваша статистика",
-      style = MaterialTheme.typography.headlineSmall,
-      modifier = Modifier.padding(bottom = 16.dp)
-    )
-
-    Text(
-      text = "Активних клієнтів: 15",
-      style = MaterialTheme.typography.bodyLarge,
-      modifier = Modifier.padding(bottom = 8.dp)
-    )
-
-    Text(
-      text = "Обсяг продажів за весь час: 150000 грн",
-      style = MaterialTheme.typography.bodyLarge,
-      modifier = Modifier.padding(bottom = 8.dp)
-    )
-
-    Text(
-      text = "Всього замовлень: 320",
-      style = MaterialTheme.typography.bodyLarge,
-      modifier = Modifier.padding(bottom = 8.dp)
-    )
-
-    Text(
-      text = "Найактивніший клієнт: Іван Петров",
-      style = MaterialTheme.typography.bodyLarge,
-      modifier = Modifier.padding(bottom = 8.dp)
-    )
-
-    Text(
-      text = "Найприбутковіший клієнт: Марія Іванова",
-      style = MaterialTheme.typography.bodyLarge,
-      modifier = Modifier.padding(bottom = 16.dp)
-    )
-
-    Text(
-      text = "Обсяг продажів за останній місяць",
-      style = MaterialTheme.typography.titleMedium,
-      modifier = Modifier.padding(bottom = 16.dp)
-    )
-
-    SalesChartMonthly()
-
-    Spacer(modifier = Modifier.height(32.dp))
-
-    Text(
-      text = "Обсяг продажів за цей рік",
-      style = MaterialTheme.typography.titleMedium,
-      modifier = Modifier.padding(bottom = 16.dp)
-    )
-
-    SalesChartYearly()
-
-    Spacer(modifier = Modifier.height(32.dp))
-
-    Button(
-      onClick = onBack,
-      modifier = Modifier.fillMaxWidth()
+  Scaffold(
+    topBar = {
+      TopAppBar(
+        title = { Text("Ваша статистика") },
+        navigationIcon = {
+          IconButton(onClick = { onBack() }) {
+            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Назад")
+          }
+        }
+      )
+    }
+  ) { innerPadding ->
+    Column(
+      modifier = Modifier
+        .fillMaxSize()
+        .padding(innerPadding)
+        .padding(top = 0.dp, start = 16.dp, end = 16.dp)
     ) {
-      Text("Перейти до архіву статистики")
+      Text(
+        text = "Активних клієнтів: 15",
+        style = MaterialTheme.typography.bodyLarge,
+        modifier = Modifier.padding(bottom = 8.dp)
+      )
+
+      Text(
+        text = "Обсяг продажів за весь час: 150000 грн",
+        style = MaterialTheme.typography.bodyLarge,
+        modifier = Modifier.padding(bottom = 8.dp)
+      )
+
+      Text(
+        text = "Всього замовлень: 320",
+        style = MaterialTheme.typography.bodyLarge,
+        modifier = Modifier.padding(bottom = 8.dp)
+      )
+
+      Text(
+        text = "Найактивніший клієнт: Іван Петров",
+        style = MaterialTheme.typography.bodyLarge,
+        modifier = Modifier.padding(bottom = 8.dp)
+      )
+
+      Text(
+        text = "Найприбутковіший клієнт: Марія Іванова",
+        style = MaterialTheme.typography.bodyLarge,
+        modifier = Modifier.padding(bottom = 16.dp)
+      )
+
+      Text(
+        text = "Обсяг продажів за останній місяць",
+        style = MaterialTheme.typography.titleMedium,
+        modifier = Modifier.padding(bottom = 16.dp)
+      )
+
+      SalesChartMonthly()
+
+      Spacer(modifier = Modifier.height(32.dp))
+
+      Text(
+        text = "Обсяг продажів за цей рік",
+        style = MaterialTheme.typography.titleMedium,
+        modifier = Modifier.padding(bottom = 16.dp)
+      )
+
+      SalesChartYearly()
+
+      Spacer(modifier = Modifier.height(32.dp))
+
+      Button(
+        onClick = navigateToCrmArchive,
+        modifier = Modifier.fillMaxWidth()
+      ) {
+        Text("Перейти до архіву статистики")
+      }
     }
   }
 }
+
 
 @Composable
 fun SalesChartMonthly() {

@@ -2,6 +2,8 @@ package com.example.myapplication.ui.components.crm
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.*
@@ -11,22 +13,31 @@ import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.unit.*
 
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CrmMainScreen(
   onBack: () -> Unit,
   // onNavigateToClients: () -> Unit,
   navigateToCrmStats: () -> Unit
 ) {
-  Column(
-    modifier = Modifier
-      .fillMaxSize()
-      .padding(16.dp)
+  Scaffold(
+    topBar = {
+      TopAppBar(
+        title = { Text("Система CRM") },
+        navigationIcon = {
+          IconButton(onClick = { onBack() }) {
+            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Назад")
+          }
+        }
+      )
+    }
+  ) { innerPadding ->
+    Column(
+      modifier = Modifier
+        .fillMaxSize()
+        .padding(innerPadding)
+        .padding(top = 0.dp, start = 16.dp, end = 16.dp)
   ) {
-    Text(
-      text = "Привіт, Друже!",
-      style = MaterialTheme.typography.headlineSmall,
-      modifier = Modifier.padding(bottom = 16.dp)
-    )
 
     Text(
       text = "Активних клієнтів: 3",
@@ -60,7 +71,7 @@ fun CrmMainScreen(
       Text("Перейти до статистики")
     }
   }
-}
+}}
 
 @Composable
 fun SalesChart() {

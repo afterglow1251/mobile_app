@@ -11,4 +11,7 @@ enum class NavigationScreens {
   ORDER_DETAILS,
   CRM_MAIN,
   CRM_STATS,
+  CRM_ARCHIVE,
+  CRM_MONTH,
+  CRM_YEAR,
 }

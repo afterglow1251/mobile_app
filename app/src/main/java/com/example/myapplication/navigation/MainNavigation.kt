@@ -10,6 +10,9 @@ import androidx.compose.ui.platform.LocalContext
 import com.example.myapplication.ui.components.auth.AuthScreen
 
 import com.example.myapplication.ui.components.cart.CartScreen
+import com.example.myapplication.ui.components.crm.CrmArchiveMonthScreen
+import com.example.myapplication.ui.components.crm.CrmArchiveScreen
+import com.example.myapplication.ui.components.crm.CrmArchiveYearScreen
 
 // import com.example.myapplication.ui.components.cart.CartScreen
 import com.example.myapplication.ui.components.crm.CrmMainScreen
@@ -96,6 +99,24 @@ fun MainNavigation() {
     }
   }
 
+  val navigateToCrmArchive: () -> Unit = {
+    navController.navigate(NavigationScreens.CRM_ARCHIVE.name) {
+      launchSingleTop = true // Запобігаємо дублюванню екрану
+    }
+  }
+
+  val navigateToCrmMonthArchive: () -> Unit = {
+    navController.navigate(NavigationScreens.CRM_MONTH.name) {
+      launchSingleTop = true // Запобігаємо дублюванню екрану
+    }
+  }
+
+  val navigateToCrmYearArchive: () -> Unit = {
+    navController.navigate(NavigationScreens.CRM_YEAR.name) {
+      launchSingleTop = true // Запобігаємо дублюванню екрану
+    }
+  }
+
   NavHost(
     navController = navController,
     startDestination = startDestination
@@ -147,7 +168,19 @@ fun MainNavigation() {
     }
 
     composable(route = NavigationScreens.CRM_STATS.name) {
-      CrmStatsScreen(onBack = { navController.popBackStack() })
+      CrmStatsScreen(onBack = { navController.popBackStack() }, navigateToCrmArchive = navigateToCrmArchive)
+    }
+
+    composable(route = NavigationScreens.CRM_ARCHIVE.name) {
+      CrmArchiveScreen(onBack = { navController.popBackStack() }, navigateToCrmMonthArchive = navigateToCrmMonthArchive, navigateToCrmYearArchive = navigateToCrmYearArchive)
+    }
+
+    composable(route = NavigationScreens.CRM_MONTH.name) {
+      CrmArchiveMonthScreen(onBack = { navController.popBackStack() })
+    }
+
+    composable(route = NavigationScreens.CRM_YEAR.name) {
+      CrmArchiveYearScreen(onBack = { navController.popBackStack() })
     }
   }
 }
