@@ -67,7 +67,6 @@ object LocalStorage {
 
     // --- Кошик ---
     fun addToCart(context: Context, cartItem: CartItem) {
-        val prefs = getPreferences(context)
         val cartItems = getCart(context).toMutableList()
 
         val existingItem = cartItems.find { it.productId == cartItem.productId }

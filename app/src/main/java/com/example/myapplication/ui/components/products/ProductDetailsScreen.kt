@@ -24,6 +24,7 @@ import com.example.myapplication.api.dto.product.ProductDto
 import com.example.myapplication.api.dto.product.CartItem
 import com.example.myapplication.api.network.NetworkModule
 import com.example.myapplication.utils.LocalStorage
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -32,6 +33,7 @@ fun ProductDetailsScreen(productId: Int, onBack: () -> Unit) {
   val scope = rememberCoroutineScope()
   var product by remember { mutableStateOf<ProductDto?>(null) }
   var isLoading by remember { mutableStateOf(false) }
+  val snackbarHostState = remember { SnackbarHostState() }
 
   LaunchedEffect(productId) {
     isLoading = true
@@ -55,7 +57,8 @@ fun ProductDetailsScreen(productId: Int, onBack: () -> Unit) {
           }
         }
       )
-    }
+    },
+    snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
   ) { innerPadding ->
     if (isLoading) {
       Box(
@@ -146,19 +149,37 @@ fun ProductDetailsScreen(productId: Int, onBack: () -> Unit) {
 
             Button(
               onClick = {
-                val userId = LocalStorage.getUser(context)?.id
-                val cartItem = CartItem(
-                  userId = userId!!,
-                  productId = it.id,
-                  name = it.name,
-                  description = it.description,
-                  price = it.price,
-                  category = it.category,
-                  imageUrl = it.images.firstOrNull()?.imageUrl.orEmpty(),
-                  quantity = 1
-                )
-                Log.d("CartScreen", "CartItem: $cartItem")
-                LocalStorage.addToCart(context, cartItem)
+                val user = LocalStorage.getUser(context)
+                if (user != null) {
+                  val currentCart = LocalStorage.getCart(context)
+                    .filter { it.userId == user.id }
+
+                  val isInCart = currentCart.any { cartItem -> cartItem.productId == it.id }
+                  if (isInCart) {
+                    scope.launch {
+                      snackbarHostState.showSnackbar("Цей товар вже є в кошику!")
+                    }
+                  } else {
+                    val cartItem = CartItem(
+                      userId = user.id,
+                      productId = it.id,
+                      name = it.name,
+                      description = it.description,
+                      price = it.price,
+                      category = it.category,
+                      imageUrl = it.images.firstOrNull()?.imageUrl.orEmpty(),
+                      quantity = 1
+                    )
+                    LocalStorage.addToCart(context, cartItem)
+                    scope.launch {
+                      snackbarHostState.showSnackbar("Товар додано в кошик!")
+                    }
+                  }
+                } else {
+                  scope.launch {
+                    snackbarHostState.showSnackbar("Увійдіть, щоб додати товар у кошик!")
+                  }
+                }
               },
               modifier = Modifier.fillMaxWidth()
             ) {
