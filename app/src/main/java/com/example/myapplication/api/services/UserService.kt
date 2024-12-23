@@ -13,7 +13,7 @@ interface UserService {
     suspend fun getUsers(@Header("Authorization") authHeader: String): List<UserDto>
 
     @GET("users/profile")
-    suspend fun getUserProfile(@Header("Authorization") authHeader: String): UserDto
+    suspend fun getUserProfile(): UserDto
 
     @POST("users/register")
     suspend fun registerUser(@Body registerDto: RegisterDto): UserDto
