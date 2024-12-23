@@ -1,7 +1,8 @@
 package com.example.myapplication.api.dto.user
 
 data class UpdateDto(
-    val username: String,
-    val phoneNumber: String,
-    val address: String,
+  val username: String? = null,
+  val phoneNumber: String? = null,
+  val address: String? = null,
+  val isEmployee: Boolean? = null 
 )

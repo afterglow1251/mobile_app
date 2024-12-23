@@ -23,6 +23,7 @@ import com.example.myapplication.api.dto.user.UserDto
 import com.example.myapplication.api.network.NetworkModule
 import com.example.myapplication.ui.components.ui.PicassoImage
 import com.example.myapplication.utils.LocalStorage
+import com.example.myapplication.validators.isValidPhoneNumber
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -301,35 +302,85 @@ fun OrderDialog(userDto: UserDto?, onDismiss: () -> Unit, onConfirm: (String, St
   var phone by remember { mutableStateOf(userDto?.phoneNumber ?: "") }
   var address by remember { mutableStateOf(userDto?.address ?: "") }
 
+  // Для відображення помилок
+  var nameError by remember { mutableStateOf<String?>(null) }
+  var phoneError by remember { mutableStateOf<String?>(null) }
+  var addressError by remember { mutableStateOf<String?>(null) }
+
+  val isFormValid = remember(name, phone, address) {
+    nameError = if (name.isEmpty()) "Ім'я не може бути порожнім." else null
+    phoneError = if (!isValidPhoneNumber(phone)) "Невірний формат номера телефону." else null
+    addressError = if (address.isEmpty()) "Адреса не може бути порожньою." else null
+
+    // Всі поля мають бути валідними
+    name.isNotEmpty() && isValidPhoneNumber(phone) && address.isNotEmpty()
+  }
+
   AlertDialog(
     onDismissRequest = { onDismiss() },
     title = { Text("Підтвердження замовлення") },
     text = {
       Column {
+        // Ім'я
         OutlinedTextField(
           value = name,
           onValueChange = { name = it },
           label = { Text("Ім'я") },
+          isError = nameError != null,
           modifier = Modifier.fillMaxWidth()
         )
+        if (nameError != null) {
+          Text(
+            text = nameError!!,
+            color = MaterialTheme.colorScheme.error,
+            style = MaterialTheme.typography.bodySmall
+          )
+        }
         Spacer(modifier = Modifier.height(8.dp))
+
+        // Номер телефону
         OutlinedTextField(
           value = phone,
           onValueChange = { phone = it },
           label = { Text("Номер телефону") },
+          isError = phoneError != null,
           modifier = Modifier.fillMaxWidth()
         )
+        if (phoneError != null) {
+          Text(
+            text = phoneError!!,
+            color = MaterialTheme.colorScheme.error,
+            style = MaterialTheme.typography.bodySmall
+          )
+        }
         Spacer(modifier = Modifier.height(8.dp))
+
+        // Адреса
         OutlinedTextField(
           value = address,
           onValueChange = { address = it },
           label = { Text("Адреса") },
+          isError = addressError != null,
           modifier = Modifier.fillMaxWidth()
         )
+        if (addressError != null) {
+          Text(
+            text = addressError!!,
+            color = MaterialTheme.colorScheme.error,
+            style = MaterialTheme.typography.bodySmall
+          )
+        }
       }
     },
     confirmButton = {
-      Button(onClick = { onConfirm(name, phone, address) }) {
+      Button(
+        onClick = {
+          if (isFormValid) {
+            onConfirm(name, phone, address)
+          }
+        },
+        enabled = isFormValid
+      ) {
         Text("Підтвердити")
       }
     },

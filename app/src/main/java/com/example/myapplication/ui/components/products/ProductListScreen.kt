@@ -13,12 +13,14 @@ import androidx.compose.material.icons.filled.ShoppingBag
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.*
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.*
 import com.example.myapplication.api.dto.product.ProductDto
 import com.example.myapplication.api.network.NetworkModule
 import androidx.compose.ui.platform.LocalContext
+import com.example.myapplication.api.dto.product.CartItem
 import com.example.myapplication.ui.components.ui.PicassoImage
 import com.example.myapplication.utils.LocalStorage
 import kotlinx.coroutines.launch
@@ -60,6 +62,7 @@ fun ProductListScreen(showProfile: () -> Unit, showProductDetails: (Int) -> Unit
         }
       )
     },
+    snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
     bottomBar = {
       NavigationBar {
         NavigationBarItem(
@@ -116,7 +119,10 @@ fun ProductListScreen(showProfile: () -> Unit, showProductDetails: (Int) -> Unit
                   horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                   itemsIndexed(beerProducts) { _, product ->
-                    ProductCard(product = product, onClick = { showProductDetails(product.id) })
+                    ProductCard(
+                      product = product, onClick = { showProductDetails(product.id) },
+                      snackbarHostState = snackbarHostState
+                    )
                   }
                 }
               }
@@ -138,7 +144,10 @@ fun ProductListScreen(showProfile: () -> Unit, showProductDetails: (Int) -> Unit
                   horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                   itemsIndexed(snackProducts) { _, product ->
-                    ProductCard(product = product, onClick = { showProductDetails(product.id) })
+                    ProductCard(
+                      product = product, onClick = { showProductDetails(product.id) },
+                      snackbarHostState = snackbarHostState
+                    )
                   }
                 }
               }
@@ -151,15 +160,23 @@ fun ProductListScreen(showProfile: () -> Unit, showProductDetails: (Int) -> Unit
 }
 
 @Composable
-fun ProductCard(product: ProductDto, onClick: () -> Unit) {
+fun ProductCard(product: ProductDto, onClick: () -> Unit, snackbarHostState: SnackbarHostState) {
+  val context = LocalContext.current
+  val scope = rememberCoroutineScope()
+  val isOutOfStock = product.quantity <= 0
+
   Column(
     modifier = Modifier
       .width(200.dp)
       .padding(8.dp)
-      .clickable(onClick = onClick) // Додаємо клікабельність
-      .background(MaterialTheme.colorScheme.surface, shape = MaterialTheme.shapes.medium)
+      .clickable(onClick = onClick)
+      .background(
+        color = if (isOutOfStock) Color.Gray.copy(alpha = 0.2f) else MaterialTheme.colorScheme.surface,
+        shape = MaterialTheme.shapes.medium
+      )
       .padding(16.dp)
   ) {
+    // Зображення продукту
     if (product.images.isNotEmpty()) {
       PicassoImage(
         url = product.images.first().imageUrl,
@@ -167,25 +184,93 @@ fun ProductCard(product: ProductDto, onClick: () -> Unit) {
           .fillMaxWidth()
           .height(200.dp)
           .padding(bottom = 8.dp)
+          .alpha(if (isOutOfStock) 0.5f else 1f)
       )
     }
 
+    // Назва та опис продукту
     Text(
       text = product.name,
       style = MaterialTheme.typography.bodyLarge,
       fontWeight = FontWeight.Bold,
+      color = if (isOutOfStock) Color.Gray else MaterialTheme.colorScheme.onSurface,
       modifier = Modifier.padding(bottom = 4.dp)
     )
     Text(
       text = product.description,
       style = MaterialTheme.typography.bodyMedium,
-      color = Color.Gray,
+      color = if (isOutOfStock) Color.Gray else Color.Gray.copy(alpha = 0.7f),
       modifier = Modifier.padding(bottom = 8.dp)
     )
+
+    // Повідомлення про відсутність товару
+    if (isOutOfStock) {
+      Text(
+        text = "Немає на складі",
+        style = MaterialTheme.typography.bodyMedium,
+        color = Color.Red,
+        fontWeight = FontWeight.Bold,
+        modifier = Modifier.padding(bottom = 8.dp)
+      )
+    }
+
+    // Ціна продукту
     Text(
       text = "Ціна: ${product.price} грн.",
       style = MaterialTheme.typography.bodyMedium,
-      color = MaterialTheme.colorScheme.primary
+      color = if (isOutOfStock) Color.Gray else MaterialTheme.colorScheme.primary
     )
+
+    // Кнопка + для додавання в кошик
+    if (!isOutOfStock) {
+      Spacer(modifier = Modifier.height(8.dp))
+      Button(
+        onClick = {
+          val user = LocalStorage.getUser(context)
+          if (user != null) {
+            val currentCart = LocalStorage.getCart(context)
+              .filter { it.userId == user.id }
+
+            val isInCart = currentCart.any { cartItem -> cartItem.productId == product.id }
+            if (isInCart) {
+              scope.launch {
+                snackbarHostState.showSnackbar("Цей товар вже є в кошику!")
+              }
+            } else {
+              val cartItem = CartItem(
+                userId = user.id,
+                productId = product.id,
+                name = product.name,
+                description = product.description,
+                price = product.price,
+                category = product.category,
+                imageUrl = product.images.firstOrNull()?.imageUrl.orEmpty(),
+                quantity = 1
+              )
+              LocalStorage.addToCart(context, cartItem)
+              scope.launch {
+                snackbarHostState.showSnackbar(
+                  message = "Товар додано в кошик!",
+                  actionLabel = "ОК",
+                  duration = SnackbarDuration.Short
+                )
+              }
+            }
+          } else {
+            scope.launch {
+              snackbarHostState.showSnackbar("Увійдіть, щоб додати товар у кошик!")
+            }
+          }
+        },
+        modifier = Modifier
+          .size(48.dp)
+          .padding(4.dp)
+          .background(MaterialTheme.colorScheme.primary, MaterialTheme.shapes.small),
+        contentPadding = PaddingValues(0.dp),
+        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+      ) {
+        Text("+", fontSize = 24.sp, color = Color.White)
+      }
+    }
   }
 }
