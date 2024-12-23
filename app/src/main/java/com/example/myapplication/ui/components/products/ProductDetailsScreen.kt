@@ -1,6 +1,5 @@
 package com.example.myapplication.ui.components.products
 
-import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.pager.HorizontalPager
@@ -181,7 +180,8 @@ fun ProductDetailsScreen(productId: Int, onBack: () -> Unit) {
                   }
                 }
               },
-              modifier = Modifier.fillMaxWidth()
+              modifier = Modifier.fillMaxWidth(),
+              enabled = it.quantity > 0 // Перевірка, чи продукт доступний (quantity > 0)
             ) {
               Text("Додати в кошик")
             }

@@ -13,6 +13,7 @@ import androidx.compose.material.icons.filled.ShoppingBag
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.*
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.*
@@ -152,12 +153,17 @@ fun ProductListScreen(showProfile: () -> Unit, showProductDetails: (Int) -> Unit
 
 @Composable
 fun ProductCard(product: ProductDto, onClick: () -> Unit) {
+  val isOutOfStock = product.quantity <= 0
+
   Column(
     modifier = Modifier
       .width(200.dp)
       .padding(8.dp)
       .clickable(onClick = onClick) // Додаємо клікабельність
-      .background(MaterialTheme.colorScheme.surface, shape = MaterialTheme.shapes.medium)
+      .background(
+        color = if (isOutOfStock) Color.Gray.copy(alpha = 0.2f) else MaterialTheme.colorScheme.surface,
+        shape = MaterialTheme.shapes.medium
+      )
       .padding(16.dp)
   ) {
     if (product.images.isNotEmpty()) {
@@ -167,6 +173,7 @@ fun ProductCard(product: ProductDto, onClick: () -> Unit) {
           .fillMaxWidth()
           .height(200.dp)
           .padding(bottom = 8.dp)
+          .alpha(if (isOutOfStock) 0.5f else 1f) // Знижуємо прозорість, якщо товар немає в наявності
       )
     }
 
@@ -174,18 +181,31 @@ fun ProductCard(product: ProductDto, onClick: () -> Unit) {
       text = product.name,
       style = MaterialTheme.typography.bodyLarge,
       fontWeight = FontWeight.Bold,
+      color = if (isOutOfStock) Color.Gray else MaterialTheme.colorScheme.onSurface,
       modifier = Modifier.padding(bottom = 4.dp)
     )
     Text(
       text = product.description,
       style = MaterialTheme.typography.bodyMedium,
-      color = Color.Gray,
+      color = if (isOutOfStock) Color.Gray else Color.Gray.copy(alpha = 0.7f),
       modifier = Modifier.padding(bottom = 8.dp)
     )
+
+    // Якщо продукт відсутній на складі, додаємо відповідне повідомлення
+    if (isOutOfStock) {
+      Text(
+        text = "Немає на складі",
+        style = MaterialTheme.typography.bodyMedium,
+        color = Color.Red,
+        fontWeight = FontWeight.Bold,
+        modifier = Modifier.padding(bottom = 8.dp)
+      )
+    }
+
     Text(
       text = "Ціна: ${product.price} грн.",
       style = MaterialTheme.typography.bodyMedium,
-      color = MaterialTheme.colorScheme.primary
+      color = if (isOutOfStock) Color.Gray else MaterialTheme.colorScheme.primary
     )
   }
 }
