@@ -7,6 +7,7 @@ import retrofit2.converter.gson.GsonConverterFactory
 import android.content.Context
 import com.example.myapplication.api.services.ProductService
 import com.example.myapplication.api.services.WholesaleCustomerService
+import com.example.myapplication.api.services.WholesaleOrderService
 
 object NetworkModule {
 
@@ -36,5 +37,9 @@ object NetworkModule {
 
     fun getWholesaleCustomerService(context: Context): WholesaleCustomerService {
         return createRetrofit(context).create(WholesaleCustomerService::class.java)
+    }
+
+    fun getWholesaleOrderService(context: Context): WholesaleOrderService {
+        return createRetrofit(context).create(WholesaleOrderService::class.java)
     }
 }
