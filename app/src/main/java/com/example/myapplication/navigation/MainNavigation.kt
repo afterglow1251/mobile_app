@@ -1,6 +1,7 @@
 package com.example.myapplication.navigation
 
 import ClientListScreen
+import CrmOrderDetailsScreen
 import androidx.compose.runtime.Composable
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -14,9 +15,14 @@ import com.example.myapplication.ui.components.cart.CartScreen
 import com.example.myapplication.ui.components.crm.CrmArchiveMonthScreen
 import com.example.myapplication.ui.components.crm.CrmArchiveScreen
 import com.example.myapplication.ui.components.crm.CrmArchiveYearScreen
+import com.example.myapplication.ui.components.crm.CrmClientAdd
+import com.example.myapplication.ui.components.crm.CrmClientDetails
 
 // import com.example.myapplication.ui.components.cart.CartScreen
 import com.example.myapplication.ui.components.crm.CrmMainScreen
+import com.example.myapplication.ui.components.crm.CrmOrderAdd
+
+import com.example.myapplication.ui.components.crm.CrmOrderListScreen
 import com.example.myapplication.ui.components.crm.CrmStatsScreen
 import com.example.myapplication.ui.components.order.OrderDetailsScreen
 
@@ -131,6 +137,36 @@ fun MainNavigation() {
     }
   }
 
+  val navigateToCrmClientDetails: () -> Unit = {
+    navController.navigate(NavigationScreens.CRM_CLIENT_DETAILS.name) {
+      launchSingleTop = true // Запобігаємо дублюванню екрану
+    }
+  }
+
+  val navigateCrmOrderList: () -> Unit = {
+    navController.navigate(NavigationScreens.CRM_ORDER_LIST.name) {
+      launchSingleTop = true // Запобігаємо дублюванню екрану
+    }
+  }
+
+  val navigateCrmOrderDetails: () -> Unit = {
+    navController.navigate(NavigationScreens.CRM_ORDER_DETAIL.name) {
+      launchSingleTop = true // Запобігаємо дублюванню екрану
+    }
+  }
+
+  val navigateCrmClientAdd: () -> Unit = {
+    navController.navigate(NavigationScreens.CRM_CLIENT_ADD.name) {
+      launchSingleTop = true // Запобігаємо дублюванню екрану
+    }
+  }
+
+  val navigateCrmOrderAdd: () -> Unit = {
+    navController.navigate(NavigationScreens.CRM_ORDER_ADD.name) {
+      launchSingleTop = true // Запобігаємо дублюванню екрану
+    }
+  }
+
   NavHost(
     navController = navController,
     startDestination = startDestination
@@ -210,7 +246,27 @@ fun MainNavigation() {
     }
 
     composable(route = NavigationScreens.CRM_CLIENT_LIST.name) {
-      ClientListScreen(onBack = { navController.popBackStack() })
+      ClientListScreen(onBack = { navController.popBackStack() }, navigateToCrmClientDetails = navigateToCrmClientDetails, navigateCrmClientAdd = navigateCrmClientAdd)
+    }
+
+    composable(route = NavigationScreens.CRM_CLIENT_DETAILS.name) {
+      CrmClientDetails(onBack = { navController.popBackStack() }, navigateCrmOrderList = navigateCrmOrderList, navigateCrmOrderDetails = navigateCrmOrderDetails, navigateCrmOrderAdd = navigateCrmOrderAdd)
+    }
+
+    composable(route = NavigationScreens.CRM_ORDER_LIST.name) {
+      CrmOrderListScreen(onBack = { navController.popBackStack() }, navigateCrmOrderDetails = navigateCrmOrderDetails)
+    }
+
+    composable(route = NavigationScreens.CRM_ORDER_DETAIL.name) {
+      CrmOrderDetailsScreen(onBack = { navController.popBackStack() })
+    }
+
+    composable(route = NavigationScreens.CRM_CLIENT_ADD.name) {
+      CrmClientAdd(onBack = { navController.popBackStack() })
+    }
+
+    composable(route = NavigationScreens.CRM_ORDER_ADD.name) {
+      CrmOrderAdd(onBack = { navController.popBackStack() })
     }
   }
 }

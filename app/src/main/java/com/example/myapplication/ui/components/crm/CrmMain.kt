@@ -25,7 +25,7 @@ fun CrmMainScreen(
       TopAppBar(
         title = { Text("Система CRM") },
         navigationIcon = {
-          IconButton(onClick = { navigateToCrmClientList() }) {
+          IconButton(onClick = { onBack() }) {
             Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Назад")
           }
         }
@@ -56,7 +56,7 @@ fun CrmMainScreen(
     Spacer(modifier = Modifier.height(32.dp))
 
     Button(
-      onClick = onBack,
+      onClick = navigateToCrmClientList,
       modifier = Modifier.fillMaxWidth()
     ) {
       Text("Перейти до клієнтів")
@@ -173,11 +173,3 @@ fun SalesChart() {
     }
   }
 }
-
-
-
-
-
-
-
-

@@ -1,3 +1,5 @@
+package com.example.myapplication.ui.components.crm
+
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -16,23 +18,25 @@ import androidx.compose.ui.unit.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ClientListScreen(
+fun CrmOrderListScreen(
   onBack: () -> Unit,
-  navigateToCrmClientDetails: () -> Unit,
-  navigateCrmClientAdd: () -> Unit
+  navigateCrmOrderDetails: () -> Unit
 ) {
-  val clients = remember {
-    listOf(
-      Client("Іван Петров", 5, 15000, "2023-12-20"),
-      Client("Марія Іванова", 3, 7000, "2023-12-18"),
-      Client("Олександр Ковальчук", 10, 35000, "2023-12-19")
-    )
+  val orders = remember {
+    List(20) { index ->
+      Order(
+        "Замовлення #${index + 1}",
+        (1000..15000).random(),
+        "Місто ${index + 1}, вул. Прикладна, ${index + 1}",
+        "+38050${(1000000..9999999).random()}"
+      )
+    }
   }
 
   Scaffold(
     topBar = {
       TopAppBar(
-        title = { Text("Список клієнтів") },
+        title = { Text("Список замовлень") },
         navigationIcon = {
           IconButton(onClick = { onBack() }) {
             Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Назад")
@@ -48,28 +52,18 @@ fun ClientListScreen(
         .padding(16.dp)
         .verticalScroll(rememberScrollState())
     ) {
-      Button(
-        onClick = navigateCrmClientAdd,
-        modifier = Modifier
-          .fillMaxWidth()
-          .padding(bottom = 16.dp)
-
-      ) {
-        Text("Додати оптового клієнта")
-      }
-
       Text(
-        text = "Ваші клієнти:",
+        text = "Ваші замовлення:",
         style = MaterialTheme.typography.titleMedium,
         modifier = Modifier.padding(bottom = 16.dp)
       )
 
-      clients.forEach { client ->
+      orders.forEach { order ->
         Box(
           modifier = Modifier
             .fillMaxWidth()
             .padding(bottom = 8.dp)
-            .clickable { navigateToCrmClientDetails() }
+            .clickable { navigateCrmOrderDetails() }
             .background(
               color = MaterialTheme.colorScheme.primary.copy(alpha = 0.15f),
               shape = MaterialTheme.shapes.medium
@@ -78,22 +72,22 @@ fun ClientListScreen(
         ) {
           Column {
             Text(
-              text = client.name,
+              text = order.number,
               style = MaterialTheme.typography.titleSmall,
               modifier = Modifier.padding(bottom = 4.dp)
             )
             Text(
-              text = "Кількість замовлень: ${client.orderCount}",
+              text = "Сума замовлення: ${order.totalSum} грн",
               style = MaterialTheme.typography.bodySmall,
               modifier = Modifier.padding(bottom = 4.dp)
             )
             Text(
-              text = "Сума замовлень: ${client.totalOrderSum} грн",
+              text = "Адреса: ${order.address}",
               style = MaterialTheme.typography.bodySmall,
               modifier = Modifier.padding(bottom = 4.dp)
             )
             Text(
-              text = "Дата останнього замовлення: ${client.lastOrderDate}",
+              text = "Контактний номер: ${order.contactNumber}",
               style = MaterialTheme.typography.bodySmall
             )
           }
@@ -102,10 +96,3 @@ fun ClientListScreen(
     }
   }
 }
-
-data class Client(
-  val name: String,
-  val orderCount: Int,
-  val totalOrderSum: Int,
-  val lastOrderDate: String
-)
