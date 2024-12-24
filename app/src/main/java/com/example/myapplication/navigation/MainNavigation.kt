@@ -102,68 +102,102 @@ fun MainNavigation() {
 
 
   val navigateToCrmMain: () -> Unit = {
-    navController.navigate(NavigationScreens.CRM_MAIN.name) {
-      launchSingleTop = true // Запобігаємо дублюванню екрану
+    val user = LocalStorage.getUser(context)
+    if (user?.isEmployee == true) {
+      navController.navigate(NavigationScreens.CRM_MAIN.name) {
+        launchSingleTop = true
+      }
     }
   }
 
   val navigateToCrmStats: () -> Unit = {
-    navController.navigate(NavigationScreens.CRM_STATS.name) {
-      launchSingleTop = true // Запобігаємо дублюванню екрану
+    val user = LocalStorage.getUser(context)
+    if (user?.isEmployee == true) {
+      navController.navigate(NavigationScreens.CRM_STATS.name) {
+        launchSingleTop = true
+      }
     }
   }
 
+
   val navigateToCrmArchive: () -> Unit = {
-    navController.navigate(NavigationScreens.CRM_ARCHIVE.name) {
-      launchSingleTop = true // Запобігаємо дублюванню екрану
+    val user = LocalStorage.getUser(context)
+    if (user?.isEmployee == true) {
+      navController.navigate(NavigationScreens.CRM_ARCHIVE.name) {
+        launchSingleTop = true
+      }
     }
   }
 
   val navigateToCrmMonthArchive: () -> Unit = {
-    navController.navigate(NavigationScreens.CRM_MONTH.name) {
-      launchSingleTop = true // Запобігаємо дублюванню екрану
+    val user = LocalStorage.getUser(context)
+    if (user?.isEmployee == true) {
+      navController.navigate(NavigationScreens.CRM_MONTH.name) {
+        launchSingleTop = true
+      }
     }
   }
 
   val navigateToCrmYearArchive: () -> Unit = {
-    navController.navigate(NavigationScreens.CRM_YEAR.name) {
-      launchSingleTop = true // Запобігаємо дублюванню екрану
+    val user = LocalStorage.getUser(context)
+    if (user?.isEmployee == true) {
+      navController.navigate(NavigationScreens.CRM_YEAR.name) {
+        launchSingleTop = true
+      }
     }
   }
 
   val navigateToCrmClientList: () -> Unit = {
-    navController.navigate(NavigationScreens.CRM_CLIENT_LIST.name) {
-      launchSingleTop = true // Запобігаємо дублюванню екрану
+    val user = LocalStorage.getUser(context)
+    if (user?.isEmployee == true) {
+      navController.navigate(NavigationScreens.CRM_CLIENT_LIST.name) {
+        launchSingleTop = true
+      }
     }
   }
 
   val navigateToCrmClientDetails: () -> Unit = {
-    navController.navigate(NavigationScreens.CRM_CLIENT_DETAILS.name) {
-      launchSingleTop = true // Запобігаємо дублюванню екрану
+    val user = LocalStorage.getUser(context)
+    if (user?.isEmployee == true) {
+      navController.navigate(NavigationScreens.CRM_CLIENT_DETAILS.name) {
+        launchSingleTop = true
+      }
     }
   }
 
   val navigateCrmOrderList: () -> Unit = {
-    navController.navigate(NavigationScreens.CRM_ORDER_LIST.name) {
-      launchSingleTop = true // Запобігаємо дублюванню екрану
+    val user = LocalStorage.getUser(context)
+    if (user?.isEmployee == true) {
+      navController.navigate(NavigationScreens.CRM_ORDER_LIST.name) {
+        launchSingleTop = true
+      }
     }
   }
 
   val navigateCrmOrderDetails: () -> Unit = {
-    navController.navigate(NavigationScreens.CRM_ORDER_DETAIL.name) {
-      launchSingleTop = true // Запобігаємо дублюванню екрану
+    val user = LocalStorage.getUser(context)
+    if (user?.isEmployee == true) {
+      navController.navigate(NavigationScreens.CRM_ORDER_DETAIL.name) {
+        launchSingleTop = true
+      }
     }
   }
 
   val navigateCrmClientAdd: () -> Unit = {
-    navController.navigate(NavigationScreens.CRM_CLIENT_ADD.name) {
-      launchSingleTop = true // Запобігаємо дублюванню екрану
+    val user = LocalStorage.getUser(context)
+    if (user?.isEmployee == true) {
+      navController.navigate(NavigationScreens.CRM_CLIENT_ADD.name) {
+        launchSingleTop = true
+      }
     }
   }
 
   val navigateCrmOrderAdd: () -> Unit = {
-    navController.navigate(NavigationScreens.CRM_ORDER_ADD.name) {
-      launchSingleTop = true // Запобігаємо дублюванню екрану
+    val user = LocalStorage.getUser(context)
+    if (user?.isEmployee == true) {
+      navController.navigate(NavigationScreens.CRM_ORDER_ADD.name) {
+        launchSingleTop = true
+      }
     }
   }
 
