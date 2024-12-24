@@ -94,12 +94,12 @@ fun MainNavigation() {
   }
 
   val onLogout: () -> Unit = {
+    LocalStorage.logoutUser(context) // Очищення токена, користувача та кошика
     navController.navigate(NavigationScreens.AUTH.name) {
-      LocalStorage.removeToken(context)
-      LocalStorage.removeUser(context)
-      popUpTo(0) // Очищення всього стека
+      popUpTo(0) // Очищення всього стека навігації
     }
   }
+
 
   val navigateToCrmMain: () -> Unit = {
     navController.navigate(NavigationScreens.CRM_MAIN.name) {

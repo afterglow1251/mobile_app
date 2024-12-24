@@ -67,16 +67,19 @@ object LocalStorage {
 
     // --- Кошик ---
     fun addToCart(context: Context, cartItem: CartItem) {
-        val cartItems = getCart(context).toMutableList()
+        val user = getUser(context)
+        if (user != null) {
+            val cartItems = getCart(context).toMutableList()
 
-        val existingItem = cartItems.find { it.productId == cartItem.productId }
-        if (existingItem != null) {
-            existingItem.quantity += cartItem.quantity
-        } else {
-            cartItems.add(cartItem)
+            val existingItem = cartItems.find { it.productId == cartItem.productId && it.userId == user.id }
+            if (existingItem != null) {
+                existingItem.quantity += cartItem.quantity
+            } else {
+                cartItems.add(cartItem)
+            }
+
+            saveCart(context, cartItems)
         }
-
-        saveCart(context, cartItems)
     }
 
     fun removeFromCart(context: Context, productId: Int) {
@@ -98,10 +101,11 @@ object LocalStorage {
 
     fun getCart(context: Context): List<CartItem> {
         val prefs = getPreferences(context)
+        val user = getUser(context)
         val cartJson = prefs.getString(CART_KEY, null)
-        return if (cartJson != null) {
+        return if (user != null && cartJson != null) {
             val type = object : TypeToken<List<CartItem>>() {}.type
-            Gson().fromJson(cartJson, type)
+            Gson().fromJson<List<CartItem>>(cartJson, type).filter { it.userId == user.id }
         } else {
             emptyList()
         }
@@ -137,5 +141,11 @@ object LocalStorage {
         } else {
             emptyList()
         }
+    }
+
+    fun logoutUser(context: Context) {
+        clearCartForUser(context)
+        removeToken(context)
+        removeUser(context)
     }
 }

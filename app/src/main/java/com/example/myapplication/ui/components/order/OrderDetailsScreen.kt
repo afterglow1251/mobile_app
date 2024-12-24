@@ -97,7 +97,7 @@ fun OrderCard(order: GetOrdersResponse, index: Int) {
       .padding(16.dp)
   ) {
     Text(
-      text = "Замовлення №${index + 1}",
+      text = "Замовлення",
       fontSize = 18.sp,
       fontWeight = FontWeight.Bold,
       modifier = Modifier.padding(bottom = 8.dp)
@@ -116,6 +116,18 @@ fun OrderCard(order: GetOrdersResponse, index: Int) {
     )
     Text(
       text = "Адреса доставки: ${order.shippingAddress}",
+      style = MaterialTheme.typography.bodyMedium,
+      color = Color.Gray,
+      modifier = Modifier.padding(bottom = 4.dp)
+    )
+    Text(
+      text = "Отримувач: ${order.username}",
+      style = MaterialTheme.typography.bodyMedium,
+      color = Color.Gray,
+      modifier = Modifier.padding(bottom = 4.dp)
+    )
+    Text(
+      text = "Номер телефону отримувача: ${order.phoneNumber}",
       style = MaterialTheme.typography.bodyMedium,
       color = Color.Gray,
       modifier = Modifier.padding(bottom = 4.dp)
