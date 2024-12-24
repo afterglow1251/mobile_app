@@ -1,6 +1,6 @@
 package com.example.myapplication.validators
 
 fun isValidPhoneNumber(phone: String): Boolean {
-  val phoneRegex = "^\\+?\\d{10,15}\$".toRegex()
+  val phoneRegex = "^\\+38\\d{10}\$".toRegex()
   return phone.matches(phoneRegex)
 }

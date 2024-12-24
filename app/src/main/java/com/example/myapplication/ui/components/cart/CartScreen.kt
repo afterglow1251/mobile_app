@@ -5,6 +5,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
@@ -15,6 +16,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.myapplication.api.dto.order.Order
@@ -268,10 +270,12 @@ fun CartItemRow(
 
 @Composable
 fun OrderDialog(
-  userDto: UserDto?, onDismiss: () -> Unit, onConfirm: (String, String, String) -> Unit
+  userDto: UserDto?,
+  onDismiss: () -> Unit,
+  onConfirm: (String, String, String) -> Unit
 ) {
   var name by remember { mutableStateOf(userDto?.username ?: "") }
-  var phone by remember { mutableStateOf(userDto?.phoneNumber ?: "") }
+  var phone by remember { mutableStateOf("+38" + (userDto?.phoneNumber?.removePrefix("+38") ?: "")) }
   var address by remember { mutableStateOf(userDto?.address ?: "") }
 
   // Для відображення помилок
@@ -288,12 +292,14 @@ fun OrderDialog(
     name.isNotEmpty() && isValidPhoneNumber(phone) && address.isNotEmpty()
   }
 
-  AlertDialog(onDismissRequest = { onDismiss() },
+  AlertDialog(
+    onDismissRequest = { onDismiss() },
     title = { Text("Підтвердження замовлення") },
     text = {
       Column {
         // Ім'я
-        OutlinedTextField(value = name,
+        OutlinedTextField(
+          value = name,
           onValueChange = { name = it },
           label = { Text("Ім'я") },
           isError = nameError != null,
@@ -309,11 +315,18 @@ fun OrderDialog(
         Spacer(modifier = Modifier.height(8.dp))
 
         // Номер телефону
-        OutlinedTextField(value = phone,
-          onValueChange = { phone = it },
+        OutlinedTextField(
+          value = phone,
+          onValueChange = {
+            // Забезпечуємо, щоб `+38` залишалося на початку
+            phone = if (it.startsWith("+38")) it else "+38"
+          },
           label = { Text("Номер телефону") },
           isError = phoneError != null,
-          modifier = Modifier.fillMaxWidth()
+          modifier = Modifier.fillMaxWidth(),
+          keyboardOptions = KeyboardOptions.Default.copy(
+            keyboardType = KeyboardType.Phone
+          )
         )
         if (phoneError != null) {
           Text(
@@ -325,7 +338,8 @@ fun OrderDialog(
         Spacer(modifier = Modifier.height(8.dp))
 
         // Адреса
-        OutlinedTextField(value = address,
+        OutlinedTextField(
+          value = address,
           onValueChange = { address = it },
           label = { Text("Адреса") },
           isError = addressError != null,
@@ -344,9 +358,11 @@ fun OrderDialog(
       Button(
         onClick = {
           if (isFormValid) {
-            onConfirm(name, phone, address)
+            // Передаємо номер без префікса "+38"
+            onConfirm(name, phone.removePrefix("+38"), address)
           }
-        }, enabled = isFormValid
+        },
+        enabled = isFormValid
       ) {
         Text("Підтвердити")
       }
@@ -355,5 +371,6 @@ fun OrderDialog(
       TextButton(onClick = { onDismiss() }) {
         Text("Скасувати")
       }
-    })
+    }
+  )
 }
