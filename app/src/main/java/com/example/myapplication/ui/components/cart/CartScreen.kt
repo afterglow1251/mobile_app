@@ -86,10 +86,11 @@ fun CartScreen(userId: Int, onBack: () -> Unit, showProductDetails: (Int) -> Uni
                 val productName = data?.optString("productName")
                 val requestedQuantity = data?.optInt("requestedQuantity")
                 val availableQuantity = data?.optInt("availableQuantity")
+
                 if (productName != null && requestedQuantity != null && availableQuantity != null) {
                   "Продукт $productName стільки-то ви замовили $requestedQuantity, але у нас доступно $availableQuantity. Спробуйте зменшити кількість або замовити пізніше."
                 } else {
-                  "Сталася помилка, спробуйте ще раз."
+                  "Сталася помилка, спробуйте ще раз. (1)"
                 }
               } catch (ex: Exception) {
                 "Невідома помилка."
@@ -100,13 +101,13 @@ fun CartScreen(userId: Int, onBack: () -> Unit, showProductDetails: (Int) -> Uni
             } else {
               // Якщо це інша помилка (не 400)
               withContext(Dispatchers.Main) {
-                errorMessage = "Сталася помилка, спробуйте пізніше."
+                errorMessage = "Сталася помилка, спробуйте пізніше. (2)"
               }
             }
           } catch (e: Exception) {
             // Загальна помилка, наприклад при відсутності з'єднання
             withContext(Dispatchers.Main) {
-              errorMessage = "Сталася помилка. Перевірте ваше підключення."
+              errorMessage = "Сталася помилка. Перевірте ваше підключення. (3)"
             }
           }
         }

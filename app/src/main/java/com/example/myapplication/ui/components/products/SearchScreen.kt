@@ -30,70 +30,26 @@ import androidx.compose.ui.unit.dp
 import com.example.myapplication.api.dto.product.CartItem
 import com.example.myapplication.api.dto.product.ProductDto
 import com.example.myapplication.api.network.NetworkModule
+import com.example.myapplication.ui.components.products.models.SearchViewModel
 import com.example.myapplication.ui.components.ui.PicassoImage
 import com.example.myapplication.utils.LocalStorage
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SearchScreen(onBack: () -> Unit, showProductDetails: (Int) -> Unit) {
-  val focusRequester = remember { FocusRequester() }
-  var searchText by remember { mutableStateOf(TextFieldValue("")) }
-  var showFilters by remember { mutableStateOf(false) }
-  var products by remember { mutableStateOf<List<ProductDto>>(emptyList()) }
-  val snackbarHostState = remember { SnackbarHostState() }
-
-  // Збережені значення фільтрів
-  val savedFilters = remember { mutableStateMapOf<String, String?>() }
-
+fun SearchScreen(
+  viewModel: SearchViewModel = androidx.lifecycle.viewmodel.compose.viewModel(),
+  onBack: () -> Unit,
+  showProductDetails: (Int) -> Unit
+) {
   val context = LocalContext.current
-  val scope = rememberCoroutineScope()
+  val snackbarHostState = remember { SnackbarHostState() }
+  val focusRequester = remember { FocusRequester() }
 
   LaunchedEffect(Unit) {
-    scope.launch {
-      try {
-        val productService = NetworkModule.getProductService(context)
-        products = productService.getAllProducts()
-      } catch (e: Exception) {
-        e.printStackTrace()
-      }
+    if (viewModel.products.value.isEmpty()) {
+      viewModel.fetchFilteredProducts(context)
     }
-  }
-
-  fun fetchFilteredProducts() {
-    scope.launch {
-      try {
-        val productService = NetworkModule.getProductService(context)
-        products = productService.getAllProducts(
-          name = searchText.text,
-          category = savedFilters["category"],
-          manufacturerCountry = savedFilters["manufacturerCountry"],
-          manufacturerName = savedFilters["manufacturerName"],
-          beerType = savedFilters["beerType"],
-          unitSize = savedFilters["unitSize"],
-          minPrice = savedFilters["minPrice"]?.takeIf { it.isNotBlank() }?.toDoubleOrNull(),
-          maxPrice = savedFilters["maxPrice"]?.takeIf { it.isNotBlank() }?.toDoubleOrNull()
-        )
-      } catch (e: Exception) {
-        e.printStackTrace()
-      }
-    }
-  }
-
-  if (showFilters) {
-    FilterDialog(
-      savedFilters = savedFilters,
-      onDismiss = { showFilters = false },
-      onApplyFilters = { filters ->
-        showFilters = false
-        filters.forEach { (key, value) ->
-          savedFilters[key] = if (value.isNullOrBlank()) null else value
-        }
-        savedFilters["minPrice"] = if (filters["minPrice"].isNullOrBlank()) "" else filters["minPrice"]
-        savedFilters["maxPrice"] = if (filters["maxPrice"].isNullOrBlank()) "" else filters["maxPrice"]
-        fetchFilteredProducts()
-      }
-    )
   }
 
   Scaffold(
@@ -101,13 +57,13 @@ fun SearchScreen(onBack: () -> Unit, showProductDetails: (Int) -> Unit) {
       TopAppBar(
         title = { Text("Пошук продуктів") },
         navigationIcon = {
-          IconButton(onClick = { onBack() }) {
+          IconButton(onClick = onBack) {
             Icon(imageVector = Icons.Filled.ArrowBack, contentDescription = "Назад")
           }
         }
       )
     },
-    snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
+    snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
   ) { innerPadding ->
     Column(
       modifier = Modifier
@@ -116,13 +72,13 @@ fun SearchScreen(onBack: () -> Unit, showProductDetails: (Int) -> Unit) {
         .padding(16.dp)
     ) {
       OutlinedTextField(
-        value = searchText,
-        onValueChange = { searchText = it },
+        value = viewModel.searchText.value,
+        onValueChange = { viewModel.searchText.value = it },
         placeholder = { Text("Введіть назву продукту...") },
         keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Search),
         keyboardActions = KeyboardActions(
           onSearch = {
-            fetchFilteredProducts()
+            viewModel.fetchFilteredProducts(context)
             focusRequester.freeFocus()
           }
         ),
@@ -130,7 +86,7 @@ fun SearchScreen(onBack: () -> Unit, showProductDetails: (Int) -> Unit) {
           .fillMaxWidth()
           .focusRequester(focusRequester),
         trailingIcon = {
-          IconButton(onClick = { showFilters = true }) {
+          IconButton(onClick = { viewModel.showFilters.value = true }) {
             Icon(imageVector = Icons.Filled.FilterList, contentDescription = "Фільтри")
           }
         }
@@ -142,19 +98,32 @@ fun SearchScreen(onBack: () -> Unit, showProductDetails: (Int) -> Unit) {
         modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.spacedBy(8.dp)
       ) {
-        itemsIndexed(
-          items = products,
-          key = { _, product -> product.id }
-        ) { _, product ->
+        itemsIndexed(viewModel.products.value) { _, product ->
           VerticalProductCard(
             product = product,
             onClick = { showProductDetails(product.id) },
-            snackbarHostState = snackbarHostState)
+            snackbarHostState = snackbarHostState
+          )
         }
       }
     }
   }
+
+  if (viewModel.showFilters.value) {
+    FilterDialog(
+      savedFilters = viewModel.savedFilters,
+      onDismiss = { viewModel.showFilters.value = false },
+      onApplyFilters = { filters ->
+        viewModel.showFilters.value = false
+        filters.forEach { (key, value) ->
+          viewModel.savedFilters[key] = if (value.isNullOrBlank()) null else value
+        }
+        viewModel.fetchFilteredProducts(context)
+      }
+    )
+  }
 }
+
 
 
 @Composable
