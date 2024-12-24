@@ -1,7 +1,5 @@
 package com.example.myapplication.navigation
 
-import ClientListScreen
-import CrmOrderDetailsScreen
 import androidx.compose.runtime.Composable
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -12,15 +10,16 @@ import androidx.compose.ui.platform.LocalContext
 import com.example.myapplication.ui.components.auth.AuthScreen
 
 import com.example.myapplication.ui.components.cart.CartScreen
+import com.example.myapplication.ui.components.crm.ClientListScreen
 import com.example.myapplication.ui.components.crm.CrmArchiveMonthScreen
 import com.example.myapplication.ui.components.crm.CrmArchiveScreen
 import com.example.myapplication.ui.components.crm.CrmArchiveYearScreen
 import com.example.myapplication.ui.components.crm.CrmClientAdd
 import com.example.myapplication.ui.components.crm.CrmClientDetails
 
-// import com.example.myapplication.ui.components.cart.CartScreen
 import com.example.myapplication.ui.components.crm.CrmMainScreen
 import com.example.myapplication.ui.components.crm.CrmOrderAdd
+import com.example.myapplication.ui.components.crm.CrmOrderDetailsScreen
 
 import com.example.myapplication.ui.components.crm.CrmOrderListScreen
 import com.example.myapplication.ui.components.crm.CrmStatsScreen
@@ -156,10 +155,10 @@ fun MainNavigation() {
     }
   }
 
-  val navigateToCrmClientDetails: () -> Unit = {
+  val navigateToCrmClientDetails: (Int) -> Unit = { customerId ->
     val user = LocalStorage.getUser(context)
     if (user?.isEmployee == true) {
-      navController.navigate(NavigationScreens.CRM_CLIENT_DETAILS.name) {
+      navController.navigate("${NavigationScreens.CRM_CLIENT_DETAILS.name}/$customerId") {
         launchSingleTop = true
       }
     }
@@ -283,9 +282,19 @@ fun MainNavigation() {
       ClientListScreen(onBack = { navController.popBackStack() }, navigateToCrmClientDetails = navigateToCrmClientDetails, navigateCrmClientAdd = navigateCrmClientAdd)
     }
 
-    composable(route = NavigationScreens.CRM_CLIENT_DETAILS.name) {
-      CrmClientDetails(onBack = { navController.popBackStack() }, navigateCrmOrderList = navigateCrmOrderList, navigateCrmOrderDetails = navigateCrmOrderDetails, navigateCrmOrderAdd = navigateCrmOrderAdd)
+    composable(route = "${NavigationScreens.CRM_CLIENT_DETAILS.name}/{clientId}") { backStackEntry ->
+      val clientId = backStackEntry.arguments?.getString("clientId")?.toIntOrNull()
+      clientId?.let {
+        CrmClientDetails(
+//          clientId = it, // TODO()
+          onBack = { navController.popBackStack() },
+          navigateCrmOrderList = navigateCrmOrderList,
+          navigateCrmOrderDetails = navigateCrmOrderDetails,
+          navigateCrmOrderAdd = navigateCrmOrderAdd
+        )
+      }
     }
+
 
     composable(route = NavigationScreens.CRM_ORDER_LIST.name) {
       CrmOrderListScreen(onBack = { navController.popBackStack() }, navigateCrmOrderDetails = navigateCrmOrderDetails)

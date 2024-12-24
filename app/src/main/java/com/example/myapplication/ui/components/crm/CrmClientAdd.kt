@@ -10,7 +10,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import com.example.myapplication.api.dto.wholesale_customer.CreateWholesaleCustomerDto
+import com.example.myapplication.api.dto.wholesale.customer.CreateWholesaleCustomerDto
 import com.example.myapplication.api.network.NetworkModule
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers

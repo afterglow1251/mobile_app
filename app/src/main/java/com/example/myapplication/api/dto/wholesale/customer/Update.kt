@@ -1,4 +1,4 @@
-package com.example.myapplication.api.dto.wholesale_customer
+package com.example.myapplication.api.dto.wholesale.customer
 
 data class UpdateWholesaleCustomerDto(
   val name: String? = null,

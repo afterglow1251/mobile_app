@@ -1,6 +1,5 @@
 package com.example.myapplication.api.dto.order
 
-import com.example.myapplication.api.dto.product.CartItem
 import com.example.myapplication.api.dto.product.ProductImageDto
 
 data class Order(

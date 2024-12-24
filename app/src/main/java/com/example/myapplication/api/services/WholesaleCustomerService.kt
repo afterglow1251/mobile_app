@@ -1,8 +1,8 @@
 package com.example.myapplication.api.services
 
-import com.example.myapplication.api.dto.wholesale_customer.CreateWholesaleCustomerDto
-import com.example.myapplication.api.dto.wholesale_customer.UpdateWholesaleCustomerDto
-import com.example.myapplication.api.dto.wholesale_customer.WholesaleCustomerDto
+import com.example.myapplication.api.dto.wholesale.customer.CreateWholesaleCustomerDto
+import com.example.myapplication.api.dto.wholesale.customer.UpdateWholesaleCustomerDto
+import com.example.myapplication.api.dto.wholesale.customer.WholesaleCustomerDto
 import retrofit2.http.*
 
 interface WholesaleCustomerService {

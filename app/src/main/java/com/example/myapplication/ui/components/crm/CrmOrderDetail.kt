@@ -1,3 +1,6 @@
+package com.example.myapplication.ui.components.crm
+
+
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
