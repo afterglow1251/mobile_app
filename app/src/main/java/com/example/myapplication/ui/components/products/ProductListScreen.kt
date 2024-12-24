@@ -54,123 +54,112 @@ fun ProductListScreen(
     }
   }
 
-  Scaffold(
-    topBar = {
-      TopAppBar(
-        title = { Text("СПИСОК ПРОДУКТІВ") },
-        actions = {
-          IconButton(onClick = { showProfile() }) {
-            Icon(imageVector = Icons.Default.Person, contentDescription = "Профіль")
-          }
-        }
-      )
-    },
-    snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
-    bottomBar = {
-      NavigationBar {
-        NavigationBarItem(
-          icon = { Icon(Icons.Default.ShoppingCart, contentDescription = "Список продуктів") },
-          label = { Text("Продукти") },
-          selected = true,
-          onClick = {}
+  Scaffold(topBar = {
+    TopAppBar(title = { Text("СПИСОК ПРОДУКТІВ") }, actions = {
+      IconButton(onClick = { showProfile() }) {
+        Icon(imageVector = Icons.Default.Person, contentDescription = "Профіль")
+      }
+    })
+  }, snackbarHost = { SnackbarHost(hostState = snackbarHostState) }, bottomBar = {
+    NavigationBar {
+      NavigationBarItem(icon = {
+        Icon(
+          Icons.Default.ShoppingCart, contentDescription = "Список продуктів"
         )
-        NavigationBarItem(
-          icon = { Icon(Icons.Default.ShoppingBag, contentDescription = "Кошик") },
-          label = { Text("Кошик") },
-          selected = false,
-          onClick = { LocalStorage.getUser(context)?.let { cartDetails(it.id) } }
-        )
-        NavigationBarItem(
-          icon = { Icon(Icons.Default.Person, contentDescription = "Мої покупки") },
-          label = { Text("Покупки") },
-          selected = false,
-          onClick = { showOrders() }
+      }, label = { Text("Продукти") }, selected = true, onClick = {})
+      NavigationBarItem(icon = { Icon(Icons.Default.ShoppingBag, contentDescription = "Кошик") },
+        label = { Text("Кошик") },
+        selected = false,
+        onClick = { LocalStorage.getUser(context)?.let { cartDetails(it.id) } })
+      NavigationBarItem(icon = { Icon(Icons.Default.Person, contentDescription = "Мої покупки") },
+        label = { Text("Покупки") },
+        selected = false,
+        onClick = { showOrders() })
+    }
+  }, content = { innerPadding ->
+    Column(
+      modifier = Modifier
+        .fillMaxSize()
+        .padding(innerPadding)
+    ) {
+      Box(modifier = Modifier
+        .fillMaxWidth()
+        .padding(16.dp)
+        .clickable { navigateToSearch() } // Реалізація кліка
+      ) {
+        OutlinedTextField(value = "",
+          onValueChange = { },
+          placeholder = { Text("Пошук продуктів...") },
+          leadingIcon = {
+            Icon(imageVector = Icons.Default.Search, contentDescription = "Пошук")
+          },
+          readOnly = false, // Заборона введення тексту
+          enabled = false, // Заборона інтерактивності
+          modifier = Modifier.fillMaxWidth()
         )
       }
-    },
-    content = { innerPadding ->
-      Column(
-        modifier = Modifier
-          .fillMaxSize()
-          .padding(innerPadding)
-      ) {
-        Box(
+
+      if (isLoading) {
+        CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally))
+      } else {
+        LazyColumn(
           modifier = Modifier
-            .fillMaxWidth()
-            .padding(16.dp)
-            .clickable { navigateToSearch() } // Реалізація кліка
+            .fillMaxSize()
+            .padding(16.dp),
+          verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-          OutlinedTextField(
-            value = "",
-            onValueChange = { },
-            placeholder = { Text("Пошук продуктів...") },
-            leadingIcon = {
-              Icon(imageVector = Icons.Default.Search, contentDescription = "Пошук")
-            },
-            readOnly = false, // Заборона введення тексту
-            enabled = false, // Заборона інтерактивності
-            modifier = Modifier.fillMaxWidth()
-          )
-        }
+          val beerProducts = products.filter { it.category.name == "beer" }
+          val snackProducts = products.filter { it.category.name == "snack" }
 
-        if (isLoading) {
-          CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally))
-        } else {
-          LazyColumn(
-            modifier = Modifier
-              .fillMaxSize()
-              .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
-          ) {
-            val beerProducts = products.filter { it.category.name == "beer" }
-            val snackProducts = products.filter { it.category.name == "snack" }
-
-            if (beerProducts.isNotEmpty()) {
-              item {
-                Text(
-                  text = "Пиво",
-                  fontSize = 20.sp,
-                  fontWeight = FontWeight.Bold,
-                  color = MaterialTheme.colorScheme.primary,
-                  modifier = Modifier.padding(bottom = 8.dp)
-                )
-              }
-              item {
-                LazyRow(
-                  modifier = Modifier.fillMaxWidth(),
-                  horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                  itemsIndexed(beerProducts) { _, product ->
-                    ProductCard(
-                      product = product, onClick = { showProductDetails(product.id) },
-                      snackbarHostState = snackbarHostState
-                    )
-                  }
+          if (beerProducts.isNotEmpty()) {
+            item {
+              Text(
+                text = "Пиво",
+                fontSize = 20.sp,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.padding(bottom = 8.dp)
+              )
+            }
+            item {
+              LazyRow(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+              ) {
+                itemsIndexed(items = beerProducts,
+                  key = { _, product -> product.id }) { _, product ->
+                  ProductCard(
+                    product = product,
+                    onClick = { showProductDetails(product.id) },
+                    snackbarHostState = snackbarHostState
+                  )
                 }
               }
             }
+          }
 
-            if (snackProducts.isNotEmpty()) {
-              item {
-                Text(
-                  text = "Снеки",
-                  fontSize = 20.sp,
-                  fontWeight = FontWeight.Bold,
-                  color = MaterialTheme.colorScheme.primary,
-                  modifier = Modifier.padding(bottom = 8.dp)
-                )
-              }
-              item {
-                LazyRow(
-                  modifier = Modifier.fillMaxWidth(),
-                  horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                  itemsIndexed(snackProducts) { _, product ->
-                    ProductCard(
-                      product = product, onClick = { showProductDetails(product.id) },
-                      snackbarHostState = snackbarHostState
-                    )
-                  }
+          if (snackProducts.isNotEmpty()) {
+            item {
+              Text(
+                text = "Снеки",
+                fontSize = 20.sp,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.padding(bottom = 8.dp)
+              )
+            }
+            item {
+              LazyRow(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+              ) {
+                itemsIndexed(items = snackProducts,
+                  key = { _, product -> product.id }) { _, product ->
+                  ProductCard(
+                    product = product,
+                    onClick = { showProductDetails(product.id) },
+                    snackbarHostState = snackbarHostState
+                  )
                 }
               }
             }
@@ -178,7 +167,7 @@ fun ProductListScreen(
         }
       }
     }
-  )
+  })
 }
 
 
@@ -251,8 +240,7 @@ fun ProductCard(product: ProductDto, onClick: () -> Unit, snackbarHostState: Sna
         onClick = {
           val user = LocalStorage.getUser(context)
           if (user != null) {
-            val currentCart = LocalStorage.getCart(context)
-              .filter { it.userId == user.id }
+            val currentCart = LocalStorage.getCart(context).filter { it.userId == user.id }
 
             val isInCart = currentCart.any { cartItem -> cartItem.productId == product.id }
             if (isInCart) {

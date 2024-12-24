@@ -30,7 +30,9 @@ import java.util.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun OrderListScreen(cartDetails: (Int) -> Unit, showMain: () -> Unit, onShowOrderDetails: (Int) -> Unit) {
+fun OrderListScreen(
+  cartDetails: (Int) -> Unit, showMain: () -> Unit, onShowOrderDetails: (Int) -> Unit
+) {
   val snackbarHostState = remember { SnackbarHostState() }
   val scope = rememberCoroutineScope()
   val context = LocalContext.current
@@ -54,89 +56,78 @@ fun OrderListScreen(cartDetails: (Int) -> Unit, showMain: () -> Unit, onShowOrde
     }
   }
 
-  Scaffold(
-    topBar = {
-      TopAppBar(
-        title = { Text("Мої замовлення") }
-      )
-    },
-    bottomBar = {
-      NavigationBar {
-        NavigationBarItem(
-          icon = { Icon(Icons.Default.ShoppingCart, contentDescription = "Продукти") },
-          label = { Text("Продукти") },
-          selected = false,
-          onClick = { showMain() }
+  Scaffold(topBar = {
+    TopAppBar(title = { Text("Мої замовлення") })
+  }, bottomBar = {
+    NavigationBar {
+      NavigationBarItem(icon = {
+        Icon(
+          Icons.Default.ShoppingCart,
+          contentDescription = "Продукти"
         )
-        NavigationBarItem(
-          icon = { Icon(Icons.Default.ShoppingBag, contentDescription = "Кошик") },
-          label = { Text("Кошик") },
-          selected = false,
-          onClick = { LocalStorage.getUser(context)?.let { cartDetails(it.id) } }
-        )
-        NavigationBarItem(
-          icon = { Icon(Icons.Default.Person, contentDescription = "Замовлення") },
-          label = { Text("Замовлення") },
-          selected = true,
-          onClick = {}
-        )
-      }
-    },
-    snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
-    content = { innerPadding ->
-      Column(
-        modifier = Modifier
-          .fillMaxSize()
-          .padding(innerPadding)
-      ) {
-        if (isLoading) {
-          CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally))
-        } else {
-          LazyColumn(
-            modifier = Modifier
-              .fillMaxSize()
-              .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
-          ) {
-            val groupedOrders = orders.groupBy { order ->
-              SimpleDateFormat("EEEE, dd MMMM", Locale("uk"))
-                .format(
-                  SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.getDefault())
-                    .apply { timeZone = TimeZone.getTimeZone("UTC") }
-                    .parse(order.createdAt)!!
-                )
+      },
+        label = { Text("Продукти") },
+        selected = false,
+        onClick = { showMain() })
+      NavigationBarItem(icon = { Icon(Icons.Default.ShoppingBag, contentDescription = "Кошик") },
+        label = { Text("Кошик") },
+        selected = false,
+        onClick = { LocalStorage.getUser(context)?.let { cartDetails(it.id) } })
+      NavigationBarItem(icon = { Icon(Icons.Default.Person, contentDescription = "Замовлення") },
+        label = { Text("Замовлення") },
+        selected = true,
+        onClick = {})
+    }
+  }, snackbarHost = { SnackbarHost(hostState = snackbarHostState) }, content = { innerPadding ->
+    Column(
+      modifier = Modifier
+        .fillMaxSize()
+        .padding(innerPadding)
+    ) {
+      if (isLoading) {
+        CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally))
+      } else {
+        LazyColumn(
+          modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+          verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+          val groupedOrders = orders.groupBy { order ->
+            SimpleDateFormat("EEEE, dd MMMM", Locale("uk")).format(SimpleDateFormat(
+                "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'",
+                Locale.getDefault()
+              ).apply { timeZone = TimeZone.getTimeZone("UTC") }.parse(order.createdAt)!!)
+          }
+
+          groupedOrders.forEach { (date, ordersForDate) ->
+            item {
+              Text(
+                text = date,
+                fontSize = 20.sp,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.padding(vertical = 8.dp)
+              )
             }
 
-            groupedOrders.forEach { (date, ordersForDate) ->
-              item {
-                Text(
-                  text = date,
-                  fontSize = 20.sp,
-                  fontWeight = FontWeight.Bold,
-                  color = MaterialTheme.colorScheme.primary,
-                  modifier = Modifier.padding(vertical = 8.dp)
-                )
-              }
-
-              items(ordersForDate) { order ->
-                OrderSummaryCard(order = order, onShowOrderDetails = { onShowOrderDetails(order.id) })
-              }
+            items(items = ordersForDate, key = { order -> order.id }) { order ->
+              OrderSummaryCard(order = order, onShowOrderDetails = { onShowOrderDetails(order.id) })
             }
           }
         }
       }
     }
-  )
+  })
 }
 
 @Composable
 fun OrderSummaryCard(order: GetOrdersResponse, onShowOrderDetails: () -> Unit) {
   val dateFormatter = SimpleDateFormat("HH:mm", Locale("uk"))
   val formattedTime = try {
-    val utcDateFormatter =
-      SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale("uk")).apply {
-        timeZone = TimeZone.getTimeZone("UTC")
-      }
+    val utcDateFormatter = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale("uk")).apply {
+      timeZone = TimeZone.getTimeZone("UTC")
+    }
     val date = utcDateFormatter.parse(order.createdAt)
 
     // Конвертуємо час в київський час
@@ -151,8 +142,7 @@ fun OrderSummaryCard(order: GetOrdersResponse, onShowOrderDetails: () -> Unit) {
       .fillMaxWidth()
       .clickable(onClick = onShowOrderDetails)
       .background(MaterialTheme.colorScheme.surface, shape = MaterialTheme.shapes.medium)
-      .padding(16.dp),
-    horizontalArrangement = Arrangement.SpaceBetween
+      .padding(16.dp), horizontalArrangement = Arrangement.SpaceBetween
   ) {
     Text(
       text = "Сума: ${order.totalPrice} грн.",
@@ -161,9 +151,7 @@ fun OrderSummaryCard(order: GetOrdersResponse, onShowOrderDetails: () -> Unit) {
     )
 
     Text(
-      text = "Час: $formattedTime",
-      style = MaterialTheme.typography.bodyMedium,
-      color = Color.Gray
+      text = "Час: $formattedTime", style = MaterialTheme.typography.bodyMedium, color = Color.Gray
     )
   }
 }
