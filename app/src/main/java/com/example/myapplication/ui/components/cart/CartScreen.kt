@@ -52,108 +52,96 @@ fun CartScreen(userId: Int, onBack: () -> Unit, showProductDetails: (Int) -> Uni
   }
 
   if (showOrderDialog) {
-    OrderDialog(
-      userDto = userDto,
-      onDismiss = {
-        showOrderDialog = false
-        errorMessage = null  // Скидаємо помилку при закритті модалки
-      },
-      onConfirm = { name, phone, address ->
-        CoroutineScope(Dispatchers.IO).launch {
-          val requestBody = Order(
-            shippingAddress = address,
-            username = name,
-            phoneNumber = phone,
-            items = LocalStorage.getCartForBackend(context)
-          )
-          try {
-            val productService = NetworkModule.getProductService(context)
-            productService.createOrder(requestBody)
-            withContext(Dispatchers.Main) {
-              LocalStorage.clearCartForUser(context)
-              showOrderDialog = false
-              loadCart()
-              onBack()
-            }
-          } catch (e: HttpException) {
-            // Перевіряємо на статус код 400
-            if (e.code() == 400) {
-              // Якщо статус 400, обробляємо помилку
-              val errorResponse = e.response()?.errorBody()?.string()
-              val errorData = try {
-                val jsonObject = errorResponse?.let { JSONObject(it) }
-                val data = jsonObject?.optJSONObject("data")
-                val productName = data?.optString("productName")
-                val requestedQuantity = data?.optInt("requestedQuantity")
-                val availableQuantity = data?.optInt("availableQuantity")
+    OrderDialog(userDto = userDto, onDismiss = {
+      showOrderDialog = false
+      errorMessage = null  // Скидаємо помилку при закритті модалки
+    }, onConfirm = { name, phone, address ->
+      CoroutineScope(Dispatchers.IO).launch {
+        val requestBody = Order(
+          shippingAddress = address,
+          username = name,
+          phoneNumber = phone,
+          items = LocalStorage.getCartForBackend(context)
+        )
+        try {
+          val productService = NetworkModule.getProductService(context)
+          productService.createOrder(requestBody)
+          withContext(Dispatchers.Main) {
+            LocalStorage.clearCartForUser(context)
+            showOrderDialog = false
+            loadCart()
+            onBack()
+          }
+        } catch (e: HttpException) {
+          // Перевіряємо на статус код 400
+          if (e.code() == 400) {
+            // Якщо статус 400, обробляємо помилку
+            val errorResponse = e.response()?.errorBody()?.string()
+            val errorData = try {
+              val jsonObject = errorResponse?.let { JSONObject(it) }
+              val data = jsonObject?.optJSONObject("data")
+              val productName = data?.optString("productName")
+              val requestedQuantity = data?.optInt("requestedQuantity")
+              val availableQuantity = data?.optInt("availableQuantity")
 
-                if (productName != null && requestedQuantity != null && availableQuantity != null) {
-                  "Продукт $productName стільки-то ви замовили $requestedQuantity, але у нас доступно $availableQuantity. Спробуйте зменшити кількість або замовити пізніше."
-                } else {
-                  "Сталася помилка, спробуйте ще раз. (1)"
-                }
-              } catch (ex: Exception) {
-                "Невідома помилка."
+              if (productName != null && requestedQuantity != null && availableQuantity != null) {
+                "Продукт $productName стільки-то ви замовили $requestedQuantity, але у нас доступно $availableQuantity. Спробуйте зменшити кількість або замовити пізніше."
+              } else {
+                "Сталася помилка, спробуйте ще раз. (1)"
               }
-              withContext(Dispatchers.Main) {
-                errorMessage = errorData
-              }
-            } else {
-              // Якщо це інша помилка (не 400)
-              withContext(Dispatchers.Main) {
-                errorMessage = "Сталася помилка, спробуйте пізніше. (2)"
-              }
+            } catch (ex: Exception) {
+              "Невідома помилка."
             }
-          } catch (e: Exception) {
-            // Загальна помилка, наприклад при відсутності з'єднання
             withContext(Dispatchers.Main) {
-              errorMessage = "Сталася помилка. Перевірте ваше підключення. (3)"
+              errorMessage = errorData
             }
+          } else {
+            // Якщо це інша помилка (не 400)
+            withContext(Dispatchers.Main) {
+              errorMessage = "Сталася помилка, спробуйте пізніше. (2)"
+            }
+          }
+        } catch (e: Exception) {
+          // Загальна помилка, наприклад при відсутності з'єднання
+          withContext(Dispatchers.Main) {
+            errorMessage = "Сталася помилка. Перевірте ваше підключення. (3)"
           }
         }
       }
-    )
+    })
   }
 
-  Scaffold(
-    topBar = {
-      TopAppBar(
-        title = { Text("Кошик") },
-        navigationIcon = {
-          IconButton(onClick = { onBack() }) {
-            Icon(Icons.Filled.ArrowBack, contentDescription = "Назад")
-          }
-        }
-      )
-    },
-    bottomBar = {
-      if (cartItems.isNotEmpty()) {
-        Column(
-          modifier = Modifier
-            .fillMaxWidth()
-            .padding(16.dp)
+  Scaffold(topBar = {
+    TopAppBar(title = { Text("Кошик") }, navigationIcon = {
+      IconButton(onClick = { onBack() }) {
+        Icon(Icons.Filled.ArrowBack, contentDescription = "Назад")
+      }
+    })
+  }, bottomBar = {
+    if (cartItems.isNotEmpty()) {
+      Column(
+        modifier = Modifier
+          .fillMaxWidth()
+          .padding(16.dp)
+      ) {
+        Text(
+          text = "Загальна вартість: ${"%.2f".format(totalPrice)} грн",
+          fontSize = 18.sp,
+          modifier = Modifier.padding(bottom = 8.dp)
+        )
+        Button(
+          onClick = { showOrderDialog = true }, modifier = Modifier.fillMaxWidth()
         ) {
-          Text(
-            text = "Загальна вартість: ${"%.2f".format(totalPrice)} грн",
-            fontSize = 18.sp,
-            modifier = Modifier.padding(bottom = 8.dp)
-          )
-          Button(
-            onClick = { showOrderDialog = true },
-            modifier = Modifier.fillMaxWidth()
-          ) {
-            Text("Оформити замовлення", fontSize = 18.sp)
-          }
+          Text("Оформити замовлення", fontSize = 18.sp)
         }
       }
     }
-  ) { innerPadding ->
+  }) { innerPadding ->
     if (cartItems.isEmpty()) {
       Box(
         modifier = Modifier
           .fillMaxSize()
-          .padding(innerPadding),
-        contentAlignment = Alignment.Center
+          .padding(innerPadding), contentAlignment = Alignment.Center
       ) {
         Text("Кошик порожній", fontSize = 20.sp)
       }
@@ -163,19 +151,13 @@ fun CartScreen(userId: Int, onBack: () -> Unit, showProductDetails: (Int) -> Uni
           .fillMaxSize()
           .padding(innerPadding)
       ) {
-        items(cartItems) { cartItem ->
-          CartItemRow(
-            context = context,
-            cartItem = cartItem,
-            onRemove = {
-              LocalStorage.removeFromCart(context, cartItem.productId)
-              loadCart()
-            },
-            onQuantityChange = {
-              loadCart() // Оновлення даних після зміни кількості
-            },
-            onShowProductDetails = { showProductDetails(cartItem.productId) }
-          )
+        items(items = cartItems, key = { cartItem -> cartItem.productId }) { cartItem ->
+          CartItemRow(context = context, cartItem = cartItem, onRemove = {
+            LocalStorage.removeFromCart(context, cartItem.productId)
+            loadCart()
+          }, onQuantityChange = {
+            loadCart()
+          }, onShowProductDetails = { showProductDetails(cartItem.productId) })
         }
       }
     }
@@ -183,14 +165,11 @@ fun CartScreen(userId: Int, onBack: () -> Unit, showProductDetails: (Int) -> Uni
 
   // Сповіщення про помилку, якщо вона є
   if (errorMessage != null) {
-    Snackbar(
-      modifier = Modifier.padding(16.dp),
-      action = {
-        TextButton(onClick = { errorMessage = null }) {
-          Text("Закрити")
-        }
+    Snackbar(modifier = Modifier.padding(16.dp), action = {
+      TextButton(onClick = { errorMessage = null }) {
+        Text("Закрити")
       }
-    ) {
+    }) {
       // Покажемо конкретне повідомлення з деталями про продукт
       Text(text = errorMessage ?: "")
     }
@@ -221,8 +200,7 @@ fun CartItemRow(
       // Картинка продукту
       if (cartItem.imageUrl.isNotEmpty()) {
         PicassoImage(
-          url = cartItem.imageUrl,
-          modifier = Modifier
+          url = cartItem.imageUrl, modifier = Modifier
             .size(120.dp) // Задаємо розмір картинки
             .padding(end = 16.dp)
         )
@@ -256,31 +234,23 @@ fun CartItemRow(
             onClick = {
               if (cartItem.quantity > 1) {
                 LocalStorage.updateCartItemQuantity(
-                  context,
-                  cartItem.productId,
-                  cartItem.quantity - 1
+                  context, cartItem.productId, cartItem.quantity - 1
                 )
                 onQuantityChange()
               }
-            },
-            enabled = cartItem.quantity > 1
+            }, enabled = cartItem.quantity > 1
           ) {
             Icon(Icons.Filled.Remove, contentDescription = "Зменшити кількість")
           }
           Text(
-            text = "${cartItem.quantity}",
-            fontSize = 16.sp
+            text = "${cartItem.quantity}", fontSize = 16.sp
           )
-          IconButton(
-            onClick = {
-              LocalStorage.updateCartItemQuantity(
-                context,
-                cartItem.productId,
-                cartItem.quantity + 1
-              )
-              onQuantityChange()
-            }
-          ) {
+          IconButton(onClick = {
+            LocalStorage.updateCartItemQuantity(
+              context, cartItem.productId, cartItem.quantity + 1
+            )
+            onQuantityChange()
+          }) {
             Icon(Icons.Filled.Add, contentDescription = "Збільшити кількість")
           }
         }
@@ -288,8 +258,7 @@ fun CartItemRow(
 
       // Кнопка видалення
       Button(
-        onClick = onRemove,
-        modifier = Modifier.align(Alignment.Bottom)
+        onClick = onRemove, modifier = Modifier.align(Alignment.Bottom)
       ) {
         Text("Видалити")
       }
@@ -298,7 +267,9 @@ fun CartItemRow(
 }
 
 @Composable
-fun OrderDialog(userDto: UserDto?, onDismiss: () -> Unit, onConfirm: (String, String, String) -> Unit) {
+fun OrderDialog(
+  userDto: UserDto?, onDismiss: () -> Unit, onConfirm: (String, String, String) -> Unit
+) {
   var name by remember { mutableStateOf(userDto?.username ?: "") }
   var phone by remember { mutableStateOf(userDto?.phoneNumber ?: "") }
   var address by remember { mutableStateOf(userDto?.address ?: "") }
@@ -317,14 +288,12 @@ fun OrderDialog(userDto: UserDto?, onDismiss: () -> Unit, onConfirm: (String, St
     name.isNotEmpty() && isValidPhoneNumber(phone) && address.isNotEmpty()
   }
 
-  AlertDialog(
-    onDismissRequest = { onDismiss() },
+  AlertDialog(onDismissRequest = { onDismiss() },
     title = { Text("Підтвердження замовлення") },
     text = {
       Column {
         // Ім'я
-        OutlinedTextField(
-          value = name,
+        OutlinedTextField(value = name,
           onValueChange = { name = it },
           label = { Text("Ім'я") },
           isError = nameError != null,
@@ -340,8 +309,7 @@ fun OrderDialog(userDto: UserDto?, onDismiss: () -> Unit, onConfirm: (String, St
         Spacer(modifier = Modifier.height(8.dp))
 
         // Номер телефону
-        OutlinedTextField(
-          value = phone,
+        OutlinedTextField(value = phone,
           onValueChange = { phone = it },
           label = { Text("Номер телефону") },
           isError = phoneError != null,
@@ -357,8 +325,7 @@ fun OrderDialog(userDto: UserDto?, onDismiss: () -> Unit, onConfirm: (String, St
         Spacer(modifier = Modifier.height(8.dp))
 
         // Адреса
-        OutlinedTextField(
-          value = address,
+        OutlinedTextField(value = address,
           onValueChange = { address = it },
           label = { Text("Адреса") },
           isError = addressError != null,
@@ -379,8 +346,7 @@ fun OrderDialog(userDto: UserDto?, onDismiss: () -> Unit, onConfirm: (String, St
           if (isFormValid) {
             onConfirm(name, phone, address)
           }
-        },
-        enabled = isFormValid
+        }, enabled = isFormValid
       ) {
         Text("Підтвердити")
       }
@@ -389,6 +355,5 @@ fun OrderDialog(userDto: UserDto?, onDismiss: () -> Unit, onConfirm: (String, St
       TextButton(onClick = { onDismiss() }) {
         Text("Скасувати")
       }
-    }
-  )
+    })
 }

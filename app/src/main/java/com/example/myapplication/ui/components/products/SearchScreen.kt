@@ -98,7 +98,10 @@ fun SearchScreen(
         modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.spacedBy(8.dp)
       ) {
-        itemsIndexed(viewModel.products.value) { _, product ->
+        itemsIndexed(
+          items = viewModel.products.value,
+          key = { _, product -> product.id }
+        ) { _, product ->
           VerticalProductCard(
             product = product,
             onClick = { showProductDetails(product.id) },
