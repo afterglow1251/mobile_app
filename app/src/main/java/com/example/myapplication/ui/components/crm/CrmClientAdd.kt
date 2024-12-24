@@ -1,34 +1,30 @@
 package com.example.myapplication.ui.components.crm
 
-import androidx.compose.foundation.background
+import android.content.Context
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material3.Button
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import com.example.myapplication.api.dto.wholesale_customer.CreateWholesaleCustomerDto
+import com.example.myapplication.api.network.NetworkModule
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CrmClientAdd(onBack: () -> Unit) {
   var name by remember { mutableStateOf("") }
-  var phone by remember { mutableStateOf("") }
+  var phone by remember { mutableStateOf("+38") }
   var address by remember { mutableStateOf("") }
+  val snackbarHostState = remember { SnackbarHostState() }
+
+  val context = LocalContext.current
 
   Scaffold(
     topBar = {
@@ -40,21 +36,17 @@ fun CrmClientAdd(onBack: () -> Unit) {
           }
         }
       )
-    }
+    },
+    snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
   ) { innerPadding ->
     Column(
       modifier = Modifier
         .fillMaxSize()
         .padding(innerPadding)
-        .padding(16.dp)
-        .offset(y = (-100).dp),
+        .padding(16.dp),
       verticalArrangement = Arrangement.Center,
       horizontalAlignment = Alignment.CenterHorizontally
     ) {
-      //Text(
-      //  text = "Ім'я клієнта:",
-      //  style = MaterialTheme.typography.bodyLarge
-      //)
       OutlinedTextField(
         value = name,
         onValueChange = {
@@ -64,43 +56,71 @@ fun CrmClientAdd(onBack: () -> Unit) {
         modifier = Modifier.fillMaxWidth()
       )
 
-      //Text(
-      //  text = "Номер телефону:",
-      //  style = MaterialTheme.typography.bodyLarge
-      //)
+      Spacer(modifier = Modifier.height(8.dp))
 
       OutlinedTextField(
-        value = name,
+        value = phone,
         onValueChange = {
-          name = it
+          if (it.startsWith("+38")) {
+            phone = it
+          }
         },
-        label = { Text("Введіть номер телефону клієнту") },
+        label = { Text("Введіть номер телефону клієнта") },
         modifier = Modifier.fillMaxWidth()
       )
 
-      //Text(
-      //  text = "Адреса клієнта:",
-      //  style = MaterialTheme.typography.bodyLarge
-      //)
+      Spacer(modifier = Modifier.height(8.dp))
 
       OutlinedTextField(
-        value = name,
+        value = address,
         onValueChange = {
-          name = it
+          address = it
         },
-        label = { Text("Введіть Адресу клієнту") },
+        label = { Text("Введіть адресу клієнта") },
         modifier = Modifier.fillMaxWidth()
       )
+
+      Spacer(modifier = Modifier.height(16.dp))
 
       Button(
-        onClick = onBack,
-        modifier = Modifier
-          .fillMaxWidth()
-          .padding(top = 16.dp)
-
+        onClick = {
+          addCustomer(context, name, phone, address, onBack, snackbarHostState)
+        },
+        modifier = Modifier.fillMaxWidth()
       ) {
         Text("Додати оптового клієнта")
       }
     }
   }
 }
+
+fun addCustomer(
+  context: Context,
+  name: String,
+  phone: String,
+  address: String,
+  onBack: () -> Unit,
+  snackbarHostState: SnackbarHostState
+) {
+  val service = NetworkModule.getWholesaleCustomerService(context)
+  val createDto = CreateWholesaleCustomerDto(name, address, phone)
+  CoroutineScope(Dispatchers.IO).launch {
+    try {
+      service.createCustomer(createDto)
+      CoroutineScope(Dispatchers.Main).launch {
+        onBack() // Виклик onBack одразу після успішного створення
+        snackbarHostState.showSnackbar("Клієнта успішно додано")
+      }
+    } catch (e: Exception) {
+      CoroutineScope(Dispatchers.Main).launch {
+        val message = if (e.message?.contains("A customer with this phone number already exists") == true) {
+          "Клієнт із таким номером телефону вже існує"
+        } else {
+          "Помилка: ${e.localizedMessage}"
+        }
+        snackbarHostState.showSnackbar(message)
+      }
+    }
+  }
+}
+
