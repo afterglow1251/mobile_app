@@ -359,7 +359,7 @@ fun OrderDialog(
         onClick = {
           if (isFormValid) {
             // Передаємо номер без префікса "+38"
-            onConfirm(name, phone.removePrefix("+38"), address)
+            onConfirm(name, phone, address)
           }
         },
         enabled = isFormValid
