@@ -286,7 +286,7 @@ fun MainNavigation() {
       val clientId = backStackEntry.arguments?.getString("clientId")?.toIntOrNull()
       clientId?.let {
         CrmClientDetails(
-//          clientId = it, // TODO()
+          clientId = it,
           onBack = { navController.popBackStack() },
           navigateCrmOrderList = navigateCrmOrderList,
           navigateCrmOrderDetails = navigateCrmOrderDetails,
