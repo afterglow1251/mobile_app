@@ -1,5 +1,6 @@
 package com.example.myapplication.ui.components.crm
 
+import android.util.Log
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -14,6 +15,12 @@ import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.unit.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.ui.platform.LocalContext
+import com.example.myapplication.api.dto.wholesale.order.WholesaleOrderDto
+import com.example.myapplication.api.network.NetworkModule
+import java.util.Calendar
+import java.util.Locale
+import kotlin.math.roundToInt
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -22,6 +29,57 @@ fun CrmArchiveScreen(
   navigateToCrmMonthArchive: () -> Unit,
   navigateToCrmYearArchive: () -> Unit
 ) {
+  val monthsInUkrainian = listOf(
+    "Січень", "Лютий", "Березень", "Квітень", "Травень",
+    "Червень", "Липень", "Серпень", "Вересень", "Жовтень",
+    "Листопад", "Грудень"
+  )
+  val context = LocalContext.current
+  val customerService = NetworkModule.getWholesaleCustomerService(context)
+  val coroutineScope = rememberCoroutineScope()
+
+  var lastThreeMonthsOrders by remember { mutableStateOf<Map<String, List<WholesaleOrderDto>>>(emptyMap()) }
+  var lastThreeYearsOrders by remember { mutableStateOf<Map<String, List<WholesaleOrderDto>>>(emptyMap()) }
+  var isLoading by remember { mutableStateOf(true) }
+
+  LaunchedEffect(Unit) {
+    isLoading = true
+    try {
+      val allOrders = customerService.getAllCustomers().flatMap { it.orders }
+      val calendar = Calendar.getInstance()
+
+      lastThreeMonthsOrders = (0 until 3).associate { monthOffset ->
+        val targetCalendar = Calendar.getInstance().apply {
+          add(Calendar.MONTH, -monthOffset)
+        }
+        val monthIndex = targetCalendar.get(Calendar.MONTH)
+        val monthName = monthsInUkrainian[monthIndex]
+        val year = targetCalendar.get(Calendar.YEAR)
+        val monthOrders = allOrders.filter {
+          val orderDate = parseDate(it.createdAt)
+          orderDate != null &&
+                  targetCalendar.get(Calendar.MONTH) == Calendar.getInstance().apply { time = orderDate }.get(Calendar.MONTH) &&
+                  targetCalendar.get(Calendar.YEAR) == Calendar.getInstance().apply { time = orderDate }.get(Calendar.YEAR)
+        }
+        "$monthName $year" to monthOrders
+      }
+
+      lastThreeYearsOrders = (0 until 3).associate { yearOffset ->
+        val targetYear = calendar.get(Calendar.YEAR) - yearOffset
+        val yearOrders = allOrders.filter {
+          val orderDate = parseDate(it.createdAt)
+          orderDate != null && Calendar.getInstance().apply { time = orderDate }.get(Calendar.YEAR) == targetYear
+        }
+        "$targetYear" to yearOrders
+      }
+
+    } catch (e: Exception) {
+      // Handle error
+    } finally {
+      isLoading = false
+    }
+  }
+
   Scaffold(
     topBar = {
       TopAppBar(
@@ -41,120 +99,56 @@ fun CrmArchiveScreen(
         .padding(start = 16.dp, end = 16.dp, bottom = 16.dp)
         .verticalScroll(rememberScrollState())
     ) {
-      // Monthly Statistics Section
-      Box(
-        modifier = Modifier
-          .fillMaxWidth()
-          .clickable { navigateToCrmMonthArchive() }
-          .padding(vertical = 8.dp)
-      ) {
-        Text(
-          text = "Статистика за місяцями",
-          style = MaterialTheme.typography.titleLarge
-        )
-      }
+      if (isLoading) {
+        Text("Завантаження...")
+      } else {
+        Box(
+          modifier = Modifier
+            .fillMaxWidth()
+            .clickable { navigateToCrmMonthArchive() }
+            .padding(vertical = 8.dp)
+        ) {
+          Text(
+            text = "Статистика за місяці",
+            style = MaterialTheme.typography.titleLarge
+          )
+        }
 
-      Column(
-        modifier = Modifier
-          .fillMaxWidth()
-//          .padding(vertical = 8.dp)
-      ){
+        Log.d("Debug", "$lastThreeMonthsOrders")
+        lastThreeMonthsOrders.forEach { (monthName, orders) ->
+          Text(
+            text = monthName,
+            style = MaterialTheme.typography.titleLarge,
+            modifier = Modifier.padding(vertical = 8.dp)
+          )
+          Log.d("Order debug", "$orders")
+          SalesChartMonthlyAny(orders = orders)
 
-        Text(
-          text = "Місяць 1",
-          style = MaterialTheme.typography.titleMedium
-        )
-        Spacer(modifier = Modifier.height(20.dp))
-        SalesChartForDays(listOf(1000, 2000, 1500, 2500, 1800, 3000, 2300, 2000, 2700, 2200, 1900, 2300, 2600, 2000, 2000, 2700, 1000, 1900, 900, 700, 800, 700, 1200, 1800, 2300, 2600, 2400, 2500, 2400, 2700))
-        Spacer(modifier = Modifier.height(20.dp))
-        Text(
-          text = "Обсяг продажів за цей місяць: 150000 грн",
-          style = MaterialTheme.typography.bodyLarge,
-          modifier = Modifier.padding(bottom = 8.dp, top = 12.dp)
-        )
-        Text(
-          text = "Місяць 2",
-          style = MaterialTheme.typography.titleMedium
-        )
-        Spacer(modifier = Modifier.height(20.dp))
-        SalesChartForDays(listOf(1200, 1500, 1800, 2100, 1700, 2600, 1900, 2200, 2400, 2300, 2800, 2500, 2000, 2600, 1900, 1800, 1700, 1900, 1500, 1400, 1300, 700, 1100, 1000, 900, 800, 700, 600, 500, 400))
-        Spacer(modifier = Modifier.height(20.dp))
-        Text(
-          text = "Обсяг продажів за цей місяць: 50000 грн",
-          style = MaterialTheme.typography.bodyLarge,
-          modifier = Modifier.padding(bottom = 8.dp, top = 12.dp)
-        )
-        Text(
-          text = "Місяць 3",
-          style = MaterialTheme.typography.titleMedium
-        )
-        Spacer(modifier = Modifier.height(20.dp))
-        SalesChartForDays(listOf(800, 1200, 1100, 1400, 1500, 1600, 1700, 1800, 2000, 1900, 2200, 2100, 2300, 2200, 2500, 2900, 1700, 2800, 2900, 3000, 5100, 5200, 5300, 3400, 3500, 3600, 3700, 3800, 3900, 4000))
-        Spacer(modifier = Modifier.height(20.dp))
-        Text(
-          text = "Обсяг продажів за цей місяць: 110000 грн",
-          style = MaterialTheme.typography.bodyLarge,
-          modifier = Modifier.padding(bottom = 8.dp, top = 12.dp)
-        )
-      }
+          Spacer(modifier = Modifier.height(26.dp))
+        }
 
-      Spacer(modifier = Modifier.height(4.dp))
+        Box(
+          modifier = Modifier
+            .fillMaxWidth()
+            .clickable { navigateToCrmYearArchive() }
+            .padding(vertical = 8.dp)
+        ) {
+          Text(
+            text = "Статистика за роки",
+            style = MaterialTheme.typography.titleLarge
+          )
+        }
 
-      // Yearly Statistics Section
-      Box(
-        modifier = Modifier
-          .fillMaxWidth()
-          .clickable { navigateToCrmYearArchive() }
-          .padding(vertical = 8.dp)
-      ) {
-        Text(
-          text = "Статистика за роки",
-          style = MaterialTheme.typography.titleLarge
-        )
-      }
-
-      Column(
-        modifier = Modifier
-          .fillMaxWidth()
-          .padding(vertical = 8.dp)
-      ) {
-
-        Text(
-          text = "Рік 1",
-          style = MaterialTheme.typography.titleMedium
-        )
-        Spacer(modifier = Modifier.height(20.dp))
-        SalesChartWithCustomData(intArrayOf(12000, 3000, 4000, 5000, 2000, 0, 0, 0 ,0, 5000, 9000, 0).toList())
-        Spacer(modifier = Modifier.height(20.dp))
-        Text(
-          text = "Обсяг продажів за цей місяць: 150000 грн",
-          style = MaterialTheme.typography.bodyLarge,
-          modifier = Modifier.padding(bottom = 8.dp, top = 12.dp)
-        )
-        Text(
-          text = "Рік 2",
-          style = MaterialTheme.typography.titleMedium
-        )
-        Spacer(modifier = Modifier.height(20.dp))
-        SalesChartWithCustomData(intArrayOf(1000, 13000, 4500, 0, 2600, 9000, 4500, 7000 ,4000, 500, 6000, 2000).toList())
-        Spacer(modifier = Modifier.height(20.dp))
-        Text(
-          text = "Обсяг продажів за цей місяць: 50000 грн",
-          style = MaterialTheme.typography.bodyLarge,
-          modifier = Modifier.padding(bottom = 8.dp, top = 12.dp)
-        )
-        Text(
-          text = "Рік 3",
-          style = MaterialTheme.typography.titleMedium
-        )
-        Spacer(modifier = Modifier.height(20.dp))
-        SalesChartWithCustomData(intArrayOf(7000, 4000, 6000, 4000, 2000, 5000, 7000, 6000, 3000, 8000, 4000, 5000).toList())
-        Spacer(modifier = Modifier.height(20.dp))
-        Text(
-          text = "Обсяг продажів за цей місяць: 450000 грн",
-          style = MaterialTheme.typography.bodyLarge,
-          modifier = Modifier.padding(bottom = 8.dp, top = 12.dp)
-        )
+        lastThreeYearsOrders.forEach { (year, orders) ->
+          Log.d("YearOrd", "${orders}")
+          Text(
+            text = "$year",
+            style = MaterialTheme.typography.titleLarge,
+            modifier = Modifier.padding(vertical = 8.dp)
+          )
+          SalesChartYearlyAny(orders = orders)
+          Spacer(modifier = Modifier.height(26.dp))
+        }
       }
     }
   }
@@ -349,6 +343,220 @@ fun SalesChartForDays(
           }
         )
       }
+    }
+  }
+}
+
+@Composable
+fun SalesChartMonthlyAny(orders: List<WholesaleOrderDto>) {
+  val salesData = (1..31).map { day ->
+    orders.filter { order ->
+      val orderDate = parseDate(order.createdAt)
+      orderDate != null &&
+              Calendar.getInstance().apply { time = orderDate }.get(Calendar.DAY_OF_MONTH) == day
+    }.sumOf { it.totalPrice }
+  }
+
+  val days = listOf("1", "5", "10", "15", "20", "25", "30")
+  val maxSales = salesData.maxOrNull()?.takeIf { it > 0 } ?: 1.0 // Ensure non-zero max value
+
+  val buttonColor = MaterialTheme.colorScheme.primary
+
+  Canvas(modifier = Modifier.size(width = 452.dp, height = 200.dp).padding(top = 20.dp)) {
+    val horizontalSpacing = ((size.width - 64.dp.toPx()) / (salesData.size - 1).toFloat()) * 1.037f
+    val verticalStep = size.height / 5
+
+    drawLine(
+      color = Color.Gray,
+      start = Offset(36.dp.toPx(), size.height - size.height - 16),
+      end = Offset(36.dp.toPx(), size.height),
+      strokeWidth = 1.dp.toPx()
+    )
+
+    for (i in 0..5) {
+      val y = size.height - i * verticalStep
+      drawLine(
+        color = Color.LightGray,
+        start = Offset(36.dp.toPx(), y),
+        end = Offset(size.width, y),
+        strokeWidth = 1.dp.toPx()
+      )
+      drawContext.canvas.nativeCanvas.drawText(
+        "${String.format("%d", (maxSales * i / 5).roundToInt())}",
+        32.dp.toPx(),
+        y + 6.dp.toPx(),
+        android.graphics.Paint().apply {
+          color = android.graphics.Color.BLACK
+          textAlign = android.graphics.Paint.Align.RIGHT
+          textSize = 36f
+        }
+      )
+    }
+
+    salesData.forEachIndexed { index, value ->
+      val startX = 44.dp.toPx() + index * horizontalSpacing
+      val startY = size.height - (value / maxSales).toFloat() * size.height
+      val endX = if (index < salesData.size - 1) 24.dp.toPx() + (index + 1) * horizontalSpacing else startX
+      val endY = if (index < salesData.size - 1) size.height - (salesData[index + 1] / maxSales).toFloat() * size.height else startY
+
+      drawLine(
+        color = buttonColor,
+        start = Offset(startX, size.height),
+        end = Offset(startX, startY),
+        strokeWidth = 6.dp.toPx()
+      )
+    }
+
+    days.forEachIndexed { index, day ->
+      if (day == "5") {
+        val x = 44.dp.toPx() + index * horizontalSpacing * 5 * 0.80f
+        val y = size.height + 20.dp.toPx()
+        drawContext.canvas.nativeCanvas.drawText(
+          day,
+          x,
+          y,
+          android.graphics.Paint().apply {
+            color = android.graphics.Color.BLACK
+            textAlign = android.graphics.Paint.Align.CENTER
+            textSize = 36f
+          })
+      } else if (day == "10") {
+        val x = 44.dp.toPx() + index * horizontalSpacing * 5 * 0.905f
+        val y = size.height + 20.dp.toPx()
+        drawContext.canvas.nativeCanvas.drawText(
+          day,
+          x,
+          y,
+          android.graphics.Paint().apply {
+            color = android.graphics.Color.BLACK
+            textAlign = android.graphics.Paint.Align.CENTER
+            textSize = 36f
+          })
+      } else if (day == "25") {
+        val x = 44.dp.toPx() + index * horizontalSpacing * 5 * 0.965f
+        val y = size.height + 20.dp.toPx()
+        drawContext.canvas.nativeCanvas.drawText(
+          day,
+          x,
+          y,
+          android.graphics.Paint().apply {
+            color = android.graphics.Color.BLACK
+            textAlign = android.graphics.Paint.Align.CENTER
+            textSize = 36f
+          })
+      } else if (day == "30") {
+        val x = 44.dp.toPx() + index * horizontalSpacing * 5 * 0.972f
+        val y = size.height + 20.dp.toPx()
+        drawContext.canvas.nativeCanvas.drawText(
+          day,
+          x,
+          y,
+          android.graphics.Paint().apply {
+            color = android.graphics.Color.BLACK
+            textAlign = android.graphics.Paint.Align.CENTER
+            textSize = 36f
+          })
+      } else if (day == "20") {
+        val x = 44.dp.toPx() + index * horizontalSpacing * 5 * 0.955f
+        val y = size.height + 20.dp.toPx()
+        drawContext.canvas.nativeCanvas.drawText(
+          day,
+          x,
+          y,
+          android.graphics.Paint().apply {
+            color = android.graphics.Color.BLACK
+            textAlign = android.graphics.Paint.Align.CENTER
+            textSize = 36f
+          })
+      } else {
+        val x = 44.dp.toPx() + index * horizontalSpacing * 5 * 0.93f
+        val y = size.height + 20.dp.toPx()
+        drawContext.canvas.nativeCanvas.drawText(
+          day,
+          x,
+          y,
+          android.graphics.Paint().apply {
+            color = android.graphics.Color.BLACK
+            textAlign = android.graphics.Paint.Align.CENTER
+            textSize = 36f
+          }
+        )
+      }
+    }
+  }
+}
+
+@Composable
+fun SalesChartYearlyAny(orders: List<WholesaleOrderDto>) {
+  val salesData = (1..12).map { month ->
+    orders.filter { order ->
+      val orderDate = parseDate(order.createdAt)
+      orderDate != null &&
+              Calendar.getInstance().apply { time = orderDate }.get(Calendar.MONTH) + 1 == month
+    }.sumOf { it.totalPrice }
+  }
+
+  val months = listOf("Січ", "Лют", "Бер", "Кві", "Тра", "Чер", "Лип", "Сер", "Вер", "Жов", "Лис", "Гру")
+  val maxSales = salesData.maxOrNull()?.takeIf { it > 0 } ?: 1.0 // Ensure non-zero max value
+
+  val buttonColor = MaterialTheme.colorScheme.primary
+
+  Canvas(modifier = Modifier.size(width = 452.dp, height = 200.dp).padding(top = 20.dp)) {
+    val horizontalSpacing = ((size.width - 64.dp.toPx()) / (salesData.size - 1).toFloat())
+    val verticalStep = size.height / 5
+
+    drawLine(
+      color = Color.Gray,
+      start = Offset(36.dp.toPx(), size.height - size.height - 16),
+      end = Offset(36.dp.toPx(), size.height),
+      strokeWidth = 1.dp.toPx()
+    )
+
+    for (i in 0..5) {
+      val y = size.height - i * verticalStep
+      drawLine(
+        color = Color.LightGray,
+        start = Offset(36.dp.toPx(), y),
+        end = Offset(size.width, y),
+        strokeWidth = 1.dp.toPx()
+      )
+      drawContext.canvas.nativeCanvas.drawText(
+        "${String.format("%d", (maxSales * i / 5).roundToInt())}",
+        32.dp.toPx(),
+        y + 6.dp.toPx(),
+        android.graphics.Paint().apply {
+          color = android.graphics.Color.BLACK
+          textAlign = android.graphics.Paint.Align.RIGHT
+          textSize = 36f
+        }
+      )
+    }
+
+    salesData.forEachIndexed { index, value ->
+      val startX = 44.dp.toPx() + index * horizontalSpacing
+      val startY = size.height - (value / maxSales).toFloat() * size.height
+
+      drawLine(
+        color = buttonColor,
+        start = Offset(startX, size.height),
+        end = Offset(startX, startY),
+        strokeWidth = 6.dp.toPx()
+      )
+    }
+
+    months.forEachIndexed { index, month ->
+      val x = 44.dp.toPx() + index * horizontalSpacing
+      val y = size.height + 20.dp.toPx()
+      drawContext.canvas.nativeCanvas.drawText(
+        month,
+        x,
+        y,
+        android.graphics.Paint().apply {
+          color = android.graphics.Color.BLACK
+          textAlign = android.graphics.Paint.Align.CENTER
+          textSize = 36f
+        }
+      )
     }
   }
 }

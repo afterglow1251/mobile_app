@@ -1,5 +1,6 @@
 package com.example.myapplication.ui.components.crm
 
+import android.util.Log
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
@@ -10,14 +11,52 @@ import androidx.compose.ui.*
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.nativeCanvas
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.*
+import com.example.myapplication.api.dto.wholesale.customer.WholesaleCustomerDto
+import com.example.myapplication.api.dto.wholesale.order.WholesaleOrderDto
+import com.example.myapplication.api.network.NetworkModule
+import java.util.Calendar
+import java.util.Date
+import kotlin.math.roundToInt
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CrmStatsScreen(
   onBack: () -> Unit,
-   navigateToCrmArchive: () -> Unit,
+  navigateToCrmArchive: () -> Unit,
 ) {
+  val context = LocalContext.current
+  var orders by remember { mutableStateOf<List<WholesaleOrderDto>>(emptyList()) }
+  var customers by remember { mutableStateOf<List<WholesaleCustomerDto>>(emptyList()) }
+  var errorMessage by remember { mutableStateOf<String?>(null) }
+
+  val totalSales = orders.sumOf { it.totalPrice }
+  val totalCustomers = customers.size
+  val totalOrders = orders.size
+  val mostActiveCustomer = customers.maxByOrNull { it.orders.size }
+  val mostProfitableCustomer = customers.maxByOrNull { customer ->
+    customer.orders.sumOf { it.totalPrice }
+  }
+
+  LaunchedEffect(Unit) {
+    try {
+      val customerService = NetworkModule.getWholesaleCustomerService(context)
+      customers = customerService.getAllCustomers()
+    } catch (e: Exception) {
+      errorMessage = "Не вдалося завантажити клієнтів: ${e.localizedMessage}"
+    }
+  }
+
+  LaunchedEffect(Unit) {
+    try {
+      val orderService = NetworkModule.getWholesaleOrderService(context)
+      orders = orderService.getAllOrders()
+    } catch (e: Exception) {
+      errorMessage = "Не вдалося завантажити замовлення: ${e.localizedMessage}"
+    }
+  }
+
   Scaffold(
     topBar = {
       TopAppBar(
@@ -34,144 +73,222 @@ fun CrmStatsScreen(
       modifier = Modifier
         .fillMaxSize()
         .padding(innerPadding)
-        .padding(top = 0.dp, start = 16.dp, end = 16.dp)
+        .padding(horizontal = 16.dp)
     ) {
-      Text(
-        text = "Активних клієнтів: 15",
-        style = MaterialTheme.typography.bodyLarge,
-        modifier = Modifier.padding(bottom = 8.dp)
-      )
+      if (errorMessage != null) {
+        Text(
+          text = errorMessage!!,
+          color = MaterialTheme.colorScheme.error,
+          style = MaterialTheme.typography.bodyLarge,
+          modifier = Modifier.padding(vertical = 8.dp)
+        )
+      } else {
+        Text(
+          text = "Всього клієнтів: $totalCustomers",
+          style = MaterialTheme.typography.bodyLarge,
+          modifier = Modifier.padding(vertical = 4.dp)
+        )
+        Text(
+          text = "Обсяг продажів: %.2f грн".format(totalSales),
+          style = MaterialTheme.typography.bodyLarge,
+          modifier = Modifier.padding(vertical = 4.dp)
+        )
+        Text(
+          text = "Всього замовлень: $totalOrders",
+          style = MaterialTheme.typography.bodyLarge,
+          modifier = Modifier.padding(vertical = 4.dp)
+        )
+        mostActiveCustomer?.let {
+          Text(
+            text = "Найактивніший клієнт: ${it.name}",
+            style = MaterialTheme.typography.bodyLarge,
+            modifier = Modifier.padding(vertical = 4.dp)
+          )
+        }
+        mostProfitableCustomer?.let {
+          Text(
+            text = "Найприбутковіший клієнт: ${it.name}",
+            style = MaterialTheme.typography.bodyLarge,
+            modifier = Modifier.padding(vertical = 4.dp)
+          )
+        }
 
-      Text(
-        text = "Обсяг продажів за весь час: 150000 грн",
-        style = MaterialTheme.typography.bodyLarge,
-        modifier = Modifier.padding(bottom = 8.dp)
-      )
+        Spacer(modifier = Modifier.height(16.dp))
+        Text(
+          text = "Обсяг продажів за останній місяць",
+          style = MaterialTheme.typography.titleMedium,
+          modifier = Modifier.padding(bottom = 16.dp)
+        )
 
-      Text(
-        text = "Всього замовлень: 320",
-        style = MaterialTheme.typography.bodyLarge,
-        modifier = Modifier.padding(bottom = 8.dp)
-      )
+        SalesChartMonthly(orders)
 
-      Text(
-        text = "Найактивніший клієнт: Іван Петров",
-        style = MaterialTheme.typography.bodyLarge,
-        modifier = Modifier.padding(bottom = 8.dp)
-      )
+        Spacer(modifier = Modifier.height(32.dp))
 
-      Text(
-        text = "Найприбутковіший клієнт: Марія Іванова",
-        style = MaterialTheme.typography.bodyLarge,
-        modifier = Modifier.padding(bottom = 16.dp)
-      )
+        Text(
+          text = "Обсяг продажів за цей рік",
+          style = MaterialTheme.typography.titleMedium,
+          modifier = Modifier.padding(bottom = 16.dp)
+        )
 
-      Text(
-        text = "Обсяг продажів за останній місяць",
-        style = MaterialTheme.typography.titleMedium,
-        modifier = Modifier.padding(bottom = 16.dp)
-      )
+        SalesChartYearly(orders)
 
-      SalesChartMonthly()
-
-      Spacer(modifier = Modifier.height(32.dp))
-
-      Text(
-        text = "Обсяг продажів за цей рік",
-        style = MaterialTheme.typography.titleMedium,
-        modifier = Modifier.padding(bottom = 16.dp)
-      )
-
-      SalesChartYearly()
-
-      Spacer(modifier = Modifier.height(32.dp))
-
-      Button(
-        onClick = navigateToCrmArchive,
-        modifier = Modifier.fillMaxWidth()
-      ) {
-        Text("Перейти до архіву статистики")
+        Spacer(modifier = Modifier.height(32.dp))
+        Button(
+          onClick = navigateToCrmArchive,
+          modifier = Modifier.fillMaxWidth()
+        ) {
+          Text("Перейти до архіву статистики")
+        }
       }
     }
   }
 }
 
+fun isDateInCurrentMonth(date: Date): Boolean {
+  val calendar = Calendar.getInstance()
+  val currentMonth = calendar.get(Calendar.MONTH)
+  val currentYear = calendar.get(Calendar.YEAR)
+
+  calendar.time = date
+  val dateMonth = calendar.get(Calendar.MONTH)
+  val dateYear = calendar.get(Calendar.YEAR)
+
+  return dateMonth == currentMonth && dateYear == currentYear
+}
+
+fun isDateInCurrentYear(date: Date): Boolean {
+  val calendar = Calendar.getInstance()
+  val currentYear = calendar.get(Calendar.YEAR)
+
+  calendar.time = date
+  val dateYear = calendar.get(Calendar.YEAR)
+
+  return dateYear == currentYear
+}
 
 @Composable
-fun SalesChartMonthly() {
-  val salesData = listOf(1000, 2000, 1500, 2500, 1800, 3000, 2300, 2000, 2700, 2200, 1900, 2300, 2600, 2000, 2000, 2100, 1000, 1400, 900, 700, 800, 700, 1200, 1800, 2300, 2600, 2400, 2500, 2400, 2700)
+fun SalesChartMonthly(orders: List<WholesaleOrderDto>) {
+  val salesData = (1..31).map { day ->
+    orders.filter { order ->
+      val orderDate = parseDate(order.createdAt)
+      orderDate != null && isDateInCurrentMonth(orderDate) &&
+              Calendar.getInstance().apply { time = orderDate }.get(Calendar.DAY_OF_MONTH) == day
+    }.sumOf { it.totalPrice }
+  }
+
   val days = listOf("1", "5", "10", "15", "20", "25", "30")
+  val maxSales = salesData.maxOrNull()?.takeIf { it > 0 } ?: 1.0 // Ensure non-zero max value
 
   val buttonColor = MaterialTheme.colorScheme.primary
 
-  Column(
-    modifier = Modifier
-      .fillMaxWidth()
-      .height(220.dp)
-      .padding(horizontal = 16.dp)
-  ) {
-    Canvas(modifier = Modifier.fillMaxSize()) {
-      val maxSales = salesData.maxOrNull() ?: 1
-      val horizontalSpacing = ((size.width - 64.dp.toPx()) / (salesData.size - 1)) * 1.037f // Adjusted for stretching
-      val horizontalSpacingDays = ((size.width - 64.dp.toPx()) / (salesData.size - 1)) * 5
-      val verticalStep = size.height / 5
+  Canvas(modifier = Modifier.size(width = 452.dp, height = 200.dp).padding(top = 20.dp)) {
+    val horizontalSpacing = ((size.width - 64.dp.toPx()) / (salesData.size - 1).toFloat()) * 1.037f
+    val verticalStep = size.height / 5
 
+    drawLine(
+      color = Color.Gray,
+      start = Offset(36.dp.toPx(), size.height - size.height - 16),
+      end = Offset(36.dp.toPx(), size.height),
+      strokeWidth = 1.dp.toPx()
+    )
+
+    for (i in 0..5) {
+      val y = size.height - i * verticalStep
       drawLine(
-        color = Color.Gray,
-        start = Offset(16.dp.toPx(), 0f),
-        end = Offset(16.dp.toPx(), size.height),
+        color = Color.LightGray,
+        start = Offset(36.dp.toPx(), y),
+        end = Offset(size.width, y),
         strokeWidth = 1.dp.toPx()
       )
-      for (i in 0..5) {
-        val y = size.height - i * verticalStep
-        drawLine(
-          color = Color.LightGray,
-          start = Offset(16.dp.toPx(), y),
-          end = Offset(size.width, y),
-          strokeWidth = 1.dp.toPx()
-        )
+      drawContext.canvas.nativeCanvas.drawText(
+        "${String.format("%d", (maxSales * i / 5).roundToInt())}",
+        32.dp.toPx(),
+        y + 6.dp.toPx(),
+        android.graphics.Paint().apply {
+          color = android.graphics.Color.BLACK
+          textAlign = android.graphics.Paint.Align.RIGHT
+          textSize = 36f
+        }
+      )
+    }
+
+    salesData.forEachIndexed { index, value ->
+      val startX = 44.dp.toPx() + index * horizontalSpacing
+      val startY = size.height - (value / maxSales).toFloat() * size.height
+      val endX = if (index < salesData.size - 1) 24.dp.toPx() + (index + 1) * horizontalSpacing else startX
+      val endY = if (index < salesData.size - 1) size.height - (salesData[index + 1] / maxSales).toFloat() * size.height else startY
+
+      drawLine(
+        color = buttonColor,
+        start = Offset(startX, size.height),
+        end = Offset(startX, startY),
+        strokeWidth = 6.dp.toPx()
+      )
+    }
+
+    days.forEachIndexed { index, day ->
+      if (day == "5") {
+        val x = 44.dp.toPx() + index * horizontalSpacing * 5 * 0.80f
+        val y = size.height + 20.dp.toPx()
         drawContext.canvas.nativeCanvas.drawText(
-          "${maxSales * i / 5}",
-          12.dp.toPx(),
-          y + 6.dp.toPx(),
+          day,
+          x,
+          y,
           android.graphics.Paint().apply {
             color = android.graphics.Color.BLACK
-            textAlign = android.graphics.Paint.Align.RIGHT
+            textAlign = android.graphics.Paint.Align.CENTER
             textSize = 36f
-          }
-        )
-      }
-
-      for (i in 0 until salesData.size - 1) {
-        val startX = 24.dp.toPx() + i * horizontalSpacing // Adjusted for offset and scaling
-        val startY = size.height - (salesData[i].toFloat() / maxSales) * size.height
-        val endX = 24.dp.toPx() + (i + 1) * horizontalSpacing
-        val endY = size.height - (salesData[i + 1].toFloat() / maxSales) * size.height
-
-        drawLine(
-          color = buttonColor,
-          start = Offset(startX, startY),
-          end = Offset(endX, endY),
-          strokeWidth = 4.dp.toPx()
-        )
-
-        drawCircle(
-          color = buttonColor,
-          center = Offset(startX, startY),
-          radius = 4.5.dp.toPx()
-        )
-
-        if (i == salesData.size - 2) {
-          drawCircle(
-            color = buttonColor,
-            center = Offset(endX, endY),
-            radius = 4.5.dp.toPx()
-          )
-        }
-      }
-
-      days.forEachIndexed { index, day ->
-        val x = 24.dp.toPx() + index * horizontalSpacingDays
+          })
+      } else if (day == "10") {
+      val x = 44.dp.toPx() + index * horizontalSpacing * 5 * 0.905f
+      val y = size.height + 20.dp.toPx()
+      drawContext.canvas.nativeCanvas.drawText(
+        day,
+        x,
+        y,
+        android.graphics.Paint().apply {
+          color = android.graphics.Color.BLACK
+          textAlign = android.graphics.Paint.Align.CENTER
+          textSize = 36f
+        })
+    } else if (day == "25") {
+        val x = 44.dp.toPx() + index * horizontalSpacing * 5 * 0.965f
+        val y = size.height + 20.dp.toPx()
+        drawContext.canvas.nativeCanvas.drawText(
+          day,
+          x,
+          y,
+          android.graphics.Paint().apply {
+            color = android.graphics.Color.BLACK
+            textAlign = android.graphics.Paint.Align.CENTER
+            textSize = 36f
+          })
+    } else if (day == "30") {
+        val x = 44.dp.toPx() + index * horizontalSpacing * 5 * 0.972f
+        val y = size.height + 20.dp.toPx()
+        drawContext.canvas.nativeCanvas.drawText(
+          day,
+          x,
+          y,
+          android.graphics.Paint().apply {
+            color = android.graphics.Color.BLACK
+            textAlign = android.graphics.Paint.Align.CENTER
+            textSize = 36f
+          })
+    } else if (day == "20") {
+    val x = 44.dp.toPx() + index * horizontalSpacing * 5 * 0.955f
+    val y = size.height + 20.dp.toPx()
+    drawContext.canvas.nativeCanvas.drawText(
+      day,
+      x,
+      y,
+      android.graphics.Paint().apply {
+        color = android.graphics.Color.BLACK
+        textAlign = android.graphics.Paint.Align.CENTER
+        textSize = 36f
+      })
+  } else {
+        val x = 44.dp.toPx() + index * horizontalSpacing * 5 * 0.93f
         val y = size.height + 20.dp.toPx()
         drawContext.canvas.nativeCanvas.drawText(
           day,
@@ -188,93 +305,78 @@ fun SalesChartMonthly() {
   }
 }
 
+
 @Composable
-fun SalesChartYearly() {
-  val salesData = listOf(10000, 20000, 30000, 40000, 25000, 35000, 45000, 50000, 55000, 60000, 70000, 80000)
-  val months = listOf("Лют", "Квіт", "Черв", "Серп", "Жовт", "Груд")
+fun SalesChartYearly(orders: List<WholesaleOrderDto>) {
+  val salesData = (1..12).map { month ->
+    orders.filter { order ->
+      val orderDate = parseDate(order.createdAt)
+      orderDate != null && isDateInCurrentYear(orderDate) &&
+              Calendar.getInstance().apply { time = orderDate }.get(Calendar.MONTH) + 1 == month
+    }.sumOf { it.totalPrice }
+  }
+
+  val months = listOf("Січ", "Лют", "Бер", "Кві", "Тра", "Чер", "Лип", "Сер", "Вер", "Жов", "Лис", "Гру")
+  val maxSales = salesData.maxOrNull()?.takeIf { it > 0 } ?: 1.0 // Ensure non-zero max value
 
   val buttonColor = MaterialTheme.colorScheme.primary
 
-  Column(
-    modifier = Modifier
-      .fillMaxWidth()
-      .height(220.dp)
-      .padding(horizontal = 16.dp)
-  ) {
-    Canvas(modifier = Modifier.fillMaxSize()) {
-      val maxSales = salesData.maxOrNull() ?: 1
-      val horizontalSpacing = ((size.width - 64.dp.toPx()) / (months.size - 1))/2
-      val horizontalSpacingMonth = (size.width - 64.dp.toPx()) / (months.size - 1)
-      val verticalStep = size.height / 5
+  Canvas(modifier = Modifier.size(width = 452.dp, height = 200.dp).padding(top = 20.dp)) {
+    val horizontalSpacing = ((size.width - 64.dp.toPx()) / (salesData.size - 1).toFloat())
+    val verticalStep = size.height / 5
 
+    drawLine(
+      color = Color.Gray,
+      start = Offset(36.dp.toPx(), size.height - size.height - 16),
+      end = Offset(36.dp.toPx(), size.height),
+      strokeWidth = 1.dp.toPx()
+    )
+
+    for (i in 0..5) {
+      val y = size.height - i * verticalStep
       drawLine(
-        color = Color.Gray,
-        start = Offset(16.dp.toPx(), 0f),
-        end = Offset(16.dp.toPx(), size.height),
+        color = Color.LightGray,
+        start = Offset(36.dp.toPx(), y),
+        end = Offset(size.width, y),
         strokeWidth = 1.dp.toPx()
       )
-      for (i in 0..5) {
-        val y = size.height - i * verticalStep
-        drawLine(
-          color = Color.LightGray,
-          start = Offset(16.dp.toPx(), y),
-          end = Offset(size.width, y),
-          strokeWidth = 1.dp.toPx()
-        )
-        drawContext.canvas.nativeCanvas.drawText(
-          "${maxSales * i / 5}",
-          12.dp.toPx(),
-          y + 6.dp.toPx(),
-          android.graphics.Paint().apply {
-            color = android.graphics.Color.BLACK
-            textAlign = android.graphics.Paint.Align.RIGHT
-            textSize = 36f
-          }
-        )
-      }
-
-      for (i in 0 until salesData.size - 1) {
-        val startX = 24.dp.toPx() + i * horizontalSpacing // Adjusted for offset and scaling
-        val startY = size.height - (salesData[i].toFloat() / maxSales) * size.height
-        val endX = 24.dp.toPx() + (i + 1) * horizontalSpacing
-        val endY = size.height - (salesData[i + 1].toFloat() / maxSales) * size.height
-
-        drawLine(
-          color = buttonColor,
-          start = Offset(startX, startY),
-          end = Offset(endX, endY),
-          strokeWidth = 4.dp.toPx()
-        )
-
-        drawCircle(
-          color = buttonColor,
-          center = Offset(startX, startY),
-          radius = 4.5.dp.toPx()
-        )
-
-        if (i == salesData.size - 2) {
-          drawCircle(
-            color = buttonColor,
-            center = Offset(endX, endY),
-            radius = 4.5.dp.toPx()
-          )
+      drawContext.canvas.nativeCanvas.drawText(
+        "${String.format("%d", (maxSales * i / 5).roundToInt())}",
+        32.dp.toPx(),
+        y + 6.dp.toPx(),
+        android.graphics.Paint().apply {
+          color = android.graphics.Color.BLACK
+          textAlign = android.graphics.Paint.Align.RIGHT
+          textSize = 36f
         }
-      }
+      )
+    }
 
-      months.forEachIndexed { index, month ->
-        val x = 24.dp.toPx() + index * horizontalSpacingMonth + 31.5.dp.toPx() // Added offset for month labels
-        val y = size.height + 20.dp.toPx() // Adjusted bottom spacing
-        drawContext.canvas.nativeCanvas.drawText(
-          month,
-          x,
-          y,
-          android.graphics.Paint().apply {
-            color = android.graphics.Color.BLACK
-            textAlign = android.graphics.Paint.Align.CENTER
-            textSize = 36f
-          }
-        )
-      }
+    salesData.forEachIndexed { index, value ->
+      val startX = 44.dp.toPx() + index * horizontalSpacing
+      val startY = size.height - (value / maxSales).toFloat() * size.height
+
+      drawLine(
+        color = buttonColor,
+        start = Offset(startX, size.height),
+        end = Offset(startX, startY),
+        strokeWidth = 6.dp.toPx()
+      )
+    }
+
+    months.forEachIndexed { index, month ->
+      val x = 44.dp.toPx() + index * horizontalSpacing
+      val y = size.height + 20.dp.toPx()
+      drawContext.canvas.nativeCanvas.drawText(
+        month,
+        x,
+        y,
+        android.graphics.Paint().apply {
+          color = android.graphics.Color.BLACK
+          textAlign = android.graphics.Paint.Align.CENTER
+          textSize = 36f
+        }
+      )
     }
   }
 }
