@@ -11,7 +11,7 @@ import com.example.myapplication.api.services.WholesaleOrderService
 
 object NetworkModule {
 
-    private const val BASE_URL = "http://10.0.2.2:3000/"
+    private const val BASE_URL = "https://mobile-app-api-61d66f951887.herokuapp.com/"
 
     private fun createOkHttpClient(context: Context): OkHttpClient {
         return OkHttpClient.Builder()
