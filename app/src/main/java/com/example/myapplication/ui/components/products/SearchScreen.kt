@@ -161,7 +161,8 @@ fun FilterDialog(
   }
 
   manufacturers.forEach { manufacturer ->
-    selectedManufacturers[manufacturer] = savedFilters["manufacturerName"]?.contains(manufacturer) == true
+    selectedManufacturers[manufacturer] =
+      savedFilters["manufacturerName"]?.contains(manufacturer) == true
   }
 
   beerTypes.forEach { (_, type) ->
@@ -172,14 +173,16 @@ fun FilterDialog(
     selectedUnitSizes[size] = savedFilters["unitSize"]?.contains(size) == true
   }
 
-  val sectionStates = remember { mutableStateMapOf(
-    "price" to true,
-    "categories" to false,
-    "countries" to false,
-    "manufacturers" to false,
-    "beerTypes" to false,
-    "unitSizes" to false
-  ) }
+  val sectionStates = remember {
+    mutableStateMapOf(
+      "price" to true,
+      "categories" to false,
+      "countries" to false,
+      "manufacturers" to false,
+      "beerTypes" to false,
+      "unitSizes" to false
+    )
+  }
 
   AlertDialog(
     onDismissRequest = onDismiss,
@@ -257,7 +260,9 @@ fun FilterDialog(
           SectionHeader(
             title = "Виробник",
             isOpen = sectionStates["manufacturers"] == true,
-            onToggle = { sectionStates["manufacturers"] = !(sectionStates["manufacturers"] == true) }
+            onToggle = {
+              sectionStates["manufacturers"] = !(sectionStates["manufacturers"] == true)
+            }
           )
           if (sectionStates["manufacturers"] == true) {
             manufacturers.forEach { manufacturer ->
@@ -324,8 +329,10 @@ fun FilterDialog(
           if (categorySnack) "snack" else null
         ).joinToString(",")
 
-        appliedFilters["manufacturerCountry"] = selectedCountries.filter { it.value }.keys.joinToString(",")
-        appliedFilters["manufacturerName"] = selectedManufacturers.filter { it.value }.keys.joinToString(",")
+        appliedFilters["manufacturerCountry"] =
+          selectedCountries.filter { it.value }.keys.joinToString(",")
+        appliedFilters["manufacturerName"] =
+          selectedManufacturers.filter { it.value }.keys.joinToString(",")
         appliedFilters["beerType"] = selectedBeerTypes.filter { it.value }.keys.joinToString(",")
         appliedFilters["unitSize"] = selectedUnitSizes.filter { it.value }.keys.joinToString(",")
 
@@ -360,7 +367,11 @@ fun SectionHeader(title: String, isOpen: Boolean, onToggle: () -> Unit) {
 }
 
 @Composable
-fun VerticalProductCard(product: ProductDto, onClick: () -> Unit, snackbarHostState: SnackbarHostState) {
+fun VerticalProductCard(
+  product: ProductDto,
+  onClick: () -> Unit,
+  snackbarHostState: SnackbarHostState
+) {
   val context = LocalContext.current
   val scope = rememberCoroutineScope()
   val isOutOfStock = product.quantity <= 0
@@ -429,7 +440,11 @@ fun VerticalProductCard(product: ProductDto, onClick: () -> Unit, snackbarHostSt
             val isInCart = currentCart.any { cartItem -> cartItem.productId == product.id }
             if (isInCart) {
               scope.launch {
-                snackbarHostState.showSnackbar("Цей товар вже є в кошику!")
+                snackbarHostState.showSnackbar(
+                  message = "Цей товар вже є в кошику",
+                  actionLabel = "ОК",
+                  duration = SnackbarDuration.Short
+                )
               }
             } else {
               val cartItem = CartItem(
@@ -445,7 +460,7 @@ fun VerticalProductCard(product: ProductDto, onClick: () -> Unit, snackbarHostSt
               LocalStorage.addToCart(context, cartItem)
               scope.launch {
                 snackbarHostState.showSnackbar(
-                  message = "Товар додано в кошик!",
+                  message = "Товар додано в кошик",
                   actionLabel = "ОК",
                   duration = SnackbarDuration.Short
                 )

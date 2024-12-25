@@ -90,7 +90,6 @@ fun OrderListScreen(
         if (isLoading) {
           CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally))
         } else if (orders.isEmpty()) {
-          // Текст для випадку, коли немає замовлень
           Box(
             modifier = Modifier.fillMaxSize(),
             contentAlignment = Alignment.Center

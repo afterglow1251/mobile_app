@@ -83,7 +83,11 @@ fun ProductDetailsScreen(productId: Int, onBack: () -> Unit) {
               initialPageOffsetFraction = 0f,
               pageCount = { it.images.size }
             )
-            Box(modifier = Modifier.fillMaxWidth().height(250.dp)) {
+            Box(
+              modifier = Modifier
+                .fillMaxWidth()
+                .height(250.dp)
+            ) {
               HorizontalPager(
                 state = pagerState,
                 modifier = Modifier.fillMaxSize()
@@ -156,7 +160,11 @@ fun ProductDetailsScreen(productId: Int, onBack: () -> Unit) {
                   val isInCart = currentCart.any { cartItem -> cartItem.productId == it.id }
                   if (isInCart) {
                     scope.launch {
-                      snackbarHostState.showSnackbar("Цей товар вже є в кошику!")
+                      snackbarHostState.showSnackbar(
+                        message = "Цей товар вже є в кошику",
+                        actionLabel = "ОК",
+                        duration = SnackbarDuration.Short
+                      )
                     }
                   } else {
                     val cartItem = CartItem(
@@ -171,7 +179,11 @@ fun ProductDetailsScreen(productId: Int, onBack: () -> Unit) {
                     )
                     LocalStorage.addToCart(context, cartItem)
                     scope.launch {
-                      snackbarHostState.showSnackbar("Товар додано в кошик!")
+                      snackbarHostState.showSnackbar(
+                        message = "Товар додано в кошик",
+                        actionLabel = "ОК",
+                        duration = SnackbarDuration.Short
+                      )
                     }
                   }
                 } else {

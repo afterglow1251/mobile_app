@@ -84,24 +84,27 @@ fun CartScreen(userId: Int, onBack: () -> Unit, showProductDetails: (Int) -> Uni
               val availableQuantity = data?.optInt("availableQuantity")
 
               if (productName != null && requestedQuantity != null && availableQuantity != null) {
-                "Продукт $productName стільки-то ви замовили $requestedQuantity, але у нас доступно $availableQuantity. Спробуйте зменшити кількість або замовити пізніше."
+                "Продукт $productName замовлено $requestedQuantity шт., але доступно $availableQuantity. Спробуйте зменшити кількість або замовити пізніше."
               } else {
-                "Сталася помилка, спробуйте ще раз. (1)"
+                "Сталася помилка, спробуйте ще раз"
               }
             } catch (ex: Exception) {
-              "Невідома помилка."
+              "Невідома помилка"
             }
             withContext(Dispatchers.Main) {
+              showOrderDialog = false // Закриваємо модалку перед показом помилки
               errorMessage = errorData
             }
           } else {
             withContext(Dispatchers.Main) {
-              errorMessage = "Сталася помилка, спробуйте пізніше. (2)"
+              showOrderDialog = false // Закриваємо модалку перед показом помилки
+              errorMessage = "Сталася помилка, спробуйте пізніше"
             }
           }
         } catch (e: Exception) {
           withContext(Dispatchers.Main) {
-            errorMessage = "Сталася помилка. Перевірте ваше підключення. (3)"
+            showOrderDialog = false // Закриваємо модалку перед показом помилки
+            errorMessage = "Сталася помилка. Перевірте ваше підключення"
           }
         }
       }
@@ -258,12 +261,14 @@ fun CartItemRow(
 
 @Composable
 fun OrderDialog(
-  userDto: UserDto?,
-  onDismiss: () -> Unit,
-  onConfirm: (String, String, String) -> Unit
+  userDto: UserDto?, onDismiss: () -> Unit, onConfirm: (String, String, String) -> Unit
 ) {
   var name by remember { mutableStateOf(userDto?.username ?: "") }
-  var phone by remember { mutableStateOf("+38" + (userDto?.phoneNumber?.removePrefix("+38") ?: "")) }
+  var phone by remember {
+    mutableStateOf(
+      "+38" + (userDto?.phoneNumber?.removePrefix("+38") ?: "")
+    )
+  }
   var address by remember { mutableStateOf(userDto?.address ?: "") }
 
   var nameError by remember { mutableStateOf<String?>(null) }
@@ -278,13 +283,11 @@ fun OrderDialog(
     name.isNotEmpty() && isValidPhoneNumber(phone) && address.isNotEmpty()
   }
 
-  AlertDialog(
-    onDismissRequest = { onDismiss() },
+  AlertDialog(onDismissRequest = { onDismiss() },
     title = { Text("Підтвердження замовлення") },
     text = {
       Column {
-        OutlinedTextField(
-          value = name,
+        OutlinedTextField(value = name,
           onValueChange = { name = it },
           label = { Text("Ім'я") },
           isError = nameError != null,
@@ -299,8 +302,7 @@ fun OrderDialog(
         }
         Spacer(modifier = Modifier.height(8.dp))
 
-        OutlinedTextField(
-          value = phone,
+        OutlinedTextField(value = phone,
           onValueChange = {
             phone = if (it.startsWith("+38")) it else "+38"
           },
@@ -320,8 +322,7 @@ fun OrderDialog(
         }
         Spacer(modifier = Modifier.height(8.dp))
 
-        OutlinedTextField(
-          value = address,
+        OutlinedTextField(value = address,
           onValueChange = { address = it },
           label = { Text("Адреса") },
           isError = addressError != null,
@@ -342,8 +343,7 @@ fun OrderDialog(
           if (isFormValid) {
             onConfirm(name, phone, address)
           }
-        },
-        enabled = isFormValid
+        }, enabled = isFormValid
       ) {
         Text("Підтвердити")
       }
@@ -352,6 +352,5 @@ fun OrderDialog(
       TextButton(onClick = { onDismiss() }) {
         Text("Скасувати")
       }
-    }
-  )
+    })
 }

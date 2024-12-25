@@ -87,7 +87,8 @@ fun ProductListScreen(
         .padding(16.dp)
         .clickable { navigateToSearch() }
       ) {
-        OutlinedTextField(value = "",
+        OutlinedTextField(
+          value = "",
           onValueChange = { },
           placeholder = { Text("Пошук продуктів...") },
           leadingIcon = {
@@ -240,7 +241,11 @@ fun ProductCard(product: ProductDto, onClick: () -> Unit, snackbarHostState: Sna
             val isInCart = currentCart.any { cartItem -> cartItem.productId == product.id }
             if (isInCart) {
               scope.launch {
-                snackbarHostState.showSnackbar("Цей товар вже є в кошику!")
+                snackbarHostState.showSnackbar(
+                  message = "Цей товар вже є в кошику",
+                  actionLabel = "ОК",
+                  duration = SnackbarDuration.Short
+                )
               }
             } else {
               val cartItem = CartItem(
@@ -256,7 +261,7 @@ fun ProductCard(product: ProductDto, onClick: () -> Unit, snackbarHostState: Sna
               LocalStorage.addToCart(context, cartItem)
               scope.launch {
                 snackbarHostState.showSnackbar(
-                  message = "Товар додано в кошик!",
+                  message = "Товар додано в кошик",
                   actionLabel = "ОК",
                   duration = SnackbarDuration.Short
                 )
@@ -264,7 +269,7 @@ fun ProductCard(product: ProductDto, onClick: () -> Unit, snackbarHostState: Sna
             }
           } else {
             scope.launch {
-              snackbarHostState.showSnackbar("Увійдіть, щоб додати товар у кошик!")
+              snackbarHostState.showSnackbar("Увійдіть, щоб додати товар у кошик")
             }
           }
         },
