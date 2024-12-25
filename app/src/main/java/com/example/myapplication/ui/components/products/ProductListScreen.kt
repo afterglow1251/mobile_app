@@ -85,7 +85,7 @@ fun ProductListScreen(
       Box(modifier = Modifier
         .fillMaxWidth()
         .padding(16.dp)
-        .clickable { navigateToSearch() } // Реалізація кліка
+        .clickable { navigateToSearch() }
       ) {
         OutlinedTextField(value = "",
           onValueChange = { },
@@ -93,8 +93,8 @@ fun ProductListScreen(
           leadingIcon = {
             Icon(imageVector = Icons.Default.Search, contentDescription = "Пошук")
           },
-          readOnly = false, // Заборона введення тексту
-          enabled = false, // Заборона інтерактивності
+          readOnly = false,
+          enabled = false,
           modifier = Modifier.fillMaxWidth()
         )
       }
@@ -188,7 +188,6 @@ fun ProductCard(product: ProductDto, onClick: () -> Unit, snackbarHostState: Sna
       )
       .padding(16.dp)
   ) {
-    // Зображення продукту
     if (product.images.isNotEmpty()) {
       PicassoImage(
         url = product.images.first().imageUrl,
@@ -200,7 +199,6 @@ fun ProductCard(product: ProductDto, onClick: () -> Unit, snackbarHostState: Sna
       )
     }
 
-    // Назва та опис продукту
     Text(
       text = product.name,
       style = MaterialTheme.typography.bodyLarge,
@@ -215,7 +213,6 @@ fun ProductCard(product: ProductDto, onClick: () -> Unit, snackbarHostState: Sna
       modifier = Modifier.padding(bottom = 8.dp)
     )
 
-    // Повідомлення про відсутність товару
     if (isOutOfStock) {
       Text(
         text = "Немає на складі",
@@ -226,14 +223,12 @@ fun ProductCard(product: ProductDto, onClick: () -> Unit, snackbarHostState: Sna
       )
     }
 
-    // Ціна продукту
     Text(
       text = "Ціна: ${product.price} грн.",
       style = MaterialTheme.typography.bodyMedium,
       color = if (isOutOfStock) Color.Gray else MaterialTheme.colorScheme.primary
     )
 
-    // Кнопка + для додавання в кошик
     if (!isOutOfStock) {
       Spacer(modifier = Modifier.height(8.dp))
       Button(

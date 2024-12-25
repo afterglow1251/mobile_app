@@ -24,12 +24,10 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.example.myapplication.api.dto.product.CartItem
 import com.example.myapplication.api.dto.product.ProductDto
-import com.example.myapplication.api.network.NetworkModule
 import com.example.myapplication.ui.components.products.models.SearchViewModel
 import com.example.myapplication.ui.components.ui.PicassoImage
 import com.example.myapplication.utils.LocalStorage

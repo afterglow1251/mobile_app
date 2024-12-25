@@ -42,9 +42,8 @@ fun EditProfileScreen(
   var isDataLoading by remember { mutableStateOf(true) }
 
   LaunchedEffect(Unit) {
-    // Завантаження початкових даних з бекенду
     try {
-      val user = userService.getUserProfile() // Припускаємо, що є метод для отримання профілю
+      val user = userService.getUserProfile()
       username = user.username ?: ""
       phoneNumber = user.phoneNumber ?: ""
       address = user.address ?: ""
@@ -63,7 +62,6 @@ fun EditProfileScreen(
   }
 
   if (isDataLoading) {
-    // Екран завантаження
     Box(
       modifier = Modifier.fillMaxSize(),
       contentAlignment = Alignment.Center
@@ -71,7 +69,6 @@ fun EditProfileScreen(
       CircularProgressIndicator()
     }
   } else {
-    // Основний інтерфейс
     Scaffold(
       snackbarHost = { SnackbarHost(snackbarHostState) },
       modifier = Modifier.fillMaxSize()

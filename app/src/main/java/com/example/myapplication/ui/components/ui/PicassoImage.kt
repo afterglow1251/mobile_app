@@ -14,7 +14,7 @@ fun PicassoImage(url: String, modifier: Modifier = Modifier) {
       ImageView(context).apply {
         Picasso.get()
           .load(url)
-          .into(this) // Завантажуємо зображення за допомогою Picasso
+          .into(this)
       }
     }
   )

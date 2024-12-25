@@ -40,10 +40,9 @@ fun CartScreen(userId: Int, onBack: () -> Unit, showProductDetails: (Int) -> Uni
   var cartItems by remember { mutableStateOf<List<CartItem>>(emptyList()) }
   var totalPrice by remember { mutableDoubleStateOf(0.0) }
   var showOrderDialog by remember { mutableStateOf(false) }
-  var errorMessage by remember { mutableStateOf<String?>(null) }  // Для помилки
+  var errorMessage by remember { mutableStateOf<String?>(null) }
   val userDto = LocalStorage.getUser(context)
 
-  // Завантаження кошика
   fun loadCart() {
     cartItems = LocalStorage.getCart(context).filter { it.userId == userId }
     totalPrice = cartItems.sumOf { it.price * it.quantity }
@@ -56,7 +55,7 @@ fun CartScreen(userId: Int, onBack: () -> Unit, showProductDetails: (Int) -> Uni
   if (showOrderDialog) {
     OrderDialog(userDto = userDto, onDismiss = {
       showOrderDialog = false
-      errorMessage = null  // Скидаємо помилку при закритті модалки
+      errorMessage = null
     }, onConfirm = { name, phone, address ->
       CoroutineScope(Dispatchers.IO).launch {
         val requestBody = Order(
@@ -75,9 +74,7 @@ fun CartScreen(userId: Int, onBack: () -> Unit, showProductDetails: (Int) -> Uni
             onBack()
           }
         } catch (e: HttpException) {
-          // Перевіряємо на статус код 400
           if (e.code() == 400) {
-            // Якщо статус 400, обробляємо помилку
             val errorResponse = e.response()?.errorBody()?.string()
             val errorData = try {
               val jsonObject = errorResponse?.let { JSONObject(it) }
@@ -98,13 +95,11 @@ fun CartScreen(userId: Int, onBack: () -> Unit, showProductDetails: (Int) -> Uni
               errorMessage = errorData
             }
           } else {
-            // Якщо це інша помилка (не 400)
             withContext(Dispatchers.Main) {
               errorMessage = "Сталася помилка, спробуйте пізніше. (2)"
             }
           }
         } catch (e: Exception) {
-          // Загальна помилка, наприклад при відсутності з'єднання
           withContext(Dispatchers.Main) {
             errorMessage = "Сталася помилка. Перевірте ваше підключення. (3)"
           }
@@ -165,14 +160,12 @@ fun CartScreen(userId: Int, onBack: () -> Unit, showProductDetails: (Int) -> Uni
     }
   }
 
-  // Сповіщення про помилку, якщо вона є
   if (errorMessage != null) {
     Snackbar(modifier = Modifier.padding(16.dp), action = {
       TextButton(onClick = { errorMessage = null }) {
         Text("Закрити")
       }
     }) {
-      // Покажемо конкретне повідомлення з деталями про продукт
       Text(text = errorMessage ?: "")
     }
   }
@@ -199,22 +192,19 @@ fun CartItemRow(
         .fillMaxWidth()
         .padding(16.dp)
     ) {
-      // Картинка продукту
       if (cartItem.imageUrl.isNotEmpty()) {
         PicassoImage(
           url = cartItem.imageUrl, modifier = Modifier
-            .size(120.dp) // Задаємо розмір картинки
+            .size(120.dp)
             .padding(end = 16.dp)
         )
       }
 
-      // Інформація про продукт
       Column(
         modifier = Modifier
           .weight(1f)
           .padding(end = 16.dp)
       ) {
-        // Назва та ціна
         Text(
           text = cartItem.name,
           fontSize = 18.sp,
@@ -227,7 +217,6 @@ fun CartItemRow(
           modifier = Modifier.padding(bottom = 16.dp)
         )
 
-        // Кнопки для зміни кількості
         Row(
           verticalAlignment = Alignment.CenterVertically,
           horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -258,7 +247,6 @@ fun CartItemRow(
         }
       }
 
-      // Кнопка видалення
       Button(
         onClick = onRemove, modifier = Modifier.align(Alignment.Bottom)
       ) {
@@ -278,7 +266,6 @@ fun OrderDialog(
   var phone by remember { mutableStateOf("+38" + (userDto?.phoneNumber?.removePrefix("+38") ?: "")) }
   var address by remember { mutableStateOf(userDto?.address ?: "") }
 
-  // Для відображення помилок
   var nameError by remember { mutableStateOf<String?>(null) }
   var phoneError by remember { mutableStateOf<String?>(null) }
   var addressError by remember { mutableStateOf<String?>(null) }
@@ -288,7 +275,6 @@ fun OrderDialog(
     phoneError = if (!isValidPhoneNumber(phone)) "Невірний формат номера телефону." else null
     addressError = if (address.isEmpty()) "Адреса не може бути порожньою." else null
 
-    // Всі поля мають бути валідними
     name.isNotEmpty() && isValidPhoneNumber(phone) && address.isNotEmpty()
   }
 
@@ -297,7 +283,6 @@ fun OrderDialog(
     title = { Text("Підтвердження замовлення") },
     text = {
       Column {
-        // Ім'я
         OutlinedTextField(
           value = name,
           onValueChange = { name = it },
@@ -314,11 +299,9 @@ fun OrderDialog(
         }
         Spacer(modifier = Modifier.height(8.dp))
 
-        // Номер телефону
         OutlinedTextField(
           value = phone,
           onValueChange = {
-            // Забезпечуємо, щоб `+38` залишалося на початку
             phone = if (it.startsWith("+38")) it else "+38"
           },
           label = { Text("Номер телефону") },
@@ -337,7 +320,6 @@ fun OrderDialog(
         }
         Spacer(modifier = Modifier.height(8.dp))
 
-        // Адреса
         OutlinedTextField(
           value = address,
           onValueChange = { address = it },
@@ -358,7 +340,6 @@ fun OrderDialog(
       Button(
         onClick = {
           if (isFormValid) {
-            // Передаємо номер без префікса "+38"
             onConfirm(name, phone, address)
           }
         },

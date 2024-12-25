@@ -64,7 +64,6 @@ fun AuthScreen(onNavigateToProductsList: () -> Unit) {
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Привітання
         Text(
           text = "Вітаємо у Пивному Чемпіоні",
           fontSize = 24.sp,
@@ -76,7 +75,6 @@ fun AuthScreen(onNavigateToProductsList: () -> Unit) {
         Spacer(modifier = Modifier.height(32.dp))
 
         if (!isEmailChecked) {
-          // Поле вводу для email
           OutlinedTextField(
             value = email,
             onValueChange = {
@@ -135,7 +133,6 @@ fun AuthScreen(onNavigateToProductsList: () -> Unit) {
           }
 
           if (userExists) {
-            // Логін
             OutlinedTextField(value = password,
               onValueChange = { password = it },
               label = { Text("Пароль") },
@@ -165,8 +162,8 @@ fun AuthScreen(onNavigateToProductsList: () -> Unit) {
                         id = loginResponse.user.id,
                         email = loginResponse.user.email,
                         username = loginResponse.user.username,
-                        phoneNumber = loginResponse.user.phoneNumber, // або відповідне значення
-                        address = loginResponse.user.address,      // або відповідне значення
+                        phoneNumber = loginResponse.user.phoneNumber,
+                        address = loginResponse.user.address,
                         isEmployee = loginResponse.user.isEmployee,
                       )
                     )
@@ -190,7 +187,6 @@ fun AuthScreen(onNavigateToProductsList: () -> Unit) {
               Text("Увійти")
             }
           } else {
-            // Реєстрація
             OutlinedTextField(
               value = password,
               onValueChange = {

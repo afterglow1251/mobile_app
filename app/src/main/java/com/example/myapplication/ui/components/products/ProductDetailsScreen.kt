@@ -181,7 +181,7 @@ fun ProductDetailsScreen(productId: Int, onBack: () -> Unit) {
                 }
               },
               modifier = Modifier.fillMaxWidth(),
-              enabled = it.quantity > 0 // Перевірка, чи продукт доступний (quantity > 0)
+              enabled = it.quantity > 0
             ) {
               Text("Додати в кошик")
             }

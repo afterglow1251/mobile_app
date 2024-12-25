@@ -30,7 +30,6 @@ fun OrderDetailsScreen(orderId: Int, onBack: () -> Unit) {
   var orderDetails by remember { mutableStateOf<GetOrdersResponse?>(null) }
   var isLoading by remember { mutableStateOf(false) }
 
-  // Завантаження деталей замовлення
   LaunchedEffect(orderId) {
     isLoading = true
     try {
@@ -83,7 +82,6 @@ fun OrderCard(order: GetOrdersResponse, index: Int) {
     }
     val date = utcDateFormatter.parse(order.createdAt)
 
-    // Конвертуємо дату в київський час
     dateFormatter.timeZone = TimeZone.getTimeZone("Europe/Kyiv")
     dateFormatter.format(date!!)
   } catch (e: Exception) {

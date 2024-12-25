@@ -39,7 +39,6 @@ fun OrderListScreen(
   var orders by remember { mutableStateOf<List<GetOrdersResponse>>(emptyList()) }
   var isLoading by remember { mutableStateOf(false) }
 
-  // Завантаження списку замовлень через запит
   LaunchedEffect(Unit) {
     isLoading = true
     try {
@@ -130,7 +129,6 @@ fun OrderSummaryCard(order: GetOrdersResponse, onShowOrderDetails: () -> Unit) {
     }
     val date = utcDateFormatter.parse(order.createdAt)
 
-    // Конвертуємо час в київський час
     dateFormatter.timeZone = TimeZone.getTimeZone("Europe/Kyiv")
     dateFormatter.format(date!!)
   } catch (e: Exception) {

@@ -46,31 +46,31 @@ fun MainNavigation() {
 
   val editProfile: () -> Unit = {
     navController.navigate(NavigationScreens.PROFILE_EDIT.name) {
-      launchSingleTop = true // Запобігаємо дублюванню екрану
+      launchSingleTop = true
     }
   }
 
   val showOrders: () -> Unit = {
     navController.navigate(NavigationScreens.ORDERS.name) {
-      launchSingleTop = true // Запобігаємо дублюванню екрану
+      launchSingleTop = true
     }
   }
 
   val showProfile: () -> Unit = {
     navController.navigate(NavigationScreens.PROFILE.name) {
-      launchSingleTop = true // Запобігаємо дублюванню екрану
+      launchSingleTop = true
     }
   }
 
   val navigateToSearch: () -> Unit = {
     navController.navigate(NavigationScreens.SEARCH_SCREEN.name) {
-      launchSingleTop = true // Запобігаємо дублюванню екрану
+      launchSingleTop = true
     }
   }
 
   val showProductDetails: (Int) -> Unit = { productId ->
     navController.navigate("${NavigationScreens.PRODUCT_DETAIL.name}/$productId") {
-      launchSingleTop = true // Запобігаємо дублюванню екрану
+      launchSingleTop = true
     }
   }
 
@@ -82,7 +82,7 @@ fun MainNavigation() {
 
   val cartDetails: (Int) -> Unit = { userId ->
     navController.navigate("${NavigationScreens.CART.name}/$userId") {
-      launchSingleTop = true // Запобігаємо дублюванню екрану
+      launchSingleTop = true
     }
   }
 
