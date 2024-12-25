@@ -10,6 +10,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.example.myapplication.api.dto.wholesale.customer.UpdateWholesaleCustomerDto
 import com.example.myapplication.api.network.NetworkModule
+import com.example.myapplication.validators.isValidPhoneNumber
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -24,9 +25,12 @@ fun CrmClientEdit(
   var address by remember { mutableStateOf("") }
   var phoneNumber by remember { mutableStateOf("") }
   var errorMessage by remember { mutableStateOf<String?>(null) }
-  var successMessage by remember { mutableStateOf<String?>(null) }
 
-  // Завантаження даних клієнта
+  var isPhoneValid by remember { mutableStateOf(true) }
+  var isNameValid by remember { mutableStateOf(true) }
+  var isAddressValid by remember { mutableStateOf(true) }
+  var isLoading by remember { mutableStateOf(false) }
+
   LaunchedEffect(clientId) {
     try {
       val client = NetworkModule.getWholesaleCustomerService(context).getCustomerById(clientId)
@@ -54,67 +58,101 @@ fun CrmClientEdit(
         modifier = Modifier
           .fillMaxSize()
           .padding(innerPadding)
-          .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+          .padding(16.dp)
       ) {
-        when {
-          errorMessage != null -> {
-            Text(
-              text = errorMessage ?: "",
-              color = MaterialTheme.colorScheme.error
-            )
-          }
-          successMessage != null -> {
-            Text(
-              text = successMessage ?: "",
-              color = MaterialTheme.colorScheme.primary
-            )
-          }
-          else -> {
-            OutlinedTextField(
-              value = name,
-              onValueChange = { name = it },
-              label = { Text("Ім'я клієнта") },
-              modifier = Modifier.fillMaxWidth()
-            )
-            OutlinedTextField(
-              value = address,
-              onValueChange = { address = it },
-              label = { Text("Адреса клієнта") },
-              modifier = Modifier.fillMaxWidth()
-            )
-            OutlinedTextField(
-              value = phoneNumber,
-              onValueChange = { phoneNumber = it },
-              label = { Text("Телефон клієнта") },
-              modifier = Modifier.fillMaxWidth()
-            )
-            Button(
-              onClick = {
-                coroutineScope.launch {
-                  try {
-                    val updatedClient = NetworkModule.getWholesaleCustomerService(context)
-                      .updateCustomer(
-                        clientId,
-                        UpdateWholesaleCustomerDto(
-                          name = name,
-                          address = address,
-                          phoneNumber = phoneNumber
-                        )
-                      )
-                    successMessage = "Дані успішно оновлено!"
-                    name = updatedClient.name
-                    address = updatedClient.address
-                    phoneNumber = updatedClient.phoneNumber
-                  } catch (e: Exception) {
-                    errorMessage = "Не вдалося зберегти дані: ${e.localizedMessage}"
-                  }
-                }
-              },
-              modifier = Modifier.fillMaxWidth()
-            ) {
-              Text("Зберегти")
+        OutlinedTextField(
+          value = name,
+          onValueChange = {
+            name = it
+            isNameValid = it.isNotEmpty()
+          },
+          label = { Text("Ім'я клієнта") },
+          isError = !isNameValid,
+          modifier = Modifier.fillMaxWidth()
+        )
+        if (!isNameValid) {
+          Text(
+            text = "Ім'я не може бути порожнім",
+            color = MaterialTheme.colorScheme.error,
+            style = MaterialTheme.typography.bodySmall,
+            modifier = Modifier.padding(top = 4.dp)
+          )
+        }
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        OutlinedTextField(
+          value = phoneNumber,
+          onValueChange = {
+            phoneNumber = it
+            isPhoneValid = isValidPhoneNumber(it)
+          },
+          label = { Text("Номер телефону клієнта") },
+          isError = !isPhoneValid,
+          modifier = Modifier.fillMaxWidth()
+        )
+        if (!isPhoneValid) {
+          Text(
+            text = "Введіть коректний номер телефону (має починатися з +38)",
+            color = MaterialTheme.colorScheme.error,
+            style = MaterialTheme.typography.bodySmall,
+            modifier = Modifier.padding(top = 4.dp)
+          )
+        }
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        OutlinedTextField(
+          value = address,
+          onValueChange = {
+            address = it
+            isAddressValid = it.isNotEmpty()
+          },
+          label = { Text("Адреса клієнта") },
+          isError = !isAddressValid,
+          modifier = Modifier.fillMaxWidth()
+        )
+        if (!isAddressValid) {
+          Text(
+            text = "Адреса не може бути порожньою",
+            color = MaterialTheme.colorScheme.error,
+            style = MaterialTheme.typography.bodySmall,
+            modifier = Modifier.padding(top = 4.dp)
+          )
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Button(
+          onClick = {
+            isLoading = true
+            errorMessage = null
+            coroutineScope.launch {
+              try {
+                NetworkModule.getWholesaleCustomerService(context)
+                  .updateCustomer(
+                    clientId,
+                    UpdateWholesaleCustomerDto(
+                      name = name,
+                      address = address,
+                      phoneNumber = phoneNumber
+                    )
+                  )
+                onBack()
+              } catch (e: Exception) {
+                errorMessage = "Не вдалося зберегти дані: ${e.localizedMessage}"
+              } finally {
+                isLoading = false
+              }
             }
+          },
+          enabled = isPhoneValid && isNameValid && isAddressValid && !isLoading,
+          modifier = Modifier.fillMaxWidth()
+        ) {
+          if (isLoading) {
+            CircularProgressIndicator(modifier = Modifier.size(24.dp))
+          } else {
+            Text("Зберегти")
           }
         }
       }

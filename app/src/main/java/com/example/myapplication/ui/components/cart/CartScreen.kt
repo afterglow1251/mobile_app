@@ -84,7 +84,7 @@ fun CartScreen(userId: Int, onBack: () -> Unit, showProductDetails: (Int) -> Uni
               val availableQuantity = data?.optInt("availableQuantity")
 
               if (productName != null && requestedQuantity != null && availableQuantity != null) {
-                "Продукт $productName замовлено $requestedQuantity шт., але доступно $availableQuantity. Спробуйте зменшити кількість або замовити пізніше."
+                "Продукт $productName замовлено $requestedQuantity шт., але доступно $availableQuantity шт. Спробуйте зменшити кількість або замовити пізніше."
               } else {
                 "Сталася помилка, спробуйте ще раз"
               }
@@ -92,18 +92,18 @@ fun CartScreen(userId: Int, onBack: () -> Unit, showProductDetails: (Int) -> Uni
               "Невідома помилка"
             }
             withContext(Dispatchers.Main) {
-              showOrderDialog = false // Закриваємо модалку перед показом помилки
+              showOrderDialog = false
               errorMessage = errorData
             }
           } else {
             withContext(Dispatchers.Main) {
-              showOrderDialog = false // Закриваємо модалку перед показом помилки
+              showOrderDialog = false
               errorMessage = "Сталася помилка, спробуйте пізніше"
             }
           }
         } catch (e: Exception) {
           withContext(Dispatchers.Main) {
-            showOrderDialog = false // Закриваємо модалку перед показом помилки
+            showOrderDialog = false
             errorMessage = "Сталася помилка. Перевірте ваше підключення"
           }
         }
@@ -173,7 +173,6 @@ fun CartScreen(userId: Int, onBack: () -> Unit, showProductDetails: (Int) -> Uni
     }
   }
 }
-
 
 @Composable
 fun CartItemRow(
