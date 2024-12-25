@@ -92,19 +92,28 @@ fun SearchScreen(
 
       Spacer(modifier = Modifier.height(16.dp))
 
-      LazyColumn(
-        modifier = Modifier.fillMaxSize(),
-        verticalArrangement = Arrangement.spacedBy(8.dp)
-      ) {
-        itemsIndexed(
-          items = viewModel.products.value,
-          key = { _, product -> product.id }
-        ) { _, product ->
-          VerticalProductCard(
-            product = product,
-            onClick = { showProductDetails(product.id) },
-            snackbarHostState = snackbarHostState
-          )
+      if (viewModel.products.value.isEmpty()) {
+        Text(
+          text = "Товарів не знайдено. Будь ласка, спробуйте пошукати інакше.",
+          style = MaterialTheme.typography.bodyMedium,
+          color = MaterialTheme.colorScheme.onSurface,
+          modifier = Modifier.padding(16.dp)
+        )
+      } else {
+        LazyColumn(
+          modifier = Modifier.fillMaxSize(),
+          verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+          itemsIndexed(
+            items = viewModel.products.value,
+            key = { _, product -> product.id }
+          ) { _, product ->
+            VerticalProductCard(
+              product = product,
+              onClick = { showProductDetails(product.id) },
+              snackbarHostState = snackbarHostState
+            )
+          }
         }
       }
     }
@@ -124,8 +133,6 @@ fun SearchScreen(
     )
   }
 }
-
-
 
 @Composable
 fun FilterDialog(

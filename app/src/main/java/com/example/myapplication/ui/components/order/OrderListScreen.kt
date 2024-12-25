@@ -55,69 +55,87 @@ fun OrderListScreen(
     }
   }
 
-  Scaffold(topBar = {
-    TopAppBar(title = { Text("Мої замовлення") })
-  }, bottomBar = {
-    NavigationBar {
-      NavigationBarItem(icon = {
-        Icon(
-          Icons.Default.ShoppingCart,
-          contentDescription = "Продукти"
-        )
-      },
-        label = { Text("Продукти") },
-        selected = false,
-        onClick = { showMain() })
-      NavigationBarItem(icon = { Icon(Icons.Default.ShoppingBag, contentDescription = "Кошик") },
-        label = { Text("Кошик") },
-        selected = false,
-        onClick = { LocalStorage.getUser(context)?.let { cartDetails(it.id) } })
-      NavigationBarItem(icon = { Icon(Icons.Default.Person, contentDescription = "Замовлення") },
-        label = { Text("Замовлення") },
-        selected = true,
-        onClick = {})
-    }
-  }, snackbarHost = { SnackbarHost(hostState = snackbarHostState) }, content = { innerPadding ->
-    Column(
-      modifier = Modifier
-        .fillMaxSize()
-        .padding(innerPadding)
-    ) {
-      if (isLoading) {
-        CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally))
-      } else {
-        LazyColumn(
-          modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp),
-          verticalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-          val groupedOrders = orders.groupBy { order ->
-            SimpleDateFormat("EEEE, dd MMMM", Locale("uk")).format(SimpleDateFormat(
-                "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'",
-                Locale.getDefault()
-              ).apply { timeZone = TimeZone.getTimeZone("UTC") }.parse(order.createdAt)!!)
+  Scaffold(
+    topBar = {
+      TopAppBar(title = { Text("Мої замовлення") })
+    },
+    bottomBar = {
+      NavigationBar {
+        NavigationBarItem(icon = {
+          Icon(
+            Icons.Default.ShoppingCart,
+            contentDescription = "Продукти"
+          )
+        },
+          label = { Text("Продукти") },
+          selected = false,
+          onClick = { showMain() })
+        NavigationBarItem(icon = { Icon(Icons.Default.ShoppingBag, contentDescription = "Кошик") },
+          label = { Text("Кошик") },
+          selected = false,
+          onClick = { LocalStorage.getUser(context)?.let { cartDetails(it.id) } })
+        NavigationBarItem(icon = { Icon(Icons.Default.Person, contentDescription = "Замовлення") },
+          label = { Text("Замовлення") },
+          selected = true,
+          onClick = {})
+      }
+    },
+    snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
+    content = { innerPadding ->
+      Column(
+        modifier = Modifier
+          .fillMaxSize()
+          .padding(innerPadding)
+      ) {
+        if (isLoading) {
+          CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally))
+        } else if (orders.isEmpty()) {
+          // Текст для випадку, коли немає замовлень
+          Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+          ) {
+            Text(
+              text = "Ви поки що нічого не замовляли",
+              fontSize = 20.sp,
+            )
           }
-
-          groupedOrders.forEach { (date, ordersForDate) ->
-            item {
-              Text(
-                text = date,
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.padding(vertical = 8.dp)
+        } else {
+          LazyColumn(
+            modifier = Modifier
+              .fillMaxSize()
+              .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+          ) {
+            val groupedOrders = orders.groupBy { order ->
+              SimpleDateFormat("EEEE, dd MMMM", Locale("uk")).format(
+                SimpleDateFormat(
+                  "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'",
+                  Locale.getDefault()
+                ).apply { timeZone = TimeZone.getTimeZone("UTC") }.parse(order.createdAt)!!
               )
             }
 
-            items(items = ordersForDate, key = { order -> order.id }) { order ->
-              OrderSummaryCard(order = order, onShowOrderDetails = { onShowOrderDetails(order.id) })
+            groupedOrders.forEach { (date, ordersForDate) ->
+              item {
+                Text(
+                  text = date,
+                  fontSize = 20.sp,
+                  fontWeight = FontWeight.Bold,
+                  color = MaterialTheme.colorScheme.primary,
+                  modifier = Modifier.padding(vertical = 8.dp)
+                )
+              }
+
+              items(items = ordersForDate, key = { order -> order.id }) { order ->
+                OrderSummaryCard(order = order, onShowOrderDetails = { onShowOrderDetails(order.id) })
+              }
             }
           }
         }
       }
     }
-  })
+  )
 }
 
 @Composable
