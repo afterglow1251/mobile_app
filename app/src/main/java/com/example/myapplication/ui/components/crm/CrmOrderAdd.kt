@@ -8,6 +8,7 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -20,7 +21,11 @@ import androidx.compose.ui.unit.sp
 import com.example.myapplication.api.network.NetworkModule
 import com.example.myapplication.api.dto.wholesale.order.CreateWholesaleOrderDto
 import com.example.myapplication.api.dto.wholesale.order.CreateWholesaleOrderItemDto
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import org.json.JSONObject
+import retrofit2.HttpException
 
 // Клас для представлення товару в замовленні
 data class OrderProduct(
@@ -45,6 +50,16 @@ fun CrmOrderAdd(onBack: () -> Unit, customerId: Int) {
   val coroutineScope = rememberCoroutineScope()
   var isAddingProduct by remember { mutableStateOf(false) }
   var errorMessage by remember { mutableStateOf("") }
+  var errorMessage2 by remember { mutableStateOf("") }
+  val snackbarHostState = remember { SnackbarHostState() }
+  var showDeleteDialog by remember { mutableStateOf<Pair<Boolean, Int>?>(null) }
+
+  if (errorMessage2.isNotEmpty()) {
+    LaunchedEffect(errorMessage2) {
+      snackbarHostState.showSnackbar(errorMessage2)
+      errorMessage2 = ""
+    }
+  }
 
   Scaffold(
     topBar = {
@@ -56,6 +71,9 @@ fun CrmOrderAdd(onBack: () -> Unit, customerId: Int) {
           }
         }
       )
+    },
+    snackbarHost = {
+      SnackbarHost(hostState = snackbarHostState)
     }
   ) { innerPadding ->
     Column(
@@ -87,33 +105,27 @@ fun CrmOrderAdd(onBack: () -> Unit, customerId: Int) {
               .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.15f), shape = MaterialTheme.shapes.medium)
               .padding(16.dp),
           ) {
-            Column {
-              Text(
-                text = product.name,
-                style = MaterialTheme.typography.titleLarge,
-                fontSize = 22.sp,
-                modifier = Modifier.padding(bottom = 8.dp)
-              )
-              Text(
-                text = "Ціна: ${product.price} грн",
-                style = MaterialTheme.typography.bodyLarge,
-                fontSize = 18.sp
-              )
-              Text(
-                text = "Кількість: ${product.quantity}",
-                style = MaterialTheme.typography.bodyLarge,
-                fontSize = 18.sp
-
-              )
-              Spacer(modifier = Modifier.height(8.dp))
-              Button(
-                onClick = {
-                  products.removeAt(index)
-                },
-                colors = ButtonDefaults.buttonColors(containerColor = Color.Red),
-                modifier = Modifier.align(Alignment.End)
-              ) {
-                Text("Видалити", color = Color.White)
+            Row(verticalAlignment = Alignment.CenterVertically) {
+              Column(modifier = Modifier.weight(1f)) {
+                Text(
+                  text = product.name,
+                  style = MaterialTheme.typography.titleLarge,
+                  fontSize = 22.sp,
+                  modifier = Modifier.padding(bottom = 8.dp)
+                )
+                Text(
+                  text = "Ціна: ${product.price} грн",
+                  style = MaterialTheme.typography.bodyLarge,
+                  fontSize = 18.sp
+                )
+                Text(
+                  text = "Кількість: ${product.quantity}",
+                  style = MaterialTheme.typography.bodyLarge,
+                  fontSize = 18.sp
+                )
+              }
+              IconButton(onClick = { showDeleteDialog = Pair(true, index) }) {
+                Icon(Icons.Filled.Delete, contentDescription = "Видалити")
               }
             }
           }
@@ -277,10 +289,37 @@ fun CrmOrderAdd(onBack: () -> Unit, customerId: Int) {
                 }
               )
               wholesaleOrderService.createOrder(createOrderDto)
-              errorMessage = "Замовлення успішно створено"
+              errorMessage2 = "Замовлення успішно створено"
+              snackbarHostState.showSnackbar(errorMessage2)
               onBack()
-            } catch (e: Exception) {
-              errorMessage = "Помилка створення замовлення"
+            } catch (e: HttpException) {
+              if (e.code() == 400) {
+                val errorResponse = e.response()?.errorBody()?.string()
+                val errorData = try {
+                  val jsonObject = errorResponse?.let { JSONObject(it) }
+                  val data = jsonObject?.optJSONObject("data")
+                  val productName = jsonObject?.optString("productName")
+                  val requestedQuantity = data?.optInt("requestedQuantity")
+                  val availableQuantity = data?.optInt("availableQuantity")
+
+                  if (productName != null && requestedQuantity != null && availableQuantity != null) {
+                    "Продукт $productName замовлено $requestedQuantity шт., але доступно $availableQuantity шт. Спробуйте зменшити кількість або замовити пізніше."
+                  } else {
+                    "Сталася помилка, спробуйте ще раз"
+                  }
+                } catch (ex: Exception) {
+                  "Невідома помилка"
+                }
+                withContext(Dispatchers.Main) {
+                  errorMessage2 = errorData
+                  snackbarHostState.showSnackbar(errorMessage2)
+                }
+              } else {
+                withContext(Dispatchers.Main) {
+                  errorMessage2 = "Сталася помилка, спробуйте пізніше"
+                  snackbarHostState.showSnackbar(errorMessage2)
+                }
+              }
             }
           }
         },
@@ -290,6 +329,26 @@ fun CrmOrderAdd(onBack: () -> Unit, customerId: Int) {
         enabled = products.isNotEmpty()
       ) {
         Text("Створити замовлення")
+      }
+
+      if (showDeleteDialog != null) {
+        AlertDialog(
+          onDismissRequest = { showDeleteDialog = null },
+          text = { Text("Ви впевнені, що хочете видалити цей товар?") },
+          confirmButton = {
+            TextButton(onClick = {
+              products.removeAt(showDeleteDialog!!.second)
+              showDeleteDialog = null
+            }) {
+              Text("Видалити")
+            }
+          },
+          dismissButton = {
+            TextButton(onClick = { showDeleteDialog = null }) {
+              Text("Скасувати")
+            }
+          }
+        )
       }
     }
   }
