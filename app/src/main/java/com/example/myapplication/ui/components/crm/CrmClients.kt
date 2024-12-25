@@ -59,14 +59,6 @@ fun ClientListScreen(
             Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Назад")
           }
         },
-        actions = {
-          IconButton(onClick = navigateCrmClientAdd) {
-            Icon(
-              imageVector = Icons.Default.Add,
-              contentDescription = "Додати клієнта"
-            )
-          }
-        }
       )
     },
     content = { innerPadding ->

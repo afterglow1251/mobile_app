@@ -103,6 +103,7 @@ fun CrmOrderAdd(onBack: () -> Unit, customerId: Int) {
                 text = "Кількість: ${product.quantity}",
                 style = MaterialTheme.typography.bodyLarge,
                 fontSize = 18.sp
+
               )
               Spacer(modifier = Modifier.height(8.dp))
               Button(
@@ -190,8 +191,17 @@ fun CrmOrderAdd(onBack: () -> Unit, customerId: Int) {
             value = productQuantity,
             onValueChange = { productQuantity = it },
             label = { Text("Кількість") },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            isError = productQuantity.isEmpty()
           )
+          if (productQuantity.isEmpty()) {
+            Text(
+              text = "Кількість не може бути порожньою",
+              color = Color.Red,
+              fontSize = 12.sp,
+              modifier = Modifier.padding(top = 4.dp)
+            )
+          }
 
           OutlinedTextField(
             value = productPrice,

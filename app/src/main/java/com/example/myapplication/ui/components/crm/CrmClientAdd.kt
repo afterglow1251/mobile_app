@@ -12,6 +12,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.example.myapplication.api.dto.wholesale.customer.CreateWholesaleCustomerDto
 import com.example.myapplication.api.network.NetworkModule
+import com.example.myapplication.validators.isValidPhoneNumber
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -23,6 +24,7 @@ fun CrmClientAdd(onBack: () -> Unit) {
   var phone by remember { mutableStateOf("+38") }
   var address by remember { mutableStateOf("") }
   val snackbarHostState = remember { SnackbarHostState() }
+  var isPhoneValid by remember { mutableStateOf(true) }
 
   val context = LocalContext.current
 
@@ -64,10 +66,20 @@ fun CrmClientAdd(onBack: () -> Unit) {
           if (it.startsWith("+38")) {
             phone = it
           }
+          isPhoneValid = it.isEmpty() || isValidPhoneNumber(it)
         },
         label = { Text("Введіть номер телефону клієнта") },
+        isError = !isPhoneValid,
         modifier = Modifier.fillMaxWidth()
       )
+
+      if (!isPhoneValid) {
+        Text(
+          text = "Введіть коректний номер телефону (має починатися з +38)",
+          color = MaterialTheme.colorScheme.error,
+          style = MaterialTheme.typography.bodySmall
+        )
+      }
 
       Spacer(modifier = Modifier.height(8.dp))
 
@@ -109,7 +121,6 @@ fun addCustomer(
       service.createCustomer(createDto)
       CoroutineScope(Dispatchers.Main).launch {
         onBack() // Виклик onBack одразу після успішного створення
-        snackbarHostState.showSnackbar("Клієнта успішно додано")
       }
     } catch (e: Exception) {
       CoroutineScope(Dispatchers.Main).launch {
