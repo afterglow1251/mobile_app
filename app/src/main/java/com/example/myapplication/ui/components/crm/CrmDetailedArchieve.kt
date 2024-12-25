@@ -14,18 +14,56 @@ import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.unit.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.ui.platform.LocalContext
+import com.example.myapplication.api.dto.wholesale.order.WholesaleOrderDto
+import com.example.myapplication.api.network.NetworkModule
+import java.util.Calendar
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CrmArchiveMonthScreen(
   onBack: () -> Unit,
-  // onMonthStatsNavigate: () -> Unit,
-  // onYearStatsNavigate: () -> Unit
 ) {
+  val context = LocalContext.current
+  val customerService = NetworkModule.getWholesaleCustomerService(context)
+  val coroutineScope = rememberCoroutineScope()
+  val monthsInUkrainian = listOf(
+    "Січень", "Лютий", "Березень", "Квітень", "Травень",
+    "Червень", "Липень", "Серпень", "Вересень", "Жовтень",
+    "Листопад", "Грудень"
+  )
+  var ordersByMonth by remember { mutableStateOf<Map<String, List<WholesaleOrderDto>>>(emptyMap()) }
+  var isLoading by remember { mutableStateOf(true) }
+
+  LaunchedEffect(Unit) {
+    isLoading = true
+    try {
+      val allOrders = customerService.getAllCustomers().flatMap { it.orders }
+      ordersByMonth = allOrders.groupBy {
+        val orderDate = parseDate(it.createdAt)
+        if (orderDate != null) {
+          val calendar = Calendar.getInstance().apply { time = orderDate }
+          val year = calendar.get(Calendar.YEAR)
+          val month = calendar.get(Calendar.MONTH)
+          "$year-${monthsInUkrainian[month]}"
+        } else "Unknown"
+      }.toSortedMap(compareByDescending {
+        val (year, month) = it.split("-")
+        val monthIndex = monthsInUkrainian.indexOf(month)
+        year.toInt() * 12 + monthIndex
+      })
+    } catch (e: Exception) {
+      // Handle exceptions
+    } finally {
+      isLoading = false
+    }
+  }
+
   Scaffold(
     topBar = {
       TopAppBar(
-        title = { Text("Архів статистики") },
+        title = { Text("Статистика за місяці") },
         navigationIcon = {
           IconButton(onClick = { onBack() }) {
             Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Назад")
@@ -41,130 +79,63 @@ fun CrmArchiveMonthScreen(
         .padding(start = 16.dp, end = 16.dp, bottom = 16.dp)
         .verticalScroll(rememberScrollState())
     ) {
-      // Monthly Statistics Section
-      Text(
-        text = "Місяць 1",
-        style = MaterialTheme.typography.titleMedium
-      )
-      Spacer(modifier = Modifier.height(20.dp))
-      SalesChartForDays(listOf(1000, 2000, 1500, 2500, 1800, 3000, 2300, 2000, 2700, 2200, 1900, 2300, 2600, 2000, 2000, 2700, 1000, 1900, 900, 700, 800, 700, 1200, 1800, 2300, 2600, 2400, 2500, 2400, 2700))
-      Spacer(modifier = Modifier.height(20.dp))
-      Text(
-        text = "Обсяг продажів за цей місяць: 150000 грн",
-        style = MaterialTheme.typography.bodyLarge,
-        modifier = Modifier.padding(bottom = 8.dp, top = 12.dp)
-      )
-      Text(
-        text = "Місяць 2",
-        style = MaterialTheme.typography.titleMedium
-      )
-      Spacer(modifier = Modifier.height(20.dp))
-      SalesChartForDays(listOf(1200, 1500, 1800, 2100, 1700, 2600, 1900, 2200, 2400, 2300, 2800, 2500, 2000, 2600, 1900, 1800, 1700, 1900, 1500, 1400, 1300, 700, 1100, 1000, 900, 800, 700, 600, 500, 400))
-      Spacer(modifier = Modifier.height(20.dp))
-      Text(
-        text = "Обсяг продажів за цей місяць: 50000 грн",
-        style = MaterialTheme.typography.bodyLarge,
-        modifier = Modifier.padding(bottom = 8.dp, top = 12.dp)
-      )
-      Text(
-        text = "Місяць 3",
-        style = MaterialTheme.typography.titleMedium
-      )
-      Spacer(modifier = Modifier.height(20.dp))
-      SalesChartForDays(listOf(800, 1200, 1100, 1400, 1500, 1600, 1700, 1800, 2000, 1900, 2200, 2100, 2300, 2200, 2500, 2900, 1700, 2800, 2900, 3000, 5100, 5200, 5300, 3400, 3500, 3600, 3700, 3800, 3900, 4000))
-      Spacer(modifier = Modifier.height(20.dp))
-      Text(
-        text = "Обсяг продажів за цей місяць: 110000 грн",
-        style = MaterialTheme.typography.bodyLarge,
-        modifier = Modifier.padding(bottom = 8.dp, top = 12.dp)
-      )
-      Text(
-        text = "Місяць 1",
-        style = MaterialTheme.typography.titleMedium
-      )
-      Spacer(modifier = Modifier.height(20.dp))
-      SalesChartForDays(listOf(1000, 2000, 1500, 2500, 1800, 3000, 2300, 2000, 2700, 2200, 1900, 2300, 2600, 2000, 2000, 2700, 1000, 1900, 900, 700, 800, 700, 1200, 1800, 2300, 2600, 2400, 2500, 2400, 2700))
-      Spacer(modifier = Modifier.height(20.dp))
-      Text(
-        text = "Обсяг продажів за цей місяць: 150000 грн",
-        style = MaterialTheme.typography.bodyLarge,
-        modifier = Modifier.padding(bottom = 8.dp, top = 12.dp)
-      )
-      Text(
-        text = "Місяць 2",
-        style = MaterialTheme.typography.titleMedium
-      )
-      Spacer(modifier = Modifier.height(20.dp))
-      SalesChartForDays(listOf(1200, 1500, 1800, 2100, 1700, 2600, 1900, 2200, 2400, 2300, 2800, 2500, 2000, 2600, 1900, 1800, 1700, 1900, 1500, 1400, 1300, 700, 1100, 1000, 900, 800, 700, 600, 500, 400))
-      Spacer(modifier = Modifier.height(20.dp))
-      Text(
-        text = "Обсяг продажів за цей місяць: 50000 грн",
-        style = MaterialTheme.typography.bodyLarge,
-        modifier = Modifier.padding(bottom = 8.dp, top = 12.dp)
-      )
-      Text(
-        text = "Місяць 3",
-        style = MaterialTheme.typography.titleMedium
-      )
-      Spacer(modifier = Modifier.height(20.dp))
-      SalesChartForDays(listOf(800, 1200, 1100, 1400, 1500, 1600, 1700, 1800, 2000, 1900, 2200, 2100, 2300, 2200, 2500, 2900, 1700, 2800, 2900, 3000, 5100, 5200, 5300, 3400, 3500, 3600, 3700, 3800, 3900, 4000))
-      Spacer(modifier = Modifier.height(20.dp))
-      Text(
-        text = "Обсяг продажів за цей місяць: 110000 грн",
-        style = MaterialTheme.typography.bodyLarge,
-        modifier = Modifier.padding(bottom = 8.dp, top = 12.dp)
-      )
-      Text(
-        text = "Місяць 1",
-        style = MaterialTheme.typography.titleMedium
-      )
-      Spacer(modifier = Modifier.height(20.dp))
-      SalesChartForDays(listOf(1000, 2000, 1500, 2500, 1800, 3000, 2300, 2000, 2700, 2200, 1900, 2300, 2600, 2000, 2000, 2700, 1000, 1900, 900, 700, 800, 700, 1200, 1800, 2300, 2600, 2400, 2500, 2400, 2700))
-      Spacer(modifier = Modifier.height(20.dp))
-      Text(
-        text = "Обсяг продажів за цей місяць: 150000 грн",
-        style = MaterialTheme.typography.bodyLarge,
-        modifier = Modifier.padding(bottom = 8.dp, top = 12.dp)
-      )
-      Text(
-        text = "Місяць 2",
-        style = MaterialTheme.typography.titleMedium
-      )
-      Spacer(modifier = Modifier.height(20.dp))
-      SalesChartForDays(listOf(1200, 1500, 1800, 2100, 1700, 2600, 1900, 2200, 2400, 2300, 2800, 2500, 2000, 2600, 1900, 1800, 1700, 1900, 1500, 1400, 1300, 700, 1100, 1000, 900, 800, 700, 600, 500, 400))
-      Spacer(modifier = Modifier.height(20.dp))
-      Text(
-        text = "Обсяг продажів за цей місяць: 50000 грн",
-        style = MaterialTheme.typography.bodyLarge,
-        modifier = Modifier.padding(bottom = 8.dp, top = 12.dp)
-      )
-      Text(
-        text = "Місяць 3",
-        style = MaterialTheme.typography.titleMedium
-      )
-      Spacer(modifier = Modifier.height(20.dp))
-      SalesChartForDays(listOf(800, 1200, 1100, 1400, 1500, 1600, 1700, 1800, 2000, 1900, 2200, 2100, 2300, 2200, 2500, 2900, 1700, 2800, 2900, 3000, 5100, 5200, 5300, 3400, 3500, 3600, 3700, 3800, 3900, 4000))
-      Spacer(modifier = Modifier.height(20.dp))
-      Text(
-        text = "Обсяг продажів за цей місяць: 110000 грн",
-        style = MaterialTheme.typography.bodyLarge,
-        modifier = Modifier.padding(bottom = 8.dp, top = 12.dp)
-      )
+      if (isLoading) {
+        Text("Завантаження...")
+      } else {
+        ordersByMonth.forEach { (month, orders) ->
+          Text(
+            text = month,
+            style = MaterialTheme.typography.titleMedium,
+            modifier = Modifier.padding(vertical = 8.dp)
+          )
+          SalesChartMonthlyAny(orders = orders)
+          val totalSales = orders.sumOf { it.totalPrice.toInt() }
+          Spacer(modifier = Modifier.height(24.dp))
+          Text(
+            text = "Обсяг продажів за місяць: ${totalSales} грн",
+            style = MaterialTheme.typography.bodyLarge,
+            modifier = Modifier.padding(top = 8.dp, bottom = 16.dp)
+          )
+        }
+      }
     }
   }
 }
 
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CrmArchiveYearScreen(
-  onBack: () -> Unit,
-  // onMonthStatsNavigate: () -> Unit,
-  // onYearStatsNavigate: () -> Unit
+  onBack: () -> Unit
 ) {
+  val context = LocalContext.current
+  val customerService = NetworkModule.getWholesaleCustomerService(context)
+  val coroutineScope = rememberCoroutineScope()
+  var ordersByYear by remember { mutableStateOf<Map<String, List<WholesaleOrderDto>>>(emptyMap()) }
+  var isLoading by remember { mutableStateOf(true) }
+
+  LaunchedEffect(Unit) {
+    isLoading = true
+    try {
+      val allOrders = customerService.getAllCustomers().flatMap { it.orders }
+      ordersByYear = allOrders.groupBy {
+        val orderDate = parseDate(it.createdAt)
+        if (orderDate != null) {
+          val calendar = Calendar.getInstance().apply { time = orderDate }
+          calendar.get(Calendar.YEAR).toString()
+        } else "Unknown"
+      }.toSortedMap(compareByDescending { it.toIntOrNull() ?: 0 })
+    } catch (e: Exception) {
+      // Handle exceptions
+    } finally {
+      isLoading = false
+    }
+  }
+
   Scaffold(
     topBar = {
       TopAppBar(
-        title = { Text("Архів статистики") },
+        title = { Text("Статистика за роки") },
         navigationIcon = {
           IconButton(onClick = { onBack() }) {
             Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Назад")
@@ -180,114 +151,25 @@ fun CrmArchiveYearScreen(
         .padding(start = 16.dp, end = 16.dp, bottom = 16.dp)
         .verticalScroll(rememberScrollState())
     ) {
-      Text(
-        text = "Рік 1",
-        style = MaterialTheme.typography.titleMedium
-      )
-      Spacer(modifier = Modifier.height(20.dp))
-      SalesChartWithCustomData(intArrayOf(12000, 3000, 4000, 5000, 2000, 0, 0, 0 ,0, 5000, 9000, 0).toList())
-      Spacer(modifier = Modifier.height(20.dp))
-      Text(
-        text = "Обсяг продажів за цей місяць: 150000 грн",
-        style = MaterialTheme.typography.bodyLarge,
-        modifier = Modifier.padding(bottom = 8.dp, top = 12.dp)
-      )
-      Text(
-        text = "Рік 2",
-        style = MaterialTheme.typography.titleMedium
-      )
-      Spacer(modifier = Modifier.height(20.dp))
-      SalesChartWithCustomData(intArrayOf(1000, 13000, 4500, 0, 2600, 9000, 4500, 7000 ,4000, 500, 6000, 2000).toList())
-      Spacer(modifier = Modifier.height(20.dp))
-      Text(
-        text = "Обсяг продажів за цей місяць: 50000 грн",
-        style = MaterialTheme.typography.bodyLarge,
-        modifier = Modifier.padding(bottom = 8.dp, top = 12.dp)
-      )
-      Text(
-        text = "Рік 3",
-        style = MaterialTheme.typography.titleMedium
-      )
-      Spacer(modifier = Modifier.height(20.dp))
-      SalesChartWithCustomData(intArrayOf(7000, 4000, 6000, 4000, 2000, 5000, 7000, 6000, 3000, 8000, 4000, 5000).toList())
-      Spacer(modifier = Modifier.height(20.dp))
-      Text(
-        text = "Обсяг продажів за цей місяць: 450000 грн",
-        style = MaterialTheme.typography.bodyLarge,
-        modifier = Modifier.padding(bottom = 8.dp, top = 12.dp)
-      )
-      Text(
-        text = "Рік 1",
-        style = MaterialTheme.typography.titleMedium
-      )
-      Spacer(modifier = Modifier.height(20.dp))
-      SalesChartWithCustomData(intArrayOf(12000, 3000, 4000, 5000, 2000, 0, 0, 0 ,0, 5000, 9000, 0).toList())
-      Spacer(modifier = Modifier.height(20.dp))
-      Text(
-        text = "Обсяг продажів за цей місяць: 150000 грн",
-        style = MaterialTheme.typography.bodyLarge,
-        modifier = Modifier.padding(bottom = 8.dp, top = 12.dp)
-      )
-      Text(
-        text = "Рік 2",
-        style = MaterialTheme.typography.titleMedium
-      )
-      Spacer(modifier = Modifier.height(20.dp))
-      SalesChartWithCustomData(intArrayOf(1000, 13000, 4500, 0, 2600, 9000, 4500, 7000 ,4000, 500, 6000, 2000).toList())
-      Spacer(modifier = Modifier.height(20.dp))
-      Text(
-        text = "Обсяг продажів за цей місяць: 50000 грн",
-        style = MaterialTheme.typography.bodyLarge,
-        modifier = Modifier.padding(bottom = 8.dp, top = 12.dp)
-      )
-      Text(
-        text = "Рік 3",
-        style = MaterialTheme.typography.titleMedium
-      )
-      Spacer(modifier = Modifier.height(20.dp))
-      SalesChartWithCustomData(intArrayOf(7000, 4000, 6000, 4000, 2000, 5000, 7000, 6000, 3000, 8000, 4000, 5000).toList())
-      Spacer(modifier = Modifier.height(20.dp))
-      Text(
-        text = "Обсяг продажів за цей місяць: 450000 грн",
-        style = MaterialTheme.typography.bodyLarge,
-        modifier = Modifier.padding(bottom = 8.dp, top = 12.dp)
-      )
-      Text(
-        text = "Рік 1",
-        style = MaterialTheme.typography.titleMedium
-      )
-      Spacer(modifier = Modifier.height(20.dp))
-      SalesChartWithCustomData(intArrayOf(12000, 3000, 4000, 5000, 2000, 0, 0, 0 ,0, 5000, 9000, 0).toList())
-      Spacer(modifier = Modifier.height(20.dp))
-      Text(
-        text = "Обсяг продажів за цей місяць: 150000 грн",
-        style = MaterialTheme.typography.bodyLarge,
-        modifier = Modifier.padding(bottom = 8.dp, top = 12.dp)
-      )
-      Text(
-        text = "Рік 2",
-        style = MaterialTheme.typography.titleMedium
-      )
-      Spacer(modifier = Modifier.height(20.dp))
-      SalesChartWithCustomData(intArrayOf(1000, 13000, 4500, 0, 2600, 9000, 4500, 7000 ,4000, 500, 6000, 2000).toList())
-      Spacer(modifier = Modifier.height(20.dp))
-      Text(
-        text = "Обсяг продажів за цей місяць: 50000 грн",
-        style = MaterialTheme.typography.bodyLarge,
-        modifier = Modifier.padding(bottom = 8.dp, top = 12.dp)
-      )
-      Text(
-        text = "Рік 3",
-        style = MaterialTheme.typography.titleMedium
-      )
-      Spacer(modifier = Modifier.height(20.dp))
-      SalesChartWithCustomData(intArrayOf(7000, 4000, 6000, 4000, 2000, 5000, 7000, 6000, 3000, 8000, 4000, 5000).toList())
-      Spacer(modifier = Modifier.height(20.dp))
-      Text(
-        text = "Обсяг продажів за цей місяць: 450000 грн",
-        style = MaterialTheme.typography.bodyLarge,
-        modifier = Modifier.padding(bottom = 8.dp, top = 12.dp)
-      )
+      if (isLoading) {
+        Text("Завантаження...")
+      } else {
+        ordersByYear.forEach { (year, orders) ->
+          Text(
+            text = year,
+            style = MaterialTheme.typography.titleMedium,
+            modifier = Modifier.padding(vertical = 8.dp)
+          )
+          SalesChartYearlyAny(orders = orders)
+          val totalSales = orders.sumOf { it.totalPrice.toInt() }
+          Spacer(modifier = Modifier.height(24.dp))
+          Text(
+            text = "Обсяг продажів за рік: ${totalSales} грн",
+            style = MaterialTheme.typography.bodyLarge,
+            modifier = Modifier.padding(top = 8.dp, bottom = 16.dp)
+          )
+        }
+      }
     }
   }
 }

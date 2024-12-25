@@ -174,6 +174,7 @@ fun WeeklySalesChart(orders: List<WholesaleOrderDto>) {
       val horizontalSpacing = (size.width - 48.dp.toPx()) / 6
       val offsetStart = 32.dp.toPx()
       val verticalStep = size.height / 5
+      Log.d("Seize", "${size.height}")
 
       // Extend the gray vertical line slightly above the top of the chart
       drawLine(
