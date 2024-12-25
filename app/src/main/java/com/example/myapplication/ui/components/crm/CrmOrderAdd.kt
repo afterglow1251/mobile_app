@@ -18,7 +18,10 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.myapplication.api.network.NetworkModule
+import com.example.myapplication.api.services.WholesaleCustomerService
 import com.example.myapplication.api.services.ProductService
+import com.example.myapplication.api.dto.wholesale.order.CreateWholesaleOrderDto
+import com.example.myapplication.api.dto.wholesale.order.CreateWholesaleOrderItemDto
 import kotlinx.coroutines.launch
 
 // Клас для представлення товару в замовленні
@@ -34,6 +37,7 @@ data class OrderProduct(
 fun CrmOrderAdd(onBack: () -> Unit) {
   val context = LocalContext.current
   val productService = NetworkModule.getProductService(context)
+  val wholesaleOrderService = NetworkModule.getWholesaleOrderService(context)
   var productName by remember { mutableStateOf("") }
   var productQuantity by remember { mutableStateOf("") }
   var productPrice by remember { mutableStateOf("") }
@@ -252,7 +256,25 @@ fun CrmOrderAdd(onBack: () -> Unit) {
 
       Button(
         onClick = {
-          println("Замовлення створено: $products")
+          coroutineScope.launch {
+            try {
+              val createOrderDto = CreateWholesaleOrderDto(
+                customerId = 1,
+                items = products.map {
+                  CreateWholesaleOrderItemDto(
+                    productId = it.id,
+                    quantity = it.quantity,
+                    wholesalePrice = it.price
+                  )
+                }
+              )
+              wholesaleOrderService.createOrder(createOrderDto)
+              errorMessage = "Замовлення успішно створено"
+              onBack()
+            } catch (e: Exception) {
+              errorMessage = "Помилка створення замовлення"
+            }
+          }
         },
         modifier = Modifier
           .fillMaxWidth()
