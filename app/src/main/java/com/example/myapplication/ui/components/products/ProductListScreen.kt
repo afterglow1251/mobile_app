@@ -72,7 +72,7 @@ fun ProductListScreen(
         selected = false,
         onClick = { LocalStorage.getUser(context)?.let { cartDetails(it.id) } })
       NavigationBarItem(icon = { Icon(Icons.Default.Person, contentDescription = "Мої покупки") },
-        label = { Text("Покупки") },
+        label = { Text("Замовлення") },
         selected = false,
         onClick = { showOrders() })
     }

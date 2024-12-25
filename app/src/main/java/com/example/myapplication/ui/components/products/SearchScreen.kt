@@ -175,7 +175,7 @@ fun FilterDialog(
 
   val sectionStates = remember {
     mutableStateMapOf(
-      "price" to true,
+      "price" to false,
       "categories" to false,
       "countries" to false,
       "manufacturers" to false,

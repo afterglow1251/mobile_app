@@ -18,6 +18,7 @@ navigationCompose = "2.8.5"
 picasso = "2.8"
 retrofit = "2.9.0"
 vico = "1.0.0"
+uiTextGoogleFonts = "1.7.6"
 
 [libraries]
 accompanist-pager = { module = "com.google.accompanist:accompanist-pager", version.ref = "accompanistPager" }
@@ -46,6 +47,7 @@ picasso = { module = "com.squareup.picasso:picasso", version.ref = "picasso" }
 retrofit = { module = "com.squareup.retrofit2:retrofit", version.ref = "retrofit" }
 gsonConverter = { module = "com.squareup.retrofit2:converter-gson", version.ref = "retrofit" }
 vico = { module = "com.github.patrykandpatrick:vico", version.ref = "vico" }
+androidx-ui-text-google-fonts = { group = "androidx.compose.ui", name = "ui-text-google-fonts", version.ref = "uiTextGoogleFonts" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
