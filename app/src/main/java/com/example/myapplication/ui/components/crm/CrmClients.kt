@@ -121,14 +121,18 @@ fun ClientListScreen(
             customers.forEach { customer ->
               val totalOrders = customer.orders.size
               val totalSpent = customer.orders.sumOf { it.totalPrice.toDouble() }
-              val lastOrderDate = try {
-                val date = utcDateFormatter.parse(
-                  customer.orders.maxByOrNull { it.createdAt }?.createdAt ?: ""
-                )
-                dateFormatter.timeZone = TimeZone.getTimeZone("Europe/Kyiv")
-                dateFormatter.format(date!!)
-              } catch (e: Exception) {
-                "Невідома дата"
+              val lastOrderDate = if (customer.orders.isNotEmpty()) {
+                try {
+                  val date = utcDateFormatter.parse(
+                    customer.orders.maxByOrNull { it.createdAt }?.createdAt ?: ""
+                  )
+                  dateFormatter.timeZone = TimeZone.getTimeZone("Europe/Kyiv")
+                  dateFormatter.format(date!!)
+                } catch (e: Exception) {
+                  "Некоректний формат дати"
+                }
+              } else {
+                "-"
               }
 
               Box(

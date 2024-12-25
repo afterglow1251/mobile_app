@@ -16,6 +16,7 @@ import com.example.myapplication.ui.components.crm.CrmArchiveScreen
 import com.example.myapplication.ui.components.crm.CrmArchiveYearScreen
 import com.example.myapplication.ui.components.crm.CrmClientAdd
 import com.example.myapplication.ui.components.crm.CrmClientDetails
+import com.example.myapplication.ui.components.crm.CrmClientEdit
 
 import com.example.myapplication.ui.components.crm.CrmMainScreen
 import com.example.myapplication.ui.components.crm.CrmOrderAdd
@@ -200,6 +201,15 @@ fun MainNavigation() {
     }
   }
 
+  val navigateToCrmClientEdit: (Int) -> Unit = { clientId ->
+    val user = LocalStorage.getUser(context)
+    if (user?.isEmployee == true) {
+      navController.navigate("${NavigationScreens.CRM_CLIENT_EDIT.name}/$clientId") {
+        launchSingleTop = true
+      }
+    }
+  }
+
   NavHost(
     navController = navController,
     startDestination = startDestination
@@ -290,7 +300,8 @@ fun MainNavigation() {
           onBack = { navController.popBackStack() },
           navigateCrmOrderList = navigateCrmOrderList,
           navigateCrmOrderDetails = navigateCrmOrderDetails,
-          navigateCrmOrderAdd = navigateCrmOrderAdd
+          navigateCrmOrderAdd = navigateCrmOrderAdd,
+          navigateToCrmClientEdit = navigateToCrmClientEdit
         )
       }
     }
@@ -311,5 +322,16 @@ fun MainNavigation() {
     composable(route = NavigationScreens.CRM_ORDER_ADD.name) {
       CrmOrderAdd(onBack = { navController.popBackStack() })
     }
+
+    composable(route = "${NavigationScreens.CRM_CLIENT_EDIT.name}/{clientId}") { backStackEntry ->
+      val clientId = backStackEntry.arguments?.getString("clientId")?.toIntOrNull()
+      if (clientId != null) {
+        CrmClientEdit(
+          clientId = clientId,
+          onBack = { navController.popBackStack() }
+        )
+      }
+    }
+
   }
 }

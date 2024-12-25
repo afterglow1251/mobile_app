@@ -18,7 +18,7 @@ interface WholesaleCustomerService {
     @Body createDto: CreateWholesaleCustomerDto
   ): WholesaleCustomerDto
 
-  @PUT("wholesale-customers/{id}")
+  @PATCH("wholesale-customers/{id}")
   suspend fun updateCustomer(
     @Path("id") id: Int,
     @Body updateDto: UpdateWholesaleCustomerDto

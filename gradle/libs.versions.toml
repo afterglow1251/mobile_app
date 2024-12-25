@@ -1,7 +1,9 @@
 [versions]
 accompanistPager = "0.31.5-beta"
 agp = "8.7.3"
+charty = "2.0.0-alpha01"
 coilCompose = "3.0.4"
+composeYcharts = "latest_version"
 core = "1.8.0"
 kotlin = "2.0.0"
 coreKtx = "1.10.1"
@@ -22,8 +24,10 @@ accompanist-pager = { module = "com.google.accompanist:accompanist-pager", versi
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 androidx-material-icons-extended = { module = "androidx.compose.material:material-icons-extended", version.ref = "materialIconsExtended" }
 androidx-navigation-compose = { module = "androidx.navigation:navigation-compose", version.ref = "navigationCompose" }
+charty = { module = "com.himanshoe:charty", version.ref = "charty" }
 coil-compose = { module = "io.coil-kt.coil3:coil-compose", version.ref = "coilCompose" }
 compose = { module = "com.patrykandpatrick.vico:compose", version.ref = "core" }
+compose-ycharts = { module = "com.github.razerdp:Compose-YCharts", version.ref = "composeYcharts" }
 core = { module = "com.patrykandpatrick.vico:core", version.ref = "core" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }

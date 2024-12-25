@@ -19,7 +19,6 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.example.myapplication.api.dto.wholesale.customer.WholesaleCustomerDto
@@ -33,7 +32,8 @@ fun CrmClientDetails(
   onBack: () -> Unit,
   navigateCrmOrderList: () -> Unit,
   navigateCrmOrderDetails: () -> Unit,
-  navigateCrmOrderAdd: () -> Unit
+  navigateCrmOrderAdd: () -> Unit,
+  navigateToCrmClientEdit: (Int) -> Unit
 ) {
   val context = LocalContext.current
   var isLoading by remember { mutableStateOf(true) }
@@ -94,7 +94,7 @@ fun CrmClientDetails(
         )
 
         Button(
-          onClick = navigateCrmOrderAdd,
+          onClick = { navigateToCrmClientEdit(clientId) },
           modifier = Modifier
             .fillMaxWidth()
             .padding(top = 4.dp)
