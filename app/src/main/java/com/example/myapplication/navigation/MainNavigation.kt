@@ -94,9 +94,9 @@ fun MainNavigation() {
   }
 
   val onLogout: () -> Unit = {
-    LocalStorage.logoutUser(context) // Очищення токена, користувача та кошика
+    LocalStorage.logoutUser(context)
     navController.navigate(NavigationScreens.AUTH.name) {
-      popUpTo(0) // Очищення всього стека навігації
+      popUpTo(0)
     }
   }
 

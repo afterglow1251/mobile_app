@@ -57,7 +57,7 @@ fun AuthScreen(onNavigateToProductsList: () -> Unit) {
       ) {
         // Логотип
         Image(
-          painter = painterResource(id = drawable.ic_launcher_foreground),
+          painter = painterResource(id = drawable.emblem1),
           contentDescription = null,
           modifier = Modifier.size(100.dp)
         )
