@@ -4,7 +4,6 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -20,7 +19,8 @@ import com.example.myapplication.utils.LocalStorage
 import kotlinx.coroutines.*
 import androidx.compose.ui.platform.LocalContext
 import com.example.myapplication.R.*
-
+import com.example.myapplication.validators.isValidEmail
+import com.example.myapplication.validators.isValidPassword
 
 @Composable
 fun AuthScreen(onNavigateToProductsList: () -> Unit) {
@@ -34,20 +34,29 @@ fun AuthScreen(onNavigateToProductsList: () -> Unit) {
   var confirmPasswordVisible by remember { mutableStateOf(false) }
   var passwordError by remember { mutableStateOf<String?>(null) }
 
-  val snackbarHostState = remember { SnackbarHostState() }
   val context = LocalContext.current
 
-  fun isValidEmail(email: String): Boolean {
-    return android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()
-  }
-
-  Scaffold(modifier = Modifier.fillMaxSize(),
-    snackbarHost = { SnackbarHost(hostState = snackbarHostState) }) { innerPadding ->
+  Scaffold(
+    modifier = Modifier.fillMaxSize()) { innerPadding ->
     Box(
       modifier = Modifier
         .fillMaxSize()
         .padding(innerPadding)
     ) {
+      if (isEmailChecked) {
+        IconButton(
+          onClick = { isEmailChecked = false },
+          modifier = Modifier
+            .align(Alignment.TopStart)
+            .padding(16.dp)
+        ) {
+          Icon(
+            imageVector = Icons.Filled.ArrowBack,
+            contentDescription = "Назад до пошти"
+          )
+        }
+      }
+
       Column(
         modifier = Modifier
           .fillMaxSize()
@@ -55,7 +64,6 @@ fun AuthScreen(onNavigateToProductsList: () -> Unit) {
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
       ) {
-        // Логотип
         Image(
           painter = painterResource(id = drawable.emblem1),
           contentDescription = null,
@@ -79,7 +87,7 @@ fun AuthScreen(onNavigateToProductsList: () -> Unit) {
             value = email,
             onValueChange = {
               email = it
-              emailError = if (isValidEmail(it)) null else "Некоректний формат пошти"
+              emailError = if (email.isBlank()) "Поле не може бути порожнім" else if (isValidEmail(it)) null else "Некоректний формат пошти"
             },
             label = { Text("Введіть вашу пошту") },
             modifier = Modifier.fillMaxWidth(),
@@ -99,7 +107,7 @@ fun AuthScreen(onNavigateToProductsList: () -> Unit) {
 
           Button(
             onClick = {
-              if (emailError == null) {
+              if (emailError == null && email.isNotBlank()) {
                 CoroutineScope(Dispatchers.IO).launch {
                   try {
                     val service = NetworkModule.getUserService(context)
@@ -118,23 +126,19 @@ fun AuthScreen(onNavigateToProductsList: () -> Unit) {
               }
             },
             modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(8.dp),
-            enabled = emailError == null
+            shape = RoundedCornerShape(4.dp),
+            enabled = emailError == null && email.isNotBlank()
           ) {
             Text("Далі")
           }
         } else {
-          IconButton(
-            onClick = { isEmailChecked = false }, modifier = Modifier.align(Alignment.Start)
-          ) {
-            Icon(
-              imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Назад до пошти"
-            )
-          }
-
           if (userExists) {
-            OutlinedTextField(value = password,
-              onValueChange = { password = it },
+            OutlinedTextField(
+              value = password,
+              onValueChange = {
+                password = it
+                passwordError = null
+              },
               label = { Text("Пароль") },
               modifier = Modifier.fillMaxWidth(),
               visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
@@ -145,7 +149,18 @@ fun AuthScreen(onNavigateToProductsList: () -> Unit) {
                     contentDescription = null
                   )
                 }
-              })
+              },
+              isError = passwordError != null
+            )
+
+            passwordError?.let {
+              Text(
+                text = it,
+                color = MaterialTheme.colorScheme.error,
+                style = MaterialTheme.typography.bodySmall,
+                modifier = Modifier.align(Alignment.Start)
+              )
+            }
 
             Spacer(modifier = Modifier.height(16.dp))
 
@@ -174,15 +189,17 @@ fun AuthScreen(onNavigateToProductsList: () -> Unit) {
 
                   } catch (e: retrofit2.HttpException) {
                     if (e.code() == 401) {
-                      snackbarHostState.showSnackbar("Невірний емейл або пароль!")
+                      passwordError = "Невірний емейл або пароль"
                     } else {
                       throw e
                     }
                   } catch (e: Exception) {
-                    snackbarHostState.showSnackbar("Сталася помилка: ${e.localizedMessage}")
+                    passwordError = "Сталася помилка: ${e.localizedMessage}"
                   }
                 }
-              }, modifier = Modifier.fillMaxWidth()
+              },
+              modifier = Modifier.fillMaxWidth(),
+              shape = RoundedCornerShape(4.dp)
             ) {
               Text("Увійти")
             }
@@ -191,7 +208,11 @@ fun AuthScreen(onNavigateToProductsList: () -> Unit) {
               value = password,
               onValueChange = {
                 password = it
-                passwordError = if (password == confirmPassword) null else "Паролі не співпадають"
+                passwordError = when {
+                  !isValidPassword(it) -> "Пароль повинен містити щонайменше 6 символів"
+                  it != confirmPassword -> "Паролі не співпадають"
+                  else -> null
+                }
               },
               label = { Text("Пароль") },
               modifier = Modifier.fillMaxWidth(),
@@ -200,12 +221,11 @@ fun AuthScreen(onNavigateToProductsList: () -> Unit) {
                 IconButton(onClick = { passwordVisible = !passwordVisible }) {
                   Icon(
                     imageVector = if (passwordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff,
-                    contentDescription = if (passwordVisible) "Приховати пароль" else "Показати пароль"
+                    contentDescription = null
                   )
                 }
               },
-              isError = passwordError != null,
-              singleLine = true
+              isError = passwordError != null
             )
 
             Spacer(modifier = Modifier.height(8.dp))
@@ -214,7 +234,11 @@ fun AuthScreen(onNavigateToProductsList: () -> Unit) {
               value = confirmPassword,
               onValueChange = {
                 confirmPassword = it
-                passwordError = if (password == confirmPassword) null else "Паролі не співпадають"
+                passwordError = when {
+                  password != it -> "Паролі не співпадають"
+                  !isValidPassword(password) -> "Пароль повинен містити щонайменше 6 символів"
+                  else -> null
+                }
               },
               label = { Text("Підтвердіть пароль") },
               modifier = Modifier.fillMaxWidth(),
@@ -223,12 +247,11 @@ fun AuthScreen(onNavigateToProductsList: () -> Unit) {
                 IconButton(onClick = { confirmPasswordVisible = !confirmPasswordVisible }) {
                   Icon(
                     imageVector = if (confirmPasswordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff,
-                    contentDescription = if (confirmPasswordVisible) "Приховати пароль" else "Показати пароль"
+                    contentDescription = null
                   )
                 }
               },
-              isError = passwordError != null,
-              singleLine = true
+              isError = passwordError != null
             )
 
             passwordError?.let {
@@ -268,12 +291,12 @@ fun AuthScreen(onNavigateToProductsList: () -> Unit) {
                     }
 
                   } catch (e: Exception) {
-                    snackbarHostState.showSnackbar("Сталася помилка: ${e.localizedMessage}")
+                    passwordError = "Сталася помилка: ${e.localizedMessage}"
                   }
                 }
               },
               modifier = Modifier.fillMaxWidth(),
-              shape = RoundedCornerShape(8.dp),
+              shape = RoundedCornerShape(4.dp),
               enabled = passwordError == null
             ) {
               Text("Зареєструватись")
