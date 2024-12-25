@@ -26,4 +26,7 @@ interface WholesaleOrderService {
   suspend fun getAllOrdersByCustomer(
     @Path("customerId") customerId: Int
   ): List<WholesaleOrderDto>
+
+  @DELETE("wholesale-orders/{id}")
+  suspend fun deleteOrder(@Path("id") id: Int)
 }

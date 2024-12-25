@@ -8,6 +8,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
@@ -27,6 +28,7 @@ fun CrmOrderDetailsScreen(orderId: Int, onBack: () -> Unit) {
   var isLoading by remember { mutableStateOf(true) }
   var orderDetails by remember { mutableStateOf<WholesaleOrderDto?>(null) }
   var errorMessage by remember { mutableStateOf<String?>(null) }
+  var showDeleteConfirmationDialog by remember { mutableStateOf(false) }
 
   LaunchedEffect(orderId) {
     coroutineScope.launch {
@@ -54,7 +56,7 @@ fun CrmOrderDetailsScreen(orderId: Int, onBack: () -> Unit) {
     },
     bottomBar = {
       Button(
-        onClick = onBack,
+        onClick = { showDeleteConfirmationDialog = true },
         modifier = Modifier
           .fillMaxWidth()
           .padding(16.dp)
@@ -71,7 +73,13 @@ fun CrmOrderDetailsScreen(orderId: Int, onBack: () -> Unit) {
         .verticalScroll(rememberScrollState())
     ) {
       if (isLoading) {
-        Text("Завантаження деталей замовлення...")
+        Box(
+          modifier = Modifier
+            .fillMaxSize(),
+          contentAlignment = Alignment.Center
+        ) {
+          CircularProgressIndicator()
+        }
       } else if (errorMessage != null) {
         Text(errorMessage!!, color = MaterialTheme.colorScheme.error)
       } else if (orderDetails != null) {
@@ -116,6 +124,38 @@ fun CrmOrderDetailsScreen(orderId: Int, onBack: () -> Unit) {
       } else {
         Text("Замовлення не знайдено.")
       }
+    }
+
+    if (showDeleteConfirmationDialog) {
+      AlertDialog(
+        onDismissRequest = { showDeleteConfirmationDialog = false },
+        text = {
+          Text("Ви впевнені, що хочете видалити це замовлення?")
+        },
+        confirmButton = {
+          TextButton(onClick = {
+            coroutineScope.launch {
+              try {
+                val orderService = NetworkModule.getWholesaleOrderService(context)
+                orderService.deleteOrder(orderId)
+                onBack()
+              } catch (e: Exception) {
+                errorMessage = "Помилка видалення замовлення: ${e.localizedMessage}"
+              } finally {
+                showDeleteConfirmationDialog = false
+              }
+            }
+          }) {
+            Text("Підтвердити")
+          }
+        },
+        dismissButton = {
+          TextButton(onClick = { showDeleteConfirmationDialog = false }) {
+            Text("Скасувати")
+          }
+        },
+        modifier = Modifier.padding(16.dp)
+      )
     }
   }
 }
