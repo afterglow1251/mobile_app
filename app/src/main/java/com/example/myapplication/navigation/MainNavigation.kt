@@ -165,19 +165,19 @@ fun MainNavigation() {
     }
   }
 
-  val navigateCrmOrderList: () -> Unit = {
+  val navigateCrmOrderList: (Int) -> Unit = { customerId ->
     val user = LocalStorage.getUser(context)
     if (user?.isEmployee == true) {
-      navController.navigate(NavigationScreens.CRM_ORDER_LIST.name) {
+      navController.navigate("${NavigationScreens.CRM_ORDER_LIST.name}/$customerId") {
         launchSingleTop = true
       }
     }
   }
 
-  val navigateCrmOrderDetails: () -> Unit = {
+  val navigateCrmOrderDetails: (Int) -> Unit = { orderId ->
     val user = LocalStorage.getUser(context)
     if (user?.isEmployee == true) {
-      navController.navigate(NavigationScreens.CRM_ORDER_DETAIL.name) {
+      navController.navigate("${NavigationScreens.CRM_ORDER_DETAIL.name}/$orderId") {
         launchSingleTop = true
       }
     }
@@ -192,10 +192,10 @@ fun MainNavigation() {
     }
   }
 
-  val navigateCrmOrderAdd: () -> Unit = {
+  val navigateCrmOrderAdd: (Int) -> Unit = { customerId ->
     val user = LocalStorage.getUser(context)
     if (user?.isEmployee == true) {
-      navController.navigate(NavigationScreens.CRM_ORDER_ADD.name) {
+      navController.navigate("${NavigationScreens.CRM_ORDER_ADD.name}/$customerId") {
         launchSingleTop = true
       }
     }
@@ -229,11 +229,20 @@ fun MainNavigation() {
     }
 
     composable(route = NavigationScreens.PROFILE.name) {
-      ProfileScreen(onBack = { navController.popBackStack() }, onLogout = onLogout, editProfile = editProfile, navigateToCrmMain = navigateToCrmMain)
+      ProfileScreen(
+        onBack = { navController.popBackStack() },
+        onLogout = onLogout,
+        editProfile = editProfile,
+        navigateToCrmMain = navigateToCrmMain
+      )
     }
 
     composable(route = NavigationScreens.ORDERS.name) {
-      OrderListScreen(cartDetails = cartDetails, showMain = navigateToProductsList, onShowOrderDetails = showOrderDetails)
+      OrderListScreen(
+        cartDetails = cartDetails,
+        showMain = navigateToProductsList,
+        onShowOrderDetails = showOrderDetails
+      )
     }
 
     composable(route = NavigationScreens.PROFILE_EDIT.name) {
@@ -243,7 +252,8 @@ fun MainNavigation() {
     composable(route = NavigationScreens.SEARCH_SCREEN.name) {
       SearchScreen(
         onBack = { navController.popBackStack() },
-        showProductDetails = showProductDetails,)
+        showProductDetails = showProductDetails,
+      )
     }
 
     composable(route = "${NavigationScreens.PRODUCT_DETAIL.name}/{productId}") { backStackEntry ->
@@ -256,7 +266,11 @@ fun MainNavigation() {
     composable(route = "${NavigationScreens.CART.name}/{userId}") { backStackEntry ->
       val userId = backStackEntry.arguments?.getString("userId")?.toIntOrNull()
       if (userId != null) {
-        CartScreen(userId = userId, onBack = { navController.popBackStack() }, showProductDetails = showProductDetails)
+        CartScreen(
+          userId = userId,
+          onBack = { navController.popBackStack() },
+          showProductDetails = showProductDetails
+        )
       }
     }
 
@@ -269,15 +283,26 @@ fun MainNavigation() {
 
 
     composable(route = NavigationScreens.CRM_MAIN.name) {
-      CrmMainScreen(onBack = { navController.popBackStack() }, navigateToCrmStats = navigateToCrmStats, navigateToCrmClientList = navigateToCrmClientList)
+      CrmMainScreen(
+        onBack = { navController.popBackStack() },
+        navigateToCrmStats = navigateToCrmStats,
+        navigateToCrmClientList = navigateToCrmClientList
+      )
     }
 
     composable(route = NavigationScreens.CRM_STATS.name) {
-      CrmStatsScreen(onBack = { navController.popBackStack() }, navigateToCrmArchive = navigateToCrmArchive)
+      CrmStatsScreen(
+        onBack = { navController.popBackStack() },
+        navigateToCrmArchive = navigateToCrmArchive
+      )
     }
 
     composable(route = NavigationScreens.CRM_ARCHIVE.name) {
-      CrmArchiveScreen(onBack = { navController.popBackStack() }, navigateToCrmMonthArchive = navigateToCrmMonthArchive, navigateToCrmYearArchive = navigateToCrmYearArchive)
+      CrmArchiveScreen(
+        onBack = { navController.popBackStack() },
+        navigateToCrmMonthArchive = navigateToCrmMonthArchive,
+        navigateToCrmYearArchive = navigateToCrmYearArchive
+      )
     }
 
     composable(route = NavigationScreens.CRM_MONTH.name) {
@@ -289,7 +314,11 @@ fun MainNavigation() {
     }
 
     composable(route = NavigationScreens.CRM_CLIENT_LIST.name) {
-      ClientListScreen(onBack = { navController.popBackStack() }, navigateToCrmClientDetails = navigateToCrmClientDetails, navigateCrmClientAdd = navigateCrmClientAdd)
+      ClientListScreen(
+        onBack = { navController.popBackStack() },
+        navigateToCrmClientDetails = navigateToCrmClientDetails,
+        navigateCrmClientAdd = navigateCrmClientAdd
+      )
     }
 
     composable(route = "${NavigationScreens.CRM_CLIENT_DETAILS.name}/{clientId}") { backStackEntry ->
@@ -307,21 +336,43 @@ fun MainNavigation() {
     }
 
 
-    composable(route = NavigationScreens.CRM_ORDER_LIST.name) {
-      CrmOrderListScreen(onBack = { navController.popBackStack() }, navigateCrmOrderDetails = navigateCrmOrderDetails)
+    composable(route = "${NavigationScreens.CRM_ORDER_LIST.name}/{customerId}") { backStackEntry ->
+      val customerId = backStackEntry.arguments?.getString("customerId")?.toIntOrNull()
+      if (customerId != null) {
+        CrmOrderListScreen(
+          onBack = { navController.popBackStack() },
+          navigateCrmOrderDetails = navigateCrmOrderDetails,
+          customerId = customerId
+        )
+      }
     }
 
-    composable(route = NavigationScreens.CRM_ORDER_DETAIL.name) {
-      CrmOrderDetailsScreen(onBack = { navController.popBackStack() })
+    composable(route = "${NavigationScreens.CRM_ORDER_DETAIL.name}/{orderId}")
+    { backStackEntry ->
+      val orderId = backStackEntry.arguments?.getString("orderId")?.toIntOrNull()
+      if (orderId != null) {
+        CrmOrderDetailsScreen(
+          orderId = orderId,
+          onBack = { navController.popBackStack() }
+        )
+      }
     }
+
 
     composable(route = NavigationScreens.CRM_CLIENT_ADD.name) {
       CrmClientAdd(onBack = { navController.popBackStack() })
     }
 
-    composable(route = NavigationScreens.CRM_ORDER_ADD.name) {
-      CrmOrderAdd(onBack = { navController.popBackStack() })
+    composable(route = "${NavigationScreens.CRM_ORDER_ADD.name}/{customerId}") { backStackEntry ->
+      val customerId = backStackEntry.arguments?.getString("customerId")?.toIntOrNull()
+      if (customerId != null) {
+        CrmOrderAdd(
+          customerId = customerId,
+          onBack = { navController.popBackStack() }
+        )
+      }
     }
+
 
     composable(route = "${NavigationScreens.CRM_CLIENT_EDIT.name}/{clientId}") { backStackEntry ->
       val clientId = backStackEntry.arguments?.getString("clientId")?.toIntOrNull()
@@ -332,6 +383,7 @@ fun MainNavigation() {
         )
       }
     }
-
   }
 }
+
+

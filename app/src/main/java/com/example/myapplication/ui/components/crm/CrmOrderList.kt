@@ -1,6 +1,5 @@
 package com.example.myapplication.ui.components.crm
 
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -10,26 +9,37 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.*
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.nativeCanvas
-import androidx.compose.ui.unit.*
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.example.myapplication.api.dto.wholesale.order.WholesaleOrderDto
+import com.example.myapplication.api.network.NetworkModule
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CrmOrderListScreen(
   onBack: () -> Unit,
-  navigateCrmOrderDetails: () -> Unit
+  navigateCrmOrderDetails: (Int) -> Unit,
+  customerId: Int
 ) {
-  val orders = remember {
-    List(20) { index ->
-      Order(
-        "Замовлення #${index + 1}",
-        (1000..15000).random(),
-        "Місто ${index + 1}, вул. Прикладна, ${index + 1}",
-        "+38050${(1000000..9999999).random()}"
-      )
+  val context = LocalContext.current
+  val coroutineScope = rememberCoroutineScope()
+  var isLoading by remember { mutableStateOf(true) }
+  var orders by remember { mutableStateOf<List<WholesaleOrderDto>>(emptyList()) }
+  var errorMessage by remember { mutableStateOf<String?>(null) }
+
+  LaunchedEffect(customerId) {
+    isLoading = true
+    errorMessage = null
+    try {
+      val orderService = NetworkModule.getWholesaleOrderService(context)
+      orders = orderService.getAllOrdersByCustomer(customerId)
+    } catch (e: Exception) {
+      errorMessage = "Не вдалося завантажити замовлення. Спробуйте пізніше."
+    } finally {
+      isLoading = false
     }
   }
 
@@ -52,44 +62,52 @@ fun CrmOrderListScreen(
         .padding(16.dp)
         .verticalScroll(rememberScrollState())
     ) {
-      Text(
-        text = "Ваші замовлення:",
-        style = MaterialTheme.typography.titleMedium,
-        modifier = Modifier.padding(bottom = 16.dp)
-      )
+      if (isLoading) {
+        Text("Завантаження...", style = MaterialTheme.typography.bodyLarge)
+      } else if (errorMessage != null) {
+        Text(errorMessage!!, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodyLarge)
+      } else if (orders.isEmpty()) {
+        Text("Немає доступних замовлень.", style = MaterialTheme.typography.bodyLarge)
+      } else {
+        Text(
+          text = "Ваші замовлення:",
+          style = MaterialTheme.typography.titleMedium,
+          modifier = Modifier.padding(bottom = 16.dp)
+        )
 
-      orders.forEach { order ->
-        Box(
-          modifier = Modifier
-            .fillMaxWidth()
-            .padding(bottom = 8.dp)
-            .clickable { navigateCrmOrderDetails() }
-            .background(
-              color = MaterialTheme.colorScheme.primary.copy(alpha = 0.15f),
-              shape = MaterialTheme.shapes.medium
-            )
-            .padding(16.dp)
-        ) {
-          Column {
-            Text(
-              text = order.number,
-              style = MaterialTheme.typography.titleSmall,
-              modifier = Modifier.padding(bottom = 4.dp)
-            )
-            Text(
-              text = "Сума замовлення: ${order.totalSum} грн",
-              style = MaterialTheme.typography.bodySmall,
-              modifier = Modifier.padding(bottom = 4.dp)
-            )
-            Text(
-              text = "Адреса: ${order.address}",
-              style = MaterialTheme.typography.bodySmall,
-              modifier = Modifier.padding(bottom = 4.dp)
-            )
-            Text(
-              text = "Контактний номер: ${order.contactNumber}",
-              style = MaterialTheme.typography.bodySmall
-            )
+        orders.forEach { order ->
+          Box(
+            modifier = Modifier
+              .fillMaxWidth()
+              .padding(bottom = 8.dp)
+              .clickable { navigateCrmOrderDetails(order.id) }
+              .background(
+                color = MaterialTheme.colorScheme.primary.copy(alpha = 0.15f),
+                shape = MaterialTheme.shapes.medium
+              )
+              .padding(16.dp)
+          ) {
+            Column {
+              Text(
+                text = "Замовлення #${order.id}",
+                style = MaterialTheme.typography.titleSmall,
+                modifier = Modifier.padding(bottom = 4.dp)
+              )
+              Text(
+                text = "Сума замовлення: ${order.totalPrice} грн",
+                style = MaterialTheme.typography.bodySmall,
+                modifier = Modifier.padding(bottom = 4.dp)
+              )
+              Text(
+                text = "Статус: ${order.status}",
+                style = MaterialTheme.typography.bodySmall,
+                modifier = Modifier.padding(bottom = 4.dp)
+              )
+              Text(
+                text = "Дата створення: ${order.createdAt}",
+                style = MaterialTheme.typography.bodySmall
+              )
+            }
           }
         }
       }

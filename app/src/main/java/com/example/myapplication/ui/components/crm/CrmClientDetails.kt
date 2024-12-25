@@ -30,14 +30,15 @@ import kotlinx.coroutines.launch
 fun CrmClientDetails(
   clientId: Int,
   onBack: () -> Unit,
-  navigateCrmOrderList: () -> Unit,
-  navigateCrmOrderDetails: () -> Unit,
-  navigateCrmOrderAdd: () -> Unit,
+  navigateCrmOrderList: (Int) -> Unit,
+  navigateCrmOrderDetails: (Int) -> Unit,
+  navigateCrmOrderAdd: (Int) -> Unit,
   navigateToCrmClientEdit: (Int) -> Unit
 ) {
   val context = LocalContext.current
   var isLoading by remember { mutableStateOf(true) }
   var clientData by remember { mutableStateOf<WholesaleCustomerDto?>(null) }
+  var latestOrders by remember { mutableStateOf(emptyList<com.example.myapplication.api.dto.wholesale.order.WholesaleOrderDto>()) }
   var showDeleteConfirmationDialog by remember { mutableStateOf(false) }
   val coroutineScope = rememberCoroutineScope()
 
@@ -45,7 +46,9 @@ fun CrmClientDetails(
     isLoading = true
     try {
       val customerService = NetworkModule.getWholesaleCustomerService(context)
+      val wholesaleOrderService = NetworkModule.getWholesaleOrderService(context)
       clientData = customerService.getCustomerById(clientId)
+      latestOrders = wholesaleOrderService.getLatestOrdersByCustomer(clientId)
     } catch (e: Exception) {
       // Обробка помилки
     } finally {
@@ -103,7 +106,7 @@ fun CrmClientDetails(
         }
 
         Button(
-          onClick = navigateCrmOrderAdd,
+          onClick = { navigateCrmOrderAdd(clientId) },
           modifier = Modifier
             .fillMaxWidth()
             .padding(bottom = 8.dp)
@@ -114,7 +117,7 @@ fun CrmClientDetails(
         Box(
           modifier = Modifier
             .fillMaxWidth()
-            .clickable(onClick = navigateCrmOrderList)
+            .clickable(onClick = {navigateCrmOrderList(clientId)} )
             .padding(start = 16.dp, end = 16.dp, bottom = 16.dp)
         ) {
           Text(
@@ -123,13 +126,13 @@ fun CrmClientDetails(
           )
         }
 
-        clientData!!.orders?.let { orders ->
-          orders.forEach { order ->
+        if (latestOrders.isNotEmpty()) {
+          latestOrders.forEach { order ->
             Box(
               modifier = Modifier
                 .fillMaxWidth()
                 .padding(bottom = 8.dp)
-                .clickable { navigateCrmOrderDetails() }
+                .clickable { navigateCrmOrderDetails(order.id) }
                 .background(
                   color = MaterialTheme.colorScheme.primary.copy(alpha = 0.15f),
                   shape = MaterialTheme.shapes.medium
@@ -138,12 +141,12 @@ fun CrmClientDetails(
             ) {
               Column {
                 Text(
-                  text = order.id.toString(),
+                  text = "Номер замовлення: ${order.id}",
                   style = MaterialTheme.typography.titleSmall,
                   modifier = Modifier.padding(bottom = 4.dp)
                 )
                 Text(
-                  text = "Сума замовлення: ${order.totalPrice} грн",
+                  text = "Сума: ${order.totalPrice} грн",
                   style = MaterialTheme.typography.bodySmall,
                   modifier = Modifier.padding(bottom = 4.dp)
                 )
@@ -155,7 +158,7 @@ fun CrmClientDetails(
               }
             }
           }
-        } ?: run {
+        } else {
           Text("Немає доступних замовлень.")
         }
 
@@ -203,11 +206,3 @@ fun CrmClientDetails(
   }
 }
 
-
-
-data class Order(
-  val number: String,
-  val totalSum: Int,
-  val address: String,
-  val contactNumber: String
-)

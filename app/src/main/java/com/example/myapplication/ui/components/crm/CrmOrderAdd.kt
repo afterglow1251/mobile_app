@@ -18,8 +18,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.myapplication.api.network.NetworkModule
-import com.example.myapplication.api.services.WholesaleCustomerService
-import com.example.myapplication.api.services.ProductService
 import com.example.myapplication.api.dto.wholesale.order.CreateWholesaleOrderDto
 import com.example.myapplication.api.dto.wholesale.order.CreateWholesaleOrderItemDto
 import kotlinx.coroutines.launch
@@ -34,7 +32,7 @@ data class OrderProduct(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CrmOrderAdd(onBack: () -> Unit) {
+fun CrmOrderAdd(onBack: () -> Unit, customerId: Int) {
   val context = LocalContext.current
   val productService = NetworkModule.getProductService(context)
   val wholesaleOrderService = NetworkModule.getWholesaleOrderService(context)
@@ -259,7 +257,7 @@ fun CrmOrderAdd(onBack: () -> Unit) {
           coroutineScope.launch {
             try {
               val createOrderDto = CreateWholesaleOrderDto(
-                customerId = 1,
+                customerId = customerId,
                 items = products.map {
                   CreateWholesaleOrderItemDto(
                     productId = it.id,

@@ -21,4 +21,9 @@ interface WholesaleOrderService {
   suspend fun getLatestOrdersByCustomer(
     @Path("customerId") customerId: Int
   ): List<WholesaleOrderDto>
+
+  @GET("wholesale-orders/customer/{customerId}/all")
+  suspend fun getAllOrdersByCustomer(
+    @Path("customerId") customerId: Int
+  ): List<WholesaleOrderDto>
 }
