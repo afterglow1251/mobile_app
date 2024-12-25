@@ -100,7 +100,13 @@ fun CrmArchiveScreen(
         .verticalScroll(rememberScrollState())
     ) {
       if (isLoading) {
-        Text("Завантаження...")
+        Box(
+          modifier = Modifier
+            .fillMaxSize(),
+          contentAlignment = Alignment.Center
+        ) {
+          CircularProgressIndicator()
+        }
       } else {
         Box(
           modifier = Modifier

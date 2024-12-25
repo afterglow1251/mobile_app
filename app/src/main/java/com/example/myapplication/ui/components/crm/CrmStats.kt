@@ -31,13 +31,8 @@ fun CrmStatsScreen(
   var customers by remember { mutableStateOf<List<WholesaleCustomerDto>>(emptyList()) }
   var errorMessage by remember { mutableStateOf<String?>(null) }
 
-  val totalSales = orders.sumOf { it.totalPrice }
-  val totalCustomers = customers.size
-  val totalOrders = orders.size
-  val mostActiveCustomer = customers.maxByOrNull { it.orders.size }
-  val mostProfitableCustomer = customers.maxByOrNull { customer ->
-    customer.orders.sumOf { it.totalPrice }
-  }
+  var isLoadingCustomers by remember { mutableStateOf(true) }
+  var isLoadingOrders by remember { mutableStateOf(true) }
 
   LaunchedEffect(Unit) {
     try {
@@ -45,6 +40,8 @@ fun CrmStatsScreen(
       customers = customerService.getAllCustomers()
     } catch (e: Exception) {
       errorMessage = "Не вдалося завантажити клієнтів: ${e.localizedMessage}"
+    } finally {
+      isLoadingCustomers = false
     }
   }
 
@@ -54,7 +51,17 @@ fun CrmStatsScreen(
       orders = orderService.getAllOrders()
     } catch (e: Exception) {
       errorMessage = "Не вдалося завантажити замовлення: ${e.localizedMessage}"
+    } finally {
+      isLoadingOrders = false
     }
+  }
+
+  val totalSales = orders.sumOf { it.totalPrice }
+  val totalCustomers = customers.size
+  val totalOrders = orders.size
+  val mostActiveCustomer = customers.maxByOrNull { it.orders.size }
+  val mostProfitableCustomer = customers.maxByOrNull { customer ->
+    customer.orders.sumOf { it.totalPrice }
   }
 
   Scaffold(
@@ -75,69 +82,79 @@ fun CrmStatsScreen(
         .padding(innerPadding)
         .padding(horizontal = 16.dp)
     ) {
-      if (errorMessage != null) {
-        Text(
-          text = errorMessage!!,
-          color = MaterialTheme.colorScheme.error,
-          style = MaterialTheme.typography.bodyLarge,
-          modifier = Modifier.padding(vertical = 8.dp)
-        )
-      } else {
-        Text(
-          text = "Всього клієнтів: $totalCustomers",
-          style = MaterialTheme.typography.bodyLarge,
-          modifier = Modifier.padding(vertical = 4.dp)
-        )
-        Text(
-          text = "Обсяг продажів: %.2f грн".format(totalSales),
-          style = MaterialTheme.typography.bodyLarge,
-          modifier = Modifier.padding(vertical = 4.dp)
-        )
-        Text(
-          text = "Всього замовлень: $totalOrders",
-          style = MaterialTheme.typography.bodyLarge,
-          modifier = Modifier.padding(vertical = 4.dp)
-        )
-        mostActiveCustomer?.let {
-          Text(
-            text = "Найактивніший клієнт: ${it.name}",
-            style = MaterialTheme.typography.bodyLarge,
-            modifier = Modifier.padding(vertical = 4.dp)
-          )
-        }
-        mostProfitableCustomer?.let {
-          Text(
-            text = "Найприбутковіший клієнт: ${it.name}",
-            style = MaterialTheme.typography.bodyLarge,
-            modifier = Modifier.padding(vertical = 4.dp)
-          )
-        }
-
-        Spacer(modifier = Modifier.height(16.dp))
-        Text(
-          text = "Обсяг продажів за останній місяць",
-          style = MaterialTheme.typography.titleMedium,
-          modifier = Modifier.padding(bottom = 16.dp)
-        )
-
-        SalesChartMonthly(orders)
-
-        Spacer(modifier = Modifier.height(32.dp))
-
-        Text(
-          text = "Обсяг продажів за цей рік",
-          style = MaterialTheme.typography.titleMedium,
-          modifier = Modifier.padding(bottom = 16.dp)
-        )
-
-        SalesChartYearly(orders)
-
-        Spacer(modifier = Modifier.height(32.dp))
-        Button(
-          onClick = navigateToCrmArchive,
-          modifier = Modifier.fillMaxWidth()
+      if (isLoadingCustomers || isLoadingOrders) {
+        Box(
+          modifier = Modifier
+            .fillMaxSize(),
+          contentAlignment = Alignment.Center
         ) {
-          Text("Перейти до архіву статистики")
+          CircularProgressIndicator()
+        }
+      } else {
+        if (errorMessage != null) {
+          Text(
+            text = errorMessage!!,
+            color = MaterialTheme.colorScheme.error,
+            style = MaterialTheme.typography.bodyLarge,
+            modifier = Modifier.padding(vertical = 8.dp)
+          )
+        } else {
+          Text(
+            text = "Всього клієнтів: $totalCustomers",
+            style = MaterialTheme.typography.bodyLarge,
+            modifier = Modifier.padding(vertical = 4.dp)
+          )
+          Text(
+            text = "Обсяг продажів: %.2f грн".format(totalSales),
+            style = MaterialTheme.typography.bodyLarge,
+            modifier = Modifier.padding(vertical = 4.dp)
+          )
+          Text(
+            text = "Всього замовлень: $totalOrders",
+            style = MaterialTheme.typography.bodyLarge,
+            modifier = Modifier.padding(vertical = 4.dp)
+          )
+          mostActiveCustomer?.let {
+            Text(
+              text = "Найактивніший клієнт: ${it.name}",
+              style = MaterialTheme.typography.bodyLarge,
+              modifier = Modifier.padding(vertical = 4.dp)
+            )
+          }
+          mostProfitableCustomer?.let {
+            Text(
+              text = "Найприбутковіший клієнт: ${it.name}",
+              style = MaterialTheme.typography.bodyLarge,
+              modifier = Modifier.padding(vertical = 4.dp)
+            )
+          }
+
+          Spacer(modifier = Modifier.height(16.dp))
+          Text(
+            text = "Обсяг продажів за останній місяць",
+            style = MaterialTheme.typography.titleMedium,
+            modifier = Modifier.padding(bottom = 16.dp)
+          )
+
+          SalesChartMonthly(orders)
+
+          Spacer(modifier = Modifier.height(32.dp))
+
+          Text(
+            text = "Обсяг продажів за цей рік",
+            style = MaterialTheme.typography.titleMedium,
+            modifier = Modifier.padding(bottom = 16.dp)
+          )
+
+          SalesChartYearly(orders)
+
+          Spacer(modifier = Modifier.height(32.dp))
+          Button(
+            onClick = navigateToCrmArchive,
+            modifier = Modifier.fillMaxWidth()
+          ) {
+            Text("Перейти до архіву статистики")
+          }
         }
       }
     }
@@ -181,7 +198,9 @@ fun SalesChartMonthly(orders: List<WholesaleOrderDto>) {
 
   val buttonColor = MaterialTheme.colorScheme.primary
 
-  Canvas(modifier = Modifier.size(width = 452.dp, height = 200.dp).padding(top = 20.dp)) {
+  Canvas(modifier = Modifier
+    .size(width = 452.dp, height = 200.dp)
+    .padding(top = 20.dp)) {
     val horizontalSpacing = ((size.width - 64.dp.toPx()) / (salesData.size - 1).toFloat()) * 1.037f
     val verticalStep = size.height / 5
 
@@ -215,8 +234,10 @@ fun SalesChartMonthly(orders: List<WholesaleOrderDto>) {
     salesData.forEachIndexed { index, value ->
       val startX = 44.dp.toPx() + index * horizontalSpacing
       val startY = size.height - (value / maxSales).toFloat() * size.height
-      val endX = if (index < salesData.size - 1) 24.dp.toPx() + (index + 1) * horizontalSpacing else startX
-      val endY = if (index < salesData.size - 1) size.height - (salesData[index + 1] / maxSales).toFloat() * size.height else startY
+      val endX =
+        if (index < salesData.size - 1) 24.dp.toPx() + (index + 1) * horizontalSpacing else startX
+      val endY =
+        if (index < salesData.size - 1) size.height - (salesData[index + 1] / maxSales).toFloat() * size.height else startY
 
       drawLine(
         color = buttonColor,
@@ -240,18 +261,18 @@ fun SalesChartMonthly(orders: List<WholesaleOrderDto>) {
             textSize = 36f
           })
       } else if (day == "10") {
-      val x = 44.dp.toPx() + index * horizontalSpacing * 5 * 0.905f
-      val y = size.height + 20.dp.toPx()
-      drawContext.canvas.nativeCanvas.drawText(
-        day,
-        x,
-        y,
-        android.graphics.Paint().apply {
-          color = android.graphics.Color.BLACK
-          textAlign = android.graphics.Paint.Align.CENTER
-          textSize = 36f
-        })
-    } else if (day == "25") {
+        val x = 44.dp.toPx() + index * horizontalSpacing * 5 * 0.905f
+        val y = size.height + 20.dp.toPx()
+        drawContext.canvas.nativeCanvas.drawText(
+          day,
+          x,
+          y,
+          android.graphics.Paint().apply {
+            color = android.graphics.Color.BLACK
+            textAlign = android.graphics.Paint.Align.CENTER
+            textSize = 36f
+          })
+      } else if (day == "25") {
         val x = 44.dp.toPx() + index * horizontalSpacing * 5 * 0.965f
         val y = size.height + 20.dp.toPx()
         drawContext.canvas.nativeCanvas.drawText(
@@ -263,7 +284,7 @@ fun SalesChartMonthly(orders: List<WholesaleOrderDto>) {
             textAlign = android.graphics.Paint.Align.CENTER
             textSize = 36f
           })
-    } else if (day == "30") {
+      } else if (day == "30") {
         val x = 44.dp.toPx() + index * horizontalSpacing * 5 * 0.972f
         val y = size.height + 20.dp.toPx()
         drawContext.canvas.nativeCanvas.drawText(
@@ -275,19 +296,19 @@ fun SalesChartMonthly(orders: List<WholesaleOrderDto>) {
             textAlign = android.graphics.Paint.Align.CENTER
             textSize = 36f
           })
-    } else if (day == "20") {
-    val x = 44.dp.toPx() + index * horizontalSpacing * 5 * 0.955f
-    val y = size.height + 20.dp.toPx()
-    drawContext.canvas.nativeCanvas.drawText(
-      day,
-      x,
-      y,
-      android.graphics.Paint().apply {
-        color = android.graphics.Color.BLACK
-        textAlign = android.graphics.Paint.Align.CENTER
-        textSize = 36f
-      })
-  } else {
+      } else if (day == "20") {
+        val x = 44.dp.toPx() + index * horizontalSpacing * 5 * 0.955f
+        val y = size.height + 20.dp.toPx()
+        drawContext.canvas.nativeCanvas.drawText(
+          day,
+          x,
+          y,
+          android.graphics.Paint().apply {
+            color = android.graphics.Color.BLACK
+            textAlign = android.graphics.Paint.Align.CENTER
+            textSize = 36f
+          })
+      } else {
         val x = 44.dp.toPx() + index * horizontalSpacing * 5 * 0.93f
         val y = size.height + 20.dp.toPx()
         drawContext.canvas.nativeCanvas.drawText(
@@ -316,12 +337,15 @@ fun SalesChartYearly(orders: List<WholesaleOrderDto>) {
     }.sumOf { it.totalPrice }
   }
 
-  val months = listOf("Січ", "Лют", "Бер", "Кві", "Тра", "Чер", "Лип", "Сер", "Вер", "Жов", "Лис", "Гру")
+  val months =
+    listOf("Січ", "Лют", "Бер", "Кві", "Тра", "Чер", "Лип", "Сер", "Вер", "Жов", "Лис", "Гру")
   val maxSales = salesData.maxOrNull()?.takeIf { it > 0 } ?: 1.0 // Ensure non-zero max value
 
   val buttonColor = MaterialTheme.colorScheme.primary
 
-  Canvas(modifier = Modifier.size(width = 452.dp, height = 200.dp).padding(top = 20.dp)) {
+  Canvas(modifier = Modifier
+    .size(width = 452.dp, height = 200.dp)
+    .padding(top = 20.dp)) {
     val horizontalSpacing = ((size.width - 64.dp.toPx()) / (salesData.size - 1).toFloat())
     val verticalStep = size.height / 5
 

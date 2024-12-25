@@ -80,7 +80,13 @@ fun CrmArchiveMonthScreen(
         .verticalScroll(rememberScrollState())
     ) {
       if (isLoading) {
-        Text("Завантаження...")
+        Box(
+          modifier = Modifier
+            .fillMaxSize(),
+          contentAlignment = Alignment.Center
+        ) {
+          CircularProgressIndicator()
+        }
       } else {
         ordersByMonth.forEach { (month, orders) ->
           Text(
@@ -152,7 +158,13 @@ fun CrmArchiveYearScreen(
         .verticalScroll(rememberScrollState())
     ) {
       if (isLoading) {
-        Text("Завантаження...")
+        Box(
+          modifier = Modifier
+            .fillMaxSize(),
+          contentAlignment = Alignment.Center
+        ) {
+          CircularProgressIndicator()
+        }
       } else {
         ordersByYear.forEach { (year, orders) ->
           Text(
