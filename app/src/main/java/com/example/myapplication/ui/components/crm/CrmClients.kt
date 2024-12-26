@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -12,6 +13,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.example.myapplication.api.dto.wholesale.customer.WholesaleCustomerDto
@@ -50,15 +52,16 @@ fun ClientListScreen(
     }
   }
 
-  Scaffold(
+  Scaffold(containerColor = Color(0xFFFDF8ED),
     topBar = {
       TopAppBar(
-        title = { Text("Список клієнтів") },
+        title = { Text("Список клієнтів", color = Color.White) },
         navigationIcon = {
           IconButton(onClick = { onBack() }) {
-            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Назад")
+            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Назад", tint = Color.White)
           }
         },
+        colors = TopAppBarDefaults.smallTopAppBarColors(containerColor = Color(0xFF583E23))
       )
     },
     content = { innerPadding ->
@@ -99,15 +102,19 @@ fun ClientListScreen(
               onClick = navigateCrmClientAdd,
               modifier = Modifier
                 .fillMaxWidth()
-                .padding(bottom = 16.dp)
+                .padding(bottom = 16.dp),colors = ButtonDefaults.buttonColors(
+                containerColor = Color(0xFF583E23), // Колір фону кнопки
+                contentColor = Color.White         // Колір тексту кнопки
+              ),
+              shape = RoundedCornerShape(4.dp),
             ) {
               Text("Додати оптового клієнта")
             }
 
             Text(
               text = "Ваші клієнти:",
-              style = MaterialTheme.typography.titleMedium,
-              modifier = Modifier.padding(bottom = 16.dp)
+              style = MaterialTheme.typography.titleLarge,
+              modifier = Modifier.padding(bottom = 20.dp)
             )
 
             customers.forEach { customer ->
@@ -133,30 +140,32 @@ fun ClientListScreen(
                   .padding(bottom = 8.dp)
                   .clickable { navigateToCrmClientDetails(customer.id) }
                   .background(
-                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.15f),
+                    color = Color(0xFFFBF1DA),
                     shape = MaterialTheme.shapes.medium
                   )
-                  .padding(16.dp)
+
+                  .padding(16.dp),
+
               ) {
                 Column {
                   Text(
                     text = customer.name,
-                    style = MaterialTheme.typography.titleSmall,
+                    style = MaterialTheme.typography.titleMedium,
                     modifier = Modifier.padding(bottom = 4.dp)
                   )
                   Text(
                     text = "Кількість замовлень: $totalOrders",
-                    style = MaterialTheme.typography.bodySmall,
+                    style = MaterialTheme.typography.bodyMedium,
                     modifier = Modifier.padding(bottom = 4.dp)
                   )
                   Text(
                     text = "Сума замовлень: ${"%.2f".format(totalSpent)} грн",
-                    style = MaterialTheme.typography.bodySmall,
+                    style = MaterialTheme.typography.bodyMedium,
                     modifier = Modifier.padding(bottom = 4.dp)
                   )
                   Text(
                     text = "Дата останнього замовлення: $lastOrderDate",
-                    style = MaterialTheme.typography.bodySmall
+                    style = MaterialTheme.typography.bodyMedium
                   )
                 }
               }

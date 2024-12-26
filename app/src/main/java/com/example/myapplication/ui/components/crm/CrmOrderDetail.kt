@@ -3,6 +3,7 @@ package com.example.myapplication.ui.components.crm
 import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -10,6 +11,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.example.myapplication.api.dto.wholesale.order.WholesaleOrderDto
@@ -43,15 +45,16 @@ fun CrmOrderDetailsScreen(orderId: Int, onBack: () -> Unit) {
     }
   }
 
-  Scaffold(
+  Scaffold(containerColor = Color(0xFFFDF8ED),
     topBar = {
       TopAppBar(
-        title = { Text("Деталі замовлення") },
+        title = { Text("Деталі замовлення", color = Color.White) },
         navigationIcon = {
           IconButton(onClick = onBack) {
-            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Назад")
+            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Назад", tint = Color.White)
           }
-        }
+        },
+        colors = TopAppBarDefaults.smallTopAppBarColors(containerColor = Color(0xFF583E23))
       )
     },
     bottomBar = {
@@ -59,7 +62,11 @@ fun CrmOrderDetailsScreen(orderId: Int, onBack: () -> Unit) {
         onClick = { showDeleteConfirmationDialog = true },
         modifier = Modifier
           .fillMaxWidth()
-          .padding(16.dp)
+          .padding(16.dp),colors = ButtonDefaults.buttonColors(
+          containerColor = Color(0xFF583E23), // Колір фону кнопки
+          contentColor = Color.White         // Колір тексту кнопки
+        ),
+        shape = RoundedCornerShape(4.dp),
       ) {
         Text("Видалити замовлення", style = MaterialTheme.typography.titleMedium)
       }

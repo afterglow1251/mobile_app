@@ -60,15 +60,16 @@ fun CrmArchiveMonthScreen(
     }
   }
 
-  Scaffold(
+  Scaffold(containerColor = Color(0xFFFDF8ED),
     topBar = {
       TopAppBar(
-        title = { Text("Статистика за місяці") },
+        title = { Text("Статистика за місяці", color = Color.White) },
         navigationIcon = {
           IconButton(onClick = { onBack() }) {
-            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Назад")
+            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Назад", tint = Color.White)
           }
-        }
+        },
+        colors = TopAppBarDefaults.smallTopAppBarColors(containerColor = Color(0xFF583E23))
       )
     }
   ) { innerPadding ->
@@ -79,6 +80,7 @@ fun CrmArchiveMonthScreen(
         .padding(start = 16.dp, end = 16.dp, bottom = 16.dp)
         .verticalScroll(rememberScrollState())
     ) {
+      Spacer(modifier = Modifier.height(18.dp))
       if (isLoading) {
         Box(
           modifier = Modifier
@@ -91,11 +93,12 @@ fun CrmArchiveMonthScreen(
         ordersByMonth.forEach { (month, orders) ->
           Text(
             text = month,
-            style = MaterialTheme.typography.titleMedium,
+            style = MaterialTheme.typography.titleLarge,
             modifier = Modifier.padding(vertical = 8.dp)
           )
           SalesChartMonthlyAny(orders = orders)
           val totalSales = orders.sumOf { it.totalPrice.toInt() }
+          Spacer(modifier = Modifier.height(12.dp))
           Spacer(modifier = Modifier.height(24.dp))
           Text(
             text = "Обсяг продажів за місяць: ${totalSales} грн",
@@ -138,15 +141,16 @@ fun CrmArchiveYearScreen(
     }
   }
 
-  Scaffold(
+  Scaffold(containerColor = Color(0xFFFDF8ED),
     topBar = {
       TopAppBar(
-        title = { Text("Статистика за роки") },
+        title = { Text("Статистика за роки", color = Color.White) },
         navigationIcon = {
           IconButton(onClick = { onBack() }) {
-            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Назад")
+            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Назад", tint = Color.White)
           }
-        }
+        },
+        colors = TopAppBarDefaults.smallTopAppBarColors(containerColor = Color(0xFF583E23))
       )
     }
   ) { innerPadding ->
@@ -157,6 +161,7 @@ fun CrmArchiveYearScreen(
         .padding(start = 16.dp, end = 16.dp, bottom = 16.dp)
         .verticalScroll(rememberScrollState())
     ) {
+      Spacer(modifier = Modifier.height(18.dp))
       if (isLoading) {
         Box(
           modifier = Modifier
@@ -169,10 +174,11 @@ fun CrmArchiveYearScreen(
         ordersByYear.forEach { (year, orders) ->
           Text(
             text = year,
-            style = MaterialTheme.typography.titleMedium,
+            style = MaterialTheme.typography.titleLarge,
             modifier = Modifier.padding(vertical = 8.dp)
           )
           SalesChartYearlyAny(orders = orders)
+          Spacer(modifier = Modifier.height(12.dp))
           val totalSales = orders.sumOf { it.totalPrice.toInt() }
           Spacer(modifier = Modifier.height(24.dp))
           Text(

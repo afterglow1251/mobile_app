@@ -2,12 +2,16 @@ package com.example.myapplication.ui.components.crm
 
 import android.content.Context
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.selection.LocalTextSelectionColors
+import androidx.compose.foundation.text.selection.TextSelectionColors
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.example.myapplication.api.dto.wholesale.customer.CreateWholesaleCustomerDto
@@ -28,15 +32,16 @@ fun CrmClientAdd(onBack: () -> Unit) {
 
   val context = LocalContext.current
 
-  Scaffold(
+  Scaffold(containerColor = Color(0xFFFDF8ED),
     topBar = {
       TopAppBar(
-        title = { Text("Додати оптового клієнта") },
+        title = { Text("Додати оптового клієнта", color = Color.White) },
         navigationIcon = {
           IconButton(onClick = onBack) {
-            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Назад")
+            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Назад", tint = Color.White)
           }
-        }
+        },
+        colors = TopAppBarDefaults.smallTopAppBarColors(containerColor = Color(0xFF583E23))
       )
     },
     snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
@@ -49,18 +54,36 @@ fun CrmClientAdd(onBack: () -> Unit) {
       verticalArrangement = Arrangement.Center,
       horizontalAlignment = Alignment.CenterHorizontally
     ) {
-      OutlinedTextField(
+      CompositionLocalProvider(
+        LocalTextSelectionColors provides TextSelectionColors(
+          handleColor = Color(0xFF583E23),        // Колір крапельки
+          backgroundColor = Color(0xFFFFEBCD)    // Колір виділення
+        )
+      ) {OutlinedTextField(
         value = name,
         onValueChange = {
           name = it
         },
         label = { Text("Введіть ім'я/назву клієнта") },
-        modifier = Modifier.fillMaxWidth()
-      )
+        modifier = Modifier.fillMaxWidth(),colors = TextFieldDefaults.outlinedTextFieldColors(
+          focusedBorderColor = Color(0xFF583E23),
+          unfocusedBorderColor = Color.Gray,       // Колір бордюру без фокусу
+          errorBorderColor = Color.Red,            // Колір бордюру при помилці
+          cursorColor = Color(0xFF583E23),         // Колір курсора
+          focusedLabelColor = Color(0xFF583E23),   // Колір мітки у фокусі
+          unfocusedLabelColor = Color.Gray,        // Колір мітки без фокусу
+          errorLabelColor = Color.Red,          // Колір підказки (placeholder)
+        ),
+      )}
 
       Spacer(modifier = Modifier.height(8.dp))
 
-      OutlinedTextField(
+      CompositionLocalProvider(
+        LocalTextSelectionColors provides TextSelectionColors(
+          handleColor = Color(0xFF583E23),        // Колір крапельки
+          backgroundColor = Color(0xFFFFEBCD)    // Колір виділення
+        )
+      ) {OutlinedTextField(
         value = phone,
         onValueChange = {
           if (it.startsWith("+38")) {
@@ -70,8 +93,16 @@ fun CrmClientAdd(onBack: () -> Unit) {
         },
         label = { Text("Введіть номер телефону клієнта") },
         isError = !isPhoneValid,
-        modifier = Modifier.fillMaxWidth()
-      )
+        modifier = Modifier.fillMaxWidth(),colors = TextFieldDefaults.outlinedTextFieldColors(
+          focusedBorderColor = Color(0xFF583E23),
+          unfocusedBorderColor = Color.Gray,       // Колір бордюру без фокусу
+          errorBorderColor = Color.Red,            // Колір бордюру при помилці
+          cursorColor = Color(0xFF583E23),         // Колір курсора
+          focusedLabelColor = Color(0xFF583E23),   // Колір мітки у фокусі
+          unfocusedLabelColor = Color.Gray,        // Колір мітки без фокусу
+          errorLabelColor = Color.Red,          // Колір підказки (placeholder)
+        ),
+      )}
 
       if (!isPhoneValid) {
         Text(
@@ -83,14 +114,27 @@ fun CrmClientAdd(onBack: () -> Unit) {
 
       Spacer(modifier = Modifier.height(8.dp))
 
-      OutlinedTextField(
+      CompositionLocalProvider(
+        LocalTextSelectionColors provides TextSelectionColors(
+          handleColor = Color(0xFF583E23),        // Колір крапельки
+          backgroundColor = Color(0xFFFFEBCD)    // Колір виділення
+        )
+      ) {OutlinedTextField(
         value = address,
         onValueChange = {
           address = it
         },
         label = { Text("Введіть адресу клієнта") },
-        modifier = Modifier.fillMaxWidth()
-      )
+        modifier = Modifier.fillMaxWidth(),colors = TextFieldDefaults.outlinedTextFieldColors(
+          focusedBorderColor = Color(0xFF583E23),
+          unfocusedBorderColor = Color.Gray,       // Колір бордюру без фокусу
+          errorBorderColor = Color.Red,            // Колір бордюру при помилці
+          cursorColor = Color(0xFF583E23),         // Колір курсора
+          focusedLabelColor = Color(0xFF583E23),   // Колір мітки у фокусі
+          unfocusedLabelColor = Color.Gray,        // Колір мітки без фокусу
+          errorLabelColor = Color.Red,          // Колір підказки (placeholder)
+        ),
+      )}
 
       Spacer(modifier = Modifier.height(16.dp))
 
@@ -98,7 +142,11 @@ fun CrmClientAdd(onBack: () -> Unit) {
         onClick = {
           addCustomer(context, name, phone, address, onBack, snackbarHostState)
         },
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier.fillMaxWidth(),colors = ButtonDefaults.buttonColors(
+          containerColor = Color(0xFF583E23), // Колір фону кнопки
+          contentColor = Color.White         // Колір тексту кнопки
+        ),
+        shape = RoundedCornerShape(4.dp),
       ) {
         Text("Додати оптового клієнта")
       }

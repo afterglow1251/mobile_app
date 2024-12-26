@@ -4,11 +4,13 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -18,9 +20,11 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.example.myapplication.api.dto.wholesale.customer.WholesaleCustomerDto
@@ -58,15 +62,16 @@ fun CrmClientDetails(
     }
   }
 
-  Scaffold(
+  Scaffold(containerColor = Color(0xFFFDF8ED),
     topBar = {
       TopAppBar(
-        title = { Text(clientData?.name ?: "Завантаження...") },
+        title = { Text(clientData?.name ?: "Завантаження...", color = Color.White) },
         navigationIcon = {
           IconButton(onClick = { onBack() }) {
-            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Назад")
+            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Назад", tint = Color.White)
           }
-        }
+        },
+        colors = TopAppBarDefaults.smallTopAppBarColors(containerColor = Color(0xFF583E23))
       )
     }
   ) { innerPadding ->
@@ -104,11 +109,16 @@ fun CrmClientDetails(
           modifier = Modifier.padding(4.dp)
         )
 
+        Spacer(modifier = Modifier.height(8.dp))
         Button(
           onClick = { navigateToCrmClientEdit(clientId) },
           modifier = Modifier
             .fillMaxWidth()
-            .padding(top = 4.dp)
+            .padding(top = 4.dp),colors = ButtonDefaults.buttonColors(
+            containerColor = Color(0xFF583E23), // Колір фону кнопки
+            contentColor = Color.White         // Колір тексту кнопки
+          ),
+          shape = RoundedCornerShape(4.dp),
         ) {
           Text("Редагувати інформацію про клієнта")
         }
@@ -117,7 +127,11 @@ fun CrmClientDetails(
           onClick = { navigateCrmOrderAdd(clientId) },
           modifier = Modifier
             .fillMaxWidth()
-            .padding(bottom = 8.dp)
+            .padding(bottom = 8.dp),colors = ButtonDefaults.buttonColors(
+            containerColor = Color(0xFF583E23), // Колір фону кнопки
+            contentColor = Color.White         // Колір тексту кнопки
+          ),
+          shape = RoundedCornerShape(4.dp),
         ) {
           Text("Додати замовлення")
         }
@@ -130,7 +144,7 @@ fun CrmClientDetails(
         ) {
           Text(
             text = "Останні замовлення:",
-            style = MaterialTheme.typography.titleMedium,
+            style = MaterialTheme.typography.titleLarge,
           )
         }
 
@@ -142,7 +156,7 @@ fun CrmClientDetails(
                 .padding(bottom = 8.dp)
                 .clickable { navigateCrmOrderDetails(order.id) }
                 .background(
-                  color = MaterialTheme.colorScheme.primary.copy(alpha = 0.15f),
+                  color = Color(0xFFFBF1DA),
                   shape = MaterialTheme.shapes.medium
                 )
                 .padding(16.dp)
@@ -150,17 +164,17 @@ fun CrmClientDetails(
               Column {
                 Text(
                   text = "Номер замовлення: ${order.id}",
-                  style = MaterialTheme.typography.titleSmall,
+                  style = MaterialTheme.typography.titleMedium,
                   modifier = Modifier.padding(bottom = 4.dp)
                 )
                 Text(
                   text = "Сума: ${order.totalPrice} грн",
-                  style = MaterialTheme.typography.bodySmall,
+                  style = MaterialTheme.typography.bodyMedium,
                   modifier = Modifier.padding(bottom = 4.dp)
                 )
                 Text(
                   text = "Статус: ${order.status}",
-                  style = MaterialTheme.typography.bodySmall,
+                  style = MaterialTheme.typography.bodyMedium,
                   modifier = Modifier.padding(bottom = 4.dp)
                 )
               }
@@ -174,7 +188,11 @@ fun CrmClientDetails(
           onClick = { showDeleteConfirmationDialog = true },
           modifier = Modifier
             .fillMaxWidth()
-            .padding(top = 8.dp)
+            .padding(top = 8.dp),colors = ButtonDefaults.buttonColors(
+            containerColor = Color(0xFF583E23), // Колір фону кнопки
+            contentColor = Color.White         // Колір тексту кнопки
+          ),
+          shape = RoundedCornerShape(4.dp),
         ) {
           Text("Видалити клієнта")
         }
@@ -183,7 +201,7 @@ fun CrmClientDetails(
           AlertDialog(
             onDismissRequest = { showDeleteConfirmationDialog = false },
             text = {
-              Text("Ви впевнені, що хочете видалити цього клієнта?")
+              Text("Ви впевнені, що хочете видалити цього клієнта?", color=Color(0xFF583E23))
             },
             confirmButton = {
               TextButton(onClick = {
@@ -207,6 +225,8 @@ fun CrmClientDetails(
               }
             },
             modifier = Modifier.padding(16.dp)
+              //.background(color = Color(0xFFFBF1DA),
+            //shape = RoundedCornerShape(8.dp))
           )
         }
       }

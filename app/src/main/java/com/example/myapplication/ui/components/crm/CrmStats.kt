@@ -3,6 +3,7 @@ package com.example.myapplication.ui.components.crm
 import android.util.Log
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
@@ -64,15 +65,16 @@ fun CrmStatsScreen(
     customer.orders.sumOf { it.totalPrice }
   }
 
-  Scaffold(
+  Scaffold(containerColor = Color(0xFFFDF8ED),
     topBar = {
       TopAppBar(
-        title = { Text("Ваша статистика") },
+        title = { Text("Ваша статистика", color = Color.White)},
         navigationIcon = {
           IconButton(onClick = { onBack() }) {
-            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Назад")
+            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Назад", tint = Color.White)
           }
-        }
+        },
+        colors = TopAppBarDefaults.smallTopAppBarColors(containerColor = Color(0xFF583E23))
       )
     }
   ) { innerPadding ->
@@ -99,6 +101,7 @@ fun CrmStatsScreen(
             modifier = Modifier.padding(vertical = 8.dp)
           )
         } else {
+          Spacer(modifier = Modifier.height(8.dp))
           Text(
             text = "Всього клієнтів: $totalCustomers",
             style = MaterialTheme.typography.bodyLarge,
@@ -132,8 +135,8 @@ fun CrmStatsScreen(
           Spacer(modifier = Modifier.height(16.dp))
           Text(
             text = "Обсяг продажів за останній місяць",
-            style = MaterialTheme.typography.titleMedium,
-            modifier = Modifier.padding(bottom = 16.dp)
+            style = MaterialTheme.typography.titleLarge,
+            modifier = Modifier.padding(bottom = 12.dp)
           )
 
           SalesChartMonthly(orders)
@@ -142,16 +145,22 @@ fun CrmStatsScreen(
 
           Text(
             text = "Обсяг продажів за цей рік",
-            style = MaterialTheme.typography.titleMedium,
-            modifier = Modifier.padding(bottom = 16.dp)
+            style = MaterialTheme.typography.titleLarge,
+            modifier = Modifier.padding(bottom = 12.dp)
           )
 
           SalesChartYearly(orders)
 
           Spacer(modifier = Modifier.height(32.dp))
+          Spacer(modifier = Modifier.height(8.dp))
           Button(
             onClick = navigateToCrmArchive,
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            colors = ButtonDefaults.buttonColors(
+            containerColor = Color(0xFF583E23), // Колір фону кнопки
+            contentColor = Color.White         // Колір тексту кнопки
+          ),
+          shape = RoundedCornerShape(4.dp),
           ) {
             Text("Перейти до архіву статистики")
           }
@@ -196,7 +205,7 @@ fun SalesChartMonthly(orders: List<WholesaleOrderDto>) {
   val days = listOf("1", "5", "10", "15", "20", "25", "30")
   val maxSales = salesData.maxOrNull()?.takeIf { it > 0 } ?: 1.0 // Ensure non-zero max value
 
-  val buttonColor = MaterialTheme.colorScheme.primary
+  val buttonColor = Color(0xFF583E23)
 
   Canvas(modifier = Modifier
     .size(width = 452.dp, height = 200.dp)
@@ -341,7 +350,7 @@ fun SalesChartYearly(orders: List<WholesaleOrderDto>) {
     listOf("Січ", "Лют", "Бер", "Кві", "Тра", "Чер", "Лип", "Сер", "Вер", "Жов", "Лис", "Гру")
   val maxSales = salesData.maxOrNull()?.takeIf { it > 0 } ?: 1.0 // Ensure non-zero max value
 
-  val buttonColor = MaterialTheme.colorScheme.primary
+  val buttonColor = Color(0xFF583E23)
 
   Canvas(modifier = Modifier
     .size(width = 452.dp, height = 200.dp)

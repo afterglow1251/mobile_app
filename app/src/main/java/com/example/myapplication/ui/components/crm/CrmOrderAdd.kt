@@ -4,7 +4,10 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.selection.LocalTextSelectionColors
+import androidx.compose.foundation.text.selection.TextSelectionColors
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -61,15 +64,16 @@ fun CrmOrderAdd(onBack: () -> Unit, customerId: Int) {
     }
   }
 
-  Scaffold(
+  Scaffold(containerColor = Color(0xFFFDF8ED),
     topBar = {
       TopAppBar(
-        title = { Text("Додати оптове замовлення") },
+        title = { Text("Додати оптове замовлення", color = Color.White) },
         navigationIcon = {
           IconButton(onClick = onBack) {
-            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Назад")
+            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Назад", tint = Color.White)
           }
-        }
+        },
+        colors = TopAppBarDefaults.smallTopAppBarColors(containerColor = Color(0xFF583E23))
       )
     },
     snackbarHost = {
@@ -102,7 +106,7 @@ fun CrmOrderAdd(onBack: () -> Unit, customerId: Int) {
           Box(
             modifier = Modifier
               .fillMaxWidth()
-              .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.15f), shape = MaterialTheme.shapes.medium)
+              .background(Color(0xFFFBF1DA), shape = MaterialTheme.shapes.medium)
               .padding(16.dp),
           ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -138,8 +142,8 @@ fun CrmOrderAdd(onBack: () -> Unit, customerId: Int) {
           modifier = Modifier
             .fillMaxWidth()
             .clip(MaterialTheme.shapes.medium)
-            .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.15f))
-            .padding(16.dp)
+            .background(Color(0xFFFBF1DA))
+            .padding(horizontal = 16.dp, vertical = 8.dp) // Симетричне вирівнювання
         ) {
           if (errorMessage.isNotEmpty()) {
             Text(
@@ -149,32 +153,48 @@ fun CrmOrderAdd(onBack: () -> Unit, customerId: Int) {
             )
           }
 
-          OutlinedTextField(
-            value = productName,
-            onValueChange = {
-              productName = it
-              coroutineScope.launch {
-                suggestions = if (it.isNotEmpty()) {
-                  try {
-                    productService.getAllProducts(name = it).map { product ->
-                      OrderProduct(
-                        id = product.id,
-                        name = product.name,
-                        quantity = 0,
-                        price = product.price // Default price from DB
-                      )
+          CompositionLocalProvider(
+            LocalTextSelectionColors provides TextSelectionColors(
+              handleColor = Color(0xFF583E23),
+              backgroundColor = Color(0xFFFFEBCD)
+            )
+          ) {
+            OutlinedTextField(
+              value = productName,
+              onValueChange = {
+                productName = it
+                coroutineScope.launch {
+                  suggestions = if (it.isNotEmpty()) {
+                    try {
+                      productService.getAllProducts(name = it).map { product ->
+                        OrderProduct(
+                          id = product.id,
+                          name = product.name,
+                          quantity = 0,
+                          price = product.price
+                        )
+                      }
+                    } catch (e: Exception) {
+                      listOf()
                     }
-                  } catch (e: Exception) {
+                  } else {
                     listOf()
                   }
-                } else {
-                  listOf()
                 }
-              }
-            },
-            label = { Text("Уведіть назву товару") },
-            modifier = Modifier.fillMaxWidth()
-          )
+              },
+              label = { Text("Уведіть назву товару") },
+              modifier = Modifier.fillMaxWidth(),
+              colors = TextFieldDefaults.outlinedTextFieldColors(
+                focusedBorderColor = Color(0xFF583E23),
+                unfocusedBorderColor = Color.Gray,
+                errorBorderColor = Color.Red,
+                cursorColor = Color(0xFF583E23),
+                focusedLabelColor = Color(0xFF583E23),
+                unfocusedLabelColor = Color.Gray,
+                errorLabelColor = Color.Red
+              ),
+            )
+          }
 
           if (suggestions.isNotEmpty()) {
             Column(
@@ -204,6 +224,15 @@ fun CrmOrderAdd(onBack: () -> Unit, customerId: Int) {
             onValueChange = { productQuantity = it },
             label = { Text("Кількість") },
             modifier = Modifier.fillMaxWidth(),
+            colors = TextFieldDefaults.outlinedTextFieldColors(
+              focusedBorderColor = Color(0xFF583E23),
+              unfocusedBorderColor = Color.Gray,
+              errorBorderColor = Color.Red,
+              cursorColor = Color(0xFF583E23),
+              focusedLabelColor = Color(0xFF583E23),
+              unfocusedLabelColor = Color.Gray,
+              errorLabelColor = Color.Red
+            ),
             isError = productQuantity.isEmpty()
           )
           if (productQuantity.isEmpty()) {
@@ -219,16 +248,34 @@ fun CrmOrderAdd(onBack: () -> Unit, customerId: Int) {
             value = productPrice,
             onValueChange = { productPrice = it },
             label = { Text("Ціна (необов'язково)") },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            colors = TextFieldDefaults.outlinedTextFieldColors(
+              focusedBorderColor = Color(0xFF583E23),
+              unfocusedBorderColor = Color.Gray,
+              errorBorderColor = Color.Red,
+              cursorColor = Color(0xFF583E23),
+              focusedLabelColor = Color(0xFF583E23),
+              unfocusedLabelColor = Color.Gray,
+              errorLabelColor = Color.Red
+            ),
           )
 
           Spacer(modifier = Modifier.height(4.dp))
-          Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+          Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween
+          ) {
             Button(
               onClick = {
                 isAddingProduct = false
                 errorMessage = ""
-              }
+              },
+              modifier = Modifier.padding(end = 8.dp),
+              colors = ButtonDefaults.buttonColors(
+                containerColor = Color(0xFF583E23),
+                contentColor = Color.White
+              ),
+              shape = RoundedCornerShape(4.dp),
             ) {
               Text("Скасувати")
             }
@@ -259,7 +306,12 @@ fun CrmOrderAdd(onBack: () -> Unit, customerId: Int) {
                   }
                 }
               },
-              modifier = Modifier.weight(1f)
+              modifier = Modifier.weight(1f),
+              colors = ButtonDefaults.buttonColors(
+                containerColor = Color(0xFF583E23),
+                contentColor = Color.White
+              ),
+              shape = RoundedCornerShape(4.dp),
             ) {
               Text("Додати товар")
             }
@@ -267,9 +319,16 @@ fun CrmOrderAdd(onBack: () -> Unit, customerId: Int) {
         }
       }
 
+
+      Spacer(modifier = Modifier.height(8.dp))
+
       Button(
         onClick = { isAddingProduct = true },
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier.fillMaxWidth(),colors = ButtonDefaults.buttonColors(
+          containerColor = Color(0xFF583E23), // Колір фону кнопки
+          contentColor = Color.White         // Колір тексту кнопки
+        ),
+        shape = RoundedCornerShape(4.dp),
       ) {
         Text("Додати товар")
       }
@@ -325,7 +384,11 @@ fun CrmOrderAdd(onBack: () -> Unit, customerId: Int) {
         },
         modifier = Modifier
           .fillMaxWidth()
-          .padding(top = 8.dp),
+          .padding(top = 8.dp),colors = ButtonDefaults.buttonColors(
+          containerColor = Color(0xFF583E23), // Колір фону кнопки
+          contentColor = Color.White         // Колір тексту кнопки
+        ),
+        shape = RoundedCornerShape(4.dp),
         enabled = products.isNotEmpty()
       ) {
         Text("Створити замовлення")

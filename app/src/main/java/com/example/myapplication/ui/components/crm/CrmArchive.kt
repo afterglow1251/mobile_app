@@ -15,6 +15,7 @@ import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.unit.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.ui.platform.LocalContext
 import com.example.myapplication.api.dto.wholesale.order.WholesaleOrderDto
 import com.example.myapplication.api.network.NetworkModule
@@ -80,15 +81,16 @@ fun CrmArchiveScreen(
     }
   }
 
-  Scaffold(
+  Scaffold(containerColor = Color(0xFFFDF8ED),
     topBar = {
       TopAppBar(
-        title = { Text("Архів статистики") },
+        title = { Text("Архів статистики", color = Color.White) },
         navigationIcon = {
           IconButton(onClick = { onBack() }) {
-            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Назад")
+            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Назад", tint = Color.White)
           }
-        }
+        },
+        colors = TopAppBarDefaults.smallTopAppBarColors(containerColor = Color(0xFF583E23))
       )
     }
   ) { innerPadding ->
@@ -108,16 +110,29 @@ fun CrmArchiveScreen(
           CircularProgressIndicator()
         }
       } else {
+        Spacer(modifier = Modifier.height(10.dp))
         Box(
           modifier = Modifier
             .fillMaxWidth()
             .clickable { navigateToCrmMonthArchive() }
-            .padding(vertical = 8.dp)
+            .padding(vertical = 8.dp),
+          contentAlignment = Alignment.CenterEnd
         ) {
-          Text(
-            text = "Статистика за місяці",
-            style = MaterialTheme.typography.titleLarge
-          )
+          Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.fillMaxWidth()
+          ) {
+            Text(
+              text = "Статистика за місяці",
+              style = MaterialTheme.typography.titleLarge,
+              modifier = Modifier.weight(1f)
+            )
+            Icon(
+              Icons.AutoMirrored.Filled.ArrowForward, // Стрілочка вперед
+              contentDescription = "Перейти до статистики за місяці",
+              tint = Color(0xFF583E23)
+            )
+          }
         }
 
         Log.d("Debug", "$lastThreeMonthsOrders")
@@ -133,16 +148,29 @@ fun CrmArchiveScreen(
           Spacer(modifier = Modifier.height(26.dp))
         }
 
+        Spacer(modifier = Modifier.height(10.dp))
         Box(
           modifier = Modifier
             .fillMaxWidth()
             .clickable { navigateToCrmYearArchive() }
-            .padding(vertical = 8.dp)
+            .padding(vertical = 8.dp),
+          contentAlignment = Alignment.CenterEnd
         ) {
-          Text(
-            text = "Статистика за роки",
-            style = MaterialTheme.typography.titleLarge
-          )
+          Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.fillMaxWidth()
+          ) {
+            Text(
+              text = "Статистика за роки",
+              style = MaterialTheme.typography.titleLarge,
+              modifier = Modifier.weight(1f)
+            )
+            Icon(
+              Icons.AutoMirrored.Filled.ArrowForward, // Стрілочка вперед
+              contentDescription = "Перейти до статистики за роки",
+              tint = Color(0xFF583E23)
+            )
+          }
         }
 
         lastThreeYearsOrders.forEach { (year, orders) ->
@@ -179,7 +207,7 @@ fun SalesChartWithCustomData(
       .height(220.dp)
       .padding(horizontal = 16.dp)
   ) {
-    val buttonColor = MaterialTheme.colorScheme.primary
+    val buttonColor = Color(0xFF583E23)
     Canvas(modifier = Modifier.fillMaxSize()) {
 
       val horizontalSpacing = ((size.width - 64.dp.toPx()) / (months.size - 1)) / 2
@@ -266,7 +294,7 @@ fun SalesChartForDays(
   modifier: Modifier = Modifier
 ) {
 
-  val buttonColor = MaterialTheme.colorScheme.primary
+  val buttonColor = Color(0xFF583E23)
   val maxSales = data.maxOrNull() ?: 1
 
   Column(
@@ -366,7 +394,7 @@ fun SalesChartMonthlyAny(orders: List<WholesaleOrderDto>) {
   val days = listOf("1", "5", "10", "15", "20", "25", "30")
   val maxSales = salesData.maxOrNull()?.takeIf { it > 0 } ?: 1.0 // Ensure non-zero max value
 
-  val buttonColor = MaterialTheme.colorScheme.primary
+  val buttonColor = Color(0xFF583E23)
 
   Canvas(modifier = Modifier.size(width = 452.dp, height = 200.dp).padding(top = 20.dp)) {
     val horizontalSpacing = ((size.width - 64.dp.toPx()) / (salesData.size - 1).toFloat()) * 1.037f
@@ -505,7 +533,7 @@ fun SalesChartYearlyAny(orders: List<WholesaleOrderDto>) {
   val months = listOf("Січ", "Лют", "Бер", "Кві", "Тра", "Чер", "Лип", "Сер", "Вер", "Жов", "Лис", "Гру")
   val maxSales = salesData.maxOrNull()?.takeIf { it > 0 } ?: 1.0 // Ensure non-zero max value
 
-  val buttonColor = MaterialTheme.colorScheme.primary
+  val buttonColor = Color(0xFF583E23)
 
   Canvas(modifier = Modifier.size(width = 452.dp, height = 200.dp).padding(top = 20.dp)) {
     val horizontalSpacing = ((size.width - 64.dp.toPx()) / (salesData.size - 1).toFloat())

@@ -3,6 +3,7 @@ package com.example.myapplication.ui.components.crm
 import android.util.Log
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
@@ -82,15 +83,16 @@ fun CrmMainScreen(
     }
   }
 
-  Scaffold(
+  Scaffold(containerColor = Color(0xFFFDF8ED),
     topBar = {
       TopAppBar(
-        title = { Text("CRM Система") },
+        title = { Text("CRM Система", color = Color.White)},
         navigationIcon = {
           IconButton(onClick = { onBack() }) {
-            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Назад")
+            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Назад", tint = Color.White)
           }
-        }
+        },
+        colors = TopAppBarDefaults.smallTopAppBarColors(containerColor = Color(0xFF583E23))
       )
     }
   ) { innerPadding ->
@@ -100,26 +102,30 @@ fun CrmMainScreen(
         .padding(innerPadding)
         .padding(top = 0.dp, start = 16.dp, end = 16.dp)
     ) {
-
+      Spacer(modifier = Modifier.height(16.dp))
       Text(
         text = "Активні клієнти: $totalCustomers",
-        style = MaterialTheme.typography.bodyMedium,
+        style = MaterialTheme.typography.bodyLarge,
         modifier = Modifier.padding(bottom = 8.dp)
       )
 
       Text(
-        text = "Обсяг продажів: $totalSales грн",
-        style = MaterialTheme.typography.bodyMedium,
+        text = "Обсяг продажів за тиждень: $totalSales грн",
+        style = MaterialTheme.typography.bodyLarge,
         modifier = Modifier.padding(bottom = 16.dp)
       )
 
       WeeklySalesChart(orders)
 
       Spacer(modifier = Modifier.height(32.dp))
-
+      Spacer(modifier = Modifier.height(6.dp))
       Button(
         onClick = navigateToCrmClientList,
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier.fillMaxWidth(),colors = ButtonDefaults.buttonColors(
+          containerColor = Color(0xFF583E23), // Колір фону кнопки
+          contentColor = Color.White         // Колір тексту кнопки
+        ),
+        shape = RoundedCornerShape(4.dp),
       ) {
         Text("Перейти до клієнтів")
       }
@@ -128,7 +134,11 @@ fun CrmMainScreen(
 
       Button(
         onClick = navigateToCrmStats,
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier.fillMaxWidth(),colors = ButtonDefaults.buttonColors(
+          containerColor = Color(0xFF583E23), // Колір фону кнопки
+          contentColor = Color.White         // Колір тексту кнопки
+        ),
+        shape = RoundedCornerShape(4.dp),
       ) {
         Text("Перейти до статистики")
       }
@@ -154,7 +164,7 @@ fun WeeklySalesChart(orders: List<WholesaleOrderDto>) {
   }
   val days = listOf("Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Нд")
 
-  val buttonColor = MaterialTheme.colorScheme.primary
+  val buttonColor = Color(0xFF583E23)
 
   Column(
     modifier = Modifier
@@ -164,7 +174,7 @@ fun WeeklySalesChart(orders: List<WholesaleOrderDto>) {
   ) {
     Text(
       text = "Графік продажів за тиждень",
-      style = MaterialTheme.typography.titleMedium,
+      style = MaterialTheme.typography.titleLarge,
       modifier = Modifier.padding(bottom = 16.dp)
     )
     Spacer(modifier = Modifier.height(8.dp))

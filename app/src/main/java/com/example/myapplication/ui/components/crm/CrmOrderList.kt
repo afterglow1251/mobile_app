@@ -1,5 +1,6 @@
 package com.example.myapplication.ui.components.crm
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -11,6 +12,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -44,15 +46,17 @@ fun CrmOrderListScreen(
     }
   }
 
-  Scaffold(
+
+  Scaffold(containerColor = Color(0xFFFDF8ED),
     topBar = {
       TopAppBar(
-        title = { Text("Список замовлень") },
+        title = { Text("Список замовлень", color = Color.White) },
         navigationIcon = {
           IconButton(onClick = { onBack() }) {
-            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Назад")
+            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Назад", tint = Color.White)
           }
-        }
+        },
+        colors = TopAppBarDefaults.smallTopAppBarColors(containerColor = Color(0xFF583E23))
       )
     }
   ) { innerPadding ->
@@ -77,8 +81,8 @@ fun CrmOrderListScreen(
         Text("Немає доступних замовлень.", style = MaterialTheme.typography.bodyLarge)
       } else {
         Text(
-          text = "Ваші замовлення:",
-          style = MaterialTheme.typography.titleMedium,
+          text = "Замовлення клієнта:",
+          style = MaterialTheme.typography.titleLarge,
           modifier = Modifier.padding(bottom = 16.dp)
         )
 
@@ -89,7 +93,7 @@ fun CrmOrderListScreen(
               .padding(bottom = 8.dp)
               .clickable { navigateCrmOrderDetails(order.id) }
               .background(
-                color = MaterialTheme.colorScheme.primary.copy(alpha = 0.15f),
+                color = Color(0xFFFBF1DA),
                 shape = MaterialTheme.shapes.medium
               )
               .padding(16.dp)
@@ -97,22 +101,22 @@ fun CrmOrderListScreen(
             Column {
               Text(
                 text = "Замовлення #${order.id}",
-                style = MaterialTheme.typography.titleSmall,
+                style = MaterialTheme.typography.titleMedium,
                 modifier = Modifier.padding(bottom = 4.dp)
               )
               Text(
                 text = "Сума замовлення: ${order.totalPrice} грн",
-                style = MaterialTheme.typography.bodySmall,
+                style = MaterialTheme.typography.bodyMedium,
                 modifier = Modifier.padding(bottom = 4.dp)
               )
               Text(
                 text = "Статус: ${order.status}",
-                style = MaterialTheme.typography.bodySmall,
+                style = MaterialTheme.typography.bodyMedium,
                 modifier = Modifier.padding(bottom = 4.dp)
               )
               Text(
                 text = "Дата створення: ${order.createdAt}",
-                style = MaterialTheme.typography.bodySmall
+                style = MaterialTheme.typography.bodyMedium
               )
             }
           }

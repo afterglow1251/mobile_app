@@ -8,6 +8,7 @@ import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.*
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.*
@@ -22,6 +23,7 @@ import com.example.myapplication.R.*
 import com.example.myapplication.validators.isValidEmail
 import com.example.myapplication.validators.isValidPassword
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AuthScreen(onNavigateToProductsList: () -> Unit) {
   var email by remember { mutableStateOf("") }
@@ -36,8 +38,13 @@ fun AuthScreen(onNavigateToProductsList: () -> Unit) {
 
   val context = LocalContext.current
 
+
+
   Scaffold(
-    modifier = Modifier.fillMaxSize()) { innerPadding ->
+    modifier = Modifier.fillMaxSize(),
+    containerColor = Color(0xFFFDF8ED)
+  )
+  { innerPadding ->
     Box(
       modifier = Modifier
         .fillMaxSize()
@@ -76,7 +83,7 @@ fun AuthScreen(onNavigateToProductsList: () -> Unit) {
           text = "Вітаємо у Пивному Чемпіоні",
           fontSize = 24.sp,
           fontWeight = FontWeight.Bold,
-          color = MaterialTheme.colorScheme.primary,
+          color = Color(0xFF583E23),
           textAlign = TextAlign.Center
         )
 
@@ -91,7 +98,16 @@ fun AuthScreen(onNavigateToProductsList: () -> Unit) {
             },
             label = { Text("Введіть вашу пошту") },
             modifier = Modifier.fillMaxWidth(),
-            isError = emailError != null
+            isError = emailError != null,
+            colors = TextFieldDefaults.outlinedTextFieldColors(
+              focusedBorderColor = Color(0xFF583E23),
+              unfocusedBorderColor = Color.Gray,       // Колір бордюру без фокусу
+              errorBorderColor = Color.Red,            // Колір бордюру при помилці
+              cursorColor = Color(0xFF583E23),         // Колір курсора
+              focusedLabelColor = Color(0xFF583E23),   // Колір мітки у фокусі
+              unfocusedLabelColor = Color.Gray,        // Колір мітки без фокусу
+              errorLabelColor = Color.Red,          // Колір підказки (placeholder)
+            )
           )
 
           emailError?.let {
@@ -125,6 +141,10 @@ fun AuthScreen(onNavigateToProductsList: () -> Unit) {
                 }
               }
             },
+            colors = ButtonDefaults.buttonColors(
+              containerColor = Color(0xFF583E23), // Колір фону кнопки
+              contentColor = Color.White         // Колір тексту кнопки
+            ),
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(4.dp),
             enabled = emailError == null && email.isNotBlank()
@@ -140,6 +160,15 @@ fun AuthScreen(onNavigateToProductsList: () -> Unit) {
                 passwordError = null
               },
               label = { Text("Пароль") },
+              colors = TextFieldDefaults.outlinedTextFieldColors(
+                focusedBorderColor = Color(0xFF583E23),
+                unfocusedBorderColor = Color.Gray,       // Колір бордюру без фокусу
+                errorBorderColor = Color.Red,            // Колір бордюру при помилці
+                cursorColor = Color(0xFF583E23),         // Колір курсора
+                focusedLabelColor = Color(0xFF583E23),   // Колір мітки у фокусі
+                unfocusedLabelColor = Color.Gray,        // Колір мітки без фокусу
+                errorLabelColor = Color.Red,          // Колір підказки (placeholder)
+              ),
               modifier = Modifier.fillMaxWidth(),
               visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
               trailingIcon = {
@@ -199,7 +228,11 @@ fun AuthScreen(onNavigateToProductsList: () -> Unit) {
                 }
               },
               modifier = Modifier.fillMaxWidth(),
-              shape = RoundedCornerShape(4.dp)
+              shape = RoundedCornerShape(4.dp),
+                      colors = ButtonDefaults.buttonColors(
+                      containerColor = Color(0xFF583E23), // Колір фону кнопки
+              contentColor = Color.White         // Колір тексту кнопки
+            ),
             ) {
               Text("Увійти")
             }
@@ -214,6 +247,15 @@ fun AuthScreen(onNavigateToProductsList: () -> Unit) {
                   else -> null
                 }
               },
+              colors = TextFieldDefaults.outlinedTextFieldColors(
+                focusedBorderColor = Color(0xFF583E23),
+                unfocusedBorderColor = Color.Gray,       // Колір бордюру без фокусу
+                errorBorderColor = Color.Red,            // Колір бордюру при помилці
+                cursorColor = Color(0xFF583E23),         // Колір курсора
+                focusedLabelColor = Color(0xFF583E23),   // Колір мітки у фокусі
+                unfocusedLabelColor = Color.Gray,        // Колір мітки без фокусу
+                errorLabelColor = Color.Red,          // Колір підказки (placeholder)
+              ),
               label = { Text("Пароль") },
               modifier = Modifier.fillMaxWidth(),
               visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),

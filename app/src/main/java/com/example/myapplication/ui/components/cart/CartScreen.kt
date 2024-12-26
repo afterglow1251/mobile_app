@@ -5,6 +5,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -14,6 +15,8 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -111,12 +114,16 @@ fun CartScreen(userId: Int, onBack: () -> Unit, showProductDetails: (Int) -> Uni
     })
   }
 
-  Scaffold(topBar = {
-    TopAppBar(title = { Text("Кошик") }, navigationIcon = {
-      IconButton(onClick = { onBack() }) {
-        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Назад")
-      }
-    })
+  Scaffold(containerColor = Color(0xFFFDF8ED),topBar = {
+    TopAppBar(
+      title = { Text("Кошик", color = Color.White) },
+      navigationIcon = {
+        IconButton(onClick = { onBack() }) {
+          Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Назад", tint = Color.White)
+        }
+      },
+      colors = TopAppBarDefaults.smallTopAppBarColors(containerColor = Color(0xFF583E23))
+    )
   }, bottomBar = {
     if (cartItems.isNotEmpty()) {
       Column(
@@ -130,7 +137,13 @@ fun CartScreen(userId: Int, onBack: () -> Unit, showProductDetails: (Int) -> Uni
           modifier = Modifier.padding(bottom = 8.dp)
         )
         Button(
-          onClick = { showOrderDialog = true }, modifier = Modifier.fillMaxWidth()
+          onClick = { showOrderDialog = true },
+          modifier = Modifier.fillMaxWidth(),
+          colors = ButtonDefaults.buttonColors(
+            containerColor = Color(0xFF583E23), // Колір фону кнопки
+            contentColor = Color.White         // Колір тексту кнопки
+          ),
+          shape = RoundedCornerShape(4.dp),
         ) {
           Text("Оформити замовлення", fontSize = 18.sp)
         }
@@ -183,6 +196,7 @@ fun CartItemRow(
   onShowProductDetails: () -> Unit
 ) {
   Card(
+    colors = CardDefaults.cardColors(containerColor = Color(0xFFFBF1DA)),
     modifier = Modifier
       .fillMaxWidth()
       .padding(8.dp)
@@ -250,7 +264,14 @@ fun CartItemRow(
       }
 
       Button(
-        onClick = onRemove, modifier = Modifier.align(Alignment.Bottom)
+        onClick = onRemove,
+        modifier = Modifier.align(Alignment.Bottom),
+        colors = ButtonDefaults.buttonColors(
+          containerColor = Color(0xFF583E23), // Колір фону кнопки
+          contentColor = Color.White         // Колір тексту кнопки
+        )
+        ,
+        shape = RoundedCornerShape(4.dp),
       ) {
         Text("Видалити")
       }
@@ -258,6 +279,7 @@ fun CartItemRow(
   }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun OrderDialog(
   userDto: UserDto?, onDismiss: () -> Unit, onConfirm: (String, String, String) -> Unit
@@ -283,6 +305,8 @@ fun OrderDialog(
   }
 
   AlertDialog(onDismissRequest = { onDismiss() },
+    modifier = Modifier.padding(16.dp).clip(RoundedCornerShape(8.dp)),
+    containerColor = Color(0xFFFBF1DA),
     title = { Text("Підтвердження замовлення") },
     text = {
       Column {
@@ -290,7 +314,16 @@ fun OrderDialog(
           onValueChange = { name = it },
           label = { Text("Ім'я") },
           isError = nameError != null,
-          modifier = Modifier.fillMaxWidth()
+          modifier = Modifier.fillMaxWidth(),
+          colors = TextFieldDefaults.outlinedTextFieldColors(
+            focusedBorderColor = Color(0xFF583E23),
+            unfocusedBorderColor = Color.Gray,       // Колір бордюру без фокусу
+            errorBorderColor = Color.Red,            // Колір бордюру при помилці
+            cursorColor = Color(0xFF583E23),         // Колір курсора
+            focusedLabelColor = Color(0xFF583E23),   // Колір мітки у фокусі
+            unfocusedLabelColor = Color.Gray,        // Колір мітки без фокусу
+            errorLabelColor = Color.Red              // Колір мітки при помилці
+          )
         )
         if (nameError != null) {
           Text(
@@ -310,6 +343,15 @@ fun OrderDialog(
           modifier = Modifier.fillMaxWidth(),
           keyboardOptions = KeyboardOptions.Default.copy(
             keyboardType = KeyboardType.Phone
+          ),
+          colors = TextFieldDefaults.outlinedTextFieldColors(
+            focusedBorderColor = Color(0xFF583E23),
+            unfocusedBorderColor = Color.Gray,       // Колір бордюру без фокусу
+            errorBorderColor = Color.Red,            // Колір бордюру при помилці
+            cursorColor = Color(0xFF583E23),         // Колір курсора
+            focusedLabelColor = Color(0xFF583E23),   // Колір мітки у фокусі
+            unfocusedLabelColor = Color.Gray,        // Колір мітки без фокусу
+            errorLabelColor = Color.Red              // Колір мітки при помилці
           )
         )
         if (phoneError != null) {
@@ -325,7 +367,16 @@ fun OrderDialog(
           onValueChange = { address = it },
           label = { Text("Адреса") },
           isError = addressError != null,
-          modifier = Modifier.fillMaxWidth()
+          modifier = Modifier.fillMaxWidth(),
+          colors = TextFieldDefaults.outlinedTextFieldColors(
+            focusedBorderColor = Color(0xFF583E23),
+            unfocusedBorderColor = Color.Gray,       // Колір бордюру без фокусу
+            errorBorderColor = Color.Red,            // Колір бордюру при помилці
+            cursorColor = Color(0xFF583E23),         // Колір курсора
+            focusedLabelColor = Color(0xFF583E23),   // Колір мітки у фокусі
+            unfocusedLabelColor = Color.Gray,        // Колір мітки без фокусу
+            errorLabelColor = Color.Red              // Колір мітки при помилці
+          )
         )
         if (addressError != null) {
           Text(
@@ -342,14 +393,27 @@ fun OrderDialog(
           if (isFormValid) {
             onConfirm(name, phone, address)
           }
-        }, enabled = isFormValid
+        }, enabled = isFormValid,
+        colors = ButtonDefaults.buttonColors(
+          containerColor = Color(0xFF583E23), // Колір фону кнопки
+          contentColor = Color.White         // Колір тексту кнопки
+
+        ),
+        shape = RoundedCornerShape(4.dp),
       ) {
         Text("Підтвердити")
       }
     },
     dismissButton = {
-      TextButton(onClick = { onDismiss() }) {
-        Text("Скасувати")
+      TextButton(onClick = { onDismiss() }, colors = ButtonDefaults.buttonColors(
+        containerColor = Color.LightGray, // Колір фону кнопки
+        // contentColor = Color.White
+        // Колір тексту кнопки
+      ),
+        shape = RoundedCornerShape(4.dp),) {
+        Text("Скасувати", color = Color(0xFF583E23))
       }
     })
 }
+
+
