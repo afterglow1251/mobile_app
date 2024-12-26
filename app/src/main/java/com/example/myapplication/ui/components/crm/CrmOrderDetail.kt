@@ -122,7 +122,7 @@ fun CrmOrderDetailsScreen(orderId: Int, onBack: () -> Unit) {
         Column {
           order.orderItems.forEachIndexed { index, item ->
             Text(
-              text = "- ${item.product.name}: x${item.quantity}, ${item.price * item.quantity} грн",
+              text = "- ${item.product.name}: x${item.quantity} (${item.price} грн), ${item.price * item.quantity} грн",
               style = MaterialTheme.typography.bodyLarge,
               modifier = Modifier.padding(bottom = 4.dp)
             )
