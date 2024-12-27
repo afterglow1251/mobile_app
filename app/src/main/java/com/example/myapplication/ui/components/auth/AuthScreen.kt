@@ -3,6 +3,8 @@ package com.example.myapplication.ui.components.auth
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.selection.LocalTextSelectionColors
 import androidx.compose.foundation.text.selection.TextSelectionColors
 import androidx.compose.material.icons.Icons
@@ -21,6 +23,7 @@ import com.example.myapplication.api.network.NetworkModule
 import com.example.myapplication.utils.LocalStorage
 import kotlinx.coroutines.*
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import com.example.myapplication.R.*
 import com.example.myapplication.validators.isValidEmail
 import com.example.myapplication.validators.isValidPassword
@@ -39,8 +42,7 @@ fun AuthScreen(onNavigateToProductsList: () -> Unit) {
   var passwordError by remember { mutableStateOf<String?>(null) }
 
   val context = LocalContext.current
-
-
+  val keyboardController = LocalSoftwareKeyboardController.current
 
   Scaffold(
     modifier = Modifier.fillMaxSize(),
@@ -98,25 +100,36 @@ fun AuthScreen(onNavigateToProductsList: () -> Unit) {
               backgroundColor = Color(0xFFFFEBCD)
             )
           ) {
-          OutlinedTextField(
-            value = email,
-            onValueChange = {
-              email = it
-              emailError = if (email.isBlank()) "Поле не може бути порожнім" else if (isValidEmail(it)) null else "Некоректний формат пошти"
-            },
-            label = { Text("Введіть вашу пошту") },
-            modifier = Modifier.fillMaxWidth(),
-            isError = emailError != null,
-            colors = TextFieldDefaults.outlinedTextFieldColors(
-              focusedBorderColor = Color(0xFF583E23),
-              unfocusedBorderColor = Color.Gray,       // Колір бордюру без фокусу
-              errorBorderColor = Color.Red,            // Колір бордюру при помилці
-              cursorColor = Color(0xFF583E23),         // Колір курсора
-              focusedLabelColor = Color(0xFF583E23),   // Колір мітки у фокусі
-              unfocusedLabelColor = Color.Gray,        // Колір мітки без фокусу
-              errorLabelColor = Color.Red,          // Колір підказки (placeholder)
+            OutlinedTextField(
+              value = email,
+              onValueChange = {
+                email = it
+                emailError =
+                  if (email.isBlank()) "Поле не може бути порожнім" else if (isValidEmail(it)) null else "Некоректний формат пошти"
+              },
+              label = { Text("Введіть вашу пошту") },
+              modifier = Modifier.fillMaxWidth(),
+              isError = emailError != null,
+              colors = TextFieldDefaults.outlinedTextFieldColors(
+                focusedBorderColor = Color(0xFF583E23),
+                unfocusedBorderColor = Color.Gray,       // Колір бордюру без фокусу
+                errorBorderColor = Color.Red,            // Колір бордюру при помилці
+                cursorColor = Color(0xFF583E23),         // Колір курсора
+                focusedLabelColor = Color(0xFF583E23),   // Колір мітки у фокусі
+                unfocusedLabelColor = Color.Gray,        // Колір мітки без фокусу
+                errorLabelColor = Color.Red,          // Колір підказки (placeholder)
+              ),
+              keyboardOptions = KeyboardOptions.Default.copy(
+                imeAction = ImeAction.Done
+              ),
+              keyboardActions = KeyboardActions(
+                onDone = {
+                  keyboardController?.hide()
+                }
+              ),
+              singleLine = true
             )
-          )}
+          }
 
           emailError?.let {
             Text(
@@ -166,34 +179,45 @@ fun AuthScreen(onNavigateToProductsList: () -> Unit) {
                 handleColor = Color(0xFF583E23),
                 backgroundColor = Color(0xFFFFEBCD)
               )
-            ) { OutlinedTextField(
-              value = password,
-              onValueChange = {
-                password = it
-                passwordError = null
-              },
-              label = { Text("Пароль") },
-              colors = TextFieldDefaults.outlinedTextFieldColors(
-                focusedBorderColor = Color(0xFF583E23),
-                unfocusedBorderColor = Color.Gray,       // Колір бордюру без фокусу
-                errorBorderColor = Color.Red,            // Колір бордюру при помилці
-                cursorColor = Color(0xFF583E23),         // Колір курсора
-                focusedLabelColor = Color(0xFF583E23),   // Колір мітки у фокусі
-                unfocusedLabelColor = Color.Gray,        // Колір мітки без фокусу
-                errorLabelColor = Color.Red,          // Колір підказки (placeholder)
-              ),
-              modifier = Modifier.fillMaxWidth(),
-              visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
-              trailingIcon = {
-                IconButton(onClick = { passwordVisible = !passwordVisible }) {
-                  Icon(
-                    imageVector = if (passwordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff,
-                    contentDescription = null
-                  )
-                }
-              },
-              isError = passwordError != null
-            )}
+            ) {
+              OutlinedTextField(
+                value = password,
+                onValueChange = {
+                  password = it
+                  passwordError = null
+                },
+                label = { Text("Пароль") },
+                colors = TextFieldDefaults.outlinedTextFieldColors(
+                  focusedBorderColor = Color(0xFF583E23),
+                  unfocusedBorderColor = Color.Gray,       // Колір бордюру без фокусу
+                  errorBorderColor = Color.Red,            // Колір бордюру при помилці
+                  cursorColor = Color(0xFF583E23),         // Колір курсора
+                  focusedLabelColor = Color(0xFF583E23),   // Колір мітки у фокусі
+                  unfocusedLabelColor = Color.Gray,        // Колір мітки без фокусу
+                  errorLabelColor = Color.Red,          // Колір підказки (placeholder)
+                ),
+                keyboardOptions = KeyboardOptions.Default.copy(
+                  imeAction = ImeAction.Done
+                ),
+                keyboardActions = KeyboardActions(
+                  onDone = {
+                    keyboardController?.hide()
+                  }
+                ),
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth(),
+                visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                trailingIcon = {
+                  IconButton(onClick = { passwordVisible = !passwordVisible }) {
+                    Icon(
+                      imageVector = if (passwordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff,
+                      contentDescription = null
+                    )
+                  }
+                },
+                isError = passwordError != null
+              )
+            }
 
             passwordError?.let {
               Text(
@@ -242,10 +266,10 @@ fun AuthScreen(onNavigateToProductsList: () -> Unit) {
               },
               modifier = Modifier.fillMaxWidth(),
               shape = RoundedCornerShape(4.dp),
-                      colors = ButtonDefaults.buttonColors(
-                      containerColor = Color(0xFF583E23), // Колір фону кнопки
-              contentColor = Color.White         // Колір тексту кнопки
-            ),
+              colors = ButtonDefaults.buttonColors(
+                containerColor = Color(0xFF583E23), // Колір фону кнопки
+                contentColor = Color.White         // Колір тексту кнопки
+              ),
             ) {
               Text("Увійти")
             }
@@ -256,73 +280,83 @@ fun AuthScreen(onNavigateToProductsList: () -> Unit) {
                 backgroundColor = Color(0xFFFFEBCD)
               )
             ) {
-            OutlinedTextField(
-              value = password,
-              onValueChange = {
-                password = it
-                passwordError = when {
-                  !isValidPassword(it) -> "Пароль повинен містити щонайменше 6 символів"
-                  it != confirmPassword -> "Паролі не співпадають"
-                  else -> null
-                }
-              },
-              colors = TextFieldDefaults.outlinedTextFieldColors(
-                focusedBorderColor = Color(0xFF583E23),
-                unfocusedBorderColor = Color.Gray,       // Колір бордюру без фокусу
-                errorBorderColor = Color.Red,            // Колір бордюру при помилці
-                cursorColor = Color(0xFF583E23),         // Колір курсора
-                focusedLabelColor = Color(0xFF583E23),   // Колір мітки у фокусі
-                unfocusedLabelColor = Color.Gray,        // Колір мітки без фокусу
-                errorLabelColor = Color.Red,          // Колір підказки (placeholder)
-              ),
-              label = { Text("Пароль") },
-              modifier = Modifier.fillMaxWidth(),
-              visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
-              trailingIcon = {
-                IconButton(onClick = { passwordVisible = !passwordVisible }) {
-                  Icon(
-                    imageVector = if (passwordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff,
-                    contentDescription = null
-                  )
-                }
-              },
-              isError = passwordError != null
-            )
+              OutlinedTextField(
+                value = password,
+                onValueChange = {
+                  password = it
+                  passwordError = when {
+                    !isValidPassword(it) -> "Пароль повинен містити щонайменше 6 символів"
+                    it != confirmPassword -> "Паролі не співпадають"
+                    else -> null
+                  }
+                },
+                colors = TextFieldDefaults.outlinedTextFieldColors(
+                  focusedBorderColor = Color(0xFF583E23),
+                  unfocusedBorderColor = Color.Gray,       // Колір бордюру без фокусу
+                  errorBorderColor = Color.Red,            // Колір бордюру при помилці
+                  cursorColor = Color(0xFF583E23),         // Колір курсора
+                  focusedLabelColor = Color(0xFF583E23),   // Колір мітки у фокусі
+                  unfocusedLabelColor = Color.Gray,        // Колір мітки без фокусу
+                  errorLabelColor = Color.Red,          // Колір підказки (placeholder)
+                ),
+                keyboardOptions = KeyboardOptions.Default.copy(
+                  imeAction = ImeAction.Done
+                ),
+                keyboardActions = KeyboardActions(
+                  onDone = {
+                    keyboardController?.hide()
+                  }
+                ),
+                singleLine = true,
+                label = { Text("Пароль") },
+                modifier = Modifier.fillMaxWidth(),
+                visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                trailingIcon = {
+                  IconButton(onClick = { passwordVisible = !passwordVisible }) {
+                    Icon(
+                      imageVector = if (passwordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff,
+                      contentDescription = null
+                    )
+                  }
+                },
+                isError = passwordError != null
+              )
 
-            Spacer(modifier = Modifier.height(8.dp))
+              Spacer(modifier = Modifier.height(8.dp))
 
-            OutlinedTextField(
-              value = confirmPassword,
-              onValueChange = {
-                confirmPassword = it
-                passwordError = when {
-                  password != it -> "Паролі не співпадають"
-                  !isValidPassword(password) -> "Пароль повинен містити щонайменше 6 символів"
-                  else -> null
-                }
-              },
-              label = { Text("Підтвердіть пароль") },
-              modifier = Modifier.fillMaxWidth(),
-              colors = TextFieldDefaults.outlinedTextFieldColors(
-                focusedBorderColor = Color(0xFF583E23),
-                unfocusedBorderColor = Color.Gray,
-                errorBorderColor = Color.Red,
-                cursorColor = Color(0xFF583E23),
-                focusedLabelColor = Color(0xFF583E23),
-                unfocusedLabelColor = Color.Gray,
-                errorLabelColor = Color.Red
-              ),
-              visualTransformation = if (confirmPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
-              trailingIcon = {
-                IconButton(onClick = { confirmPasswordVisible = !confirmPasswordVisible }) {
-                  Icon(
-                    imageVector = if (confirmPasswordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff,
-                    contentDescription = null
-                  )
-                }
-              },
-              isError = passwordError != null
-            )}
+              OutlinedTextField(
+                value = confirmPassword,
+                onValueChange = {
+                  confirmPassword = it
+                  passwordError = when {
+                    password != it -> "Паролі не співпадають"
+                    !isValidPassword(password) -> "Пароль повинен містити щонайменше 6 символів"
+                    else -> null
+                  }
+                },
+                label = { Text("Підтвердіть пароль") },
+                modifier = Modifier.fillMaxWidth(),
+                colors = TextFieldDefaults.outlinedTextFieldColors(
+                  focusedBorderColor = Color(0xFF583E23),
+                  unfocusedBorderColor = Color.Gray,
+                  errorBorderColor = Color.Red,
+                  cursorColor = Color(0xFF583E23),
+                  focusedLabelColor = Color(0xFF583E23),
+                  unfocusedLabelColor = Color.Gray,
+                  errorLabelColor = Color.Red
+                ),
+                visualTransformation = if (confirmPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                trailingIcon = {
+                  IconButton(onClick = { confirmPasswordVisible = !confirmPasswordVisible }) {
+                    Icon(
+                      imageVector = if (confirmPasswordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff,
+                      contentDescription = null
+                    )
+                  }
+                },
+                isError = passwordError != null
+              )
+            }
 
             passwordError?.let {
               Text(
@@ -365,7 +399,7 @@ fun AuthScreen(onNavigateToProductsList: () -> Unit) {
                   }
                 }
               },
-              modifier = Modifier.fillMaxWidth(),colors = ButtonDefaults.buttonColors(
+              modifier = Modifier.fillMaxWidth(), colors = ButtonDefaults.buttonColors(
                 containerColor = Color(0xFF583E23), // Колір фону кнопки
                 contentColor = Color.White         // Колір тексту кнопки
               ),
