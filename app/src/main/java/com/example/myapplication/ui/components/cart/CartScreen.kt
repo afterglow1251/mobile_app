@@ -10,6 +10,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material.icons.filled.ShoppingBag
@@ -21,6 +22,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Color.Companion.Red
+import androidx.compose.ui.graphics.PathSegment
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
@@ -380,7 +382,19 @@ fun OrderDialog(
       .size(width = 500.dp, height = Dp.Unspecified), // Фіксована ширина
     containerColor = Color(0xFFFBF1DA),
     title = {
-      Text("Підтвердження замовлення", fontSize = 20.sp, fontWeight = FontWeight.Bold)
+      Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween
+      ) {
+        Text("Підтвердження замовлення", fontSize = 20.sp, fontWeight = FontWeight.Bold)
+        IconButton(onClick = onDismiss) {
+          Icon(
+            imageVector = Icons.Default.Close, // Іконка хрестика
+            contentDescription = "Закрити",
+            tint = Color(0xFF583E23)
+          )
+        }
+      }
     },
     text = {
       Column {
@@ -476,22 +490,14 @@ fun OrderDialog(
           containerColor = Color(0xFF583E23),
           contentColor = Color.White
         ),
+        modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(4.dp),
       ) {
         Text("Підтвердити")
       }
-    },
-    dismissButton = {
-      TextButton(
-        onClick = { onDismiss() },
-        colors = ButtonDefaults.buttonColors(
-          containerColor = Color.LightGray
-        ),
-        shape = RoundedCornerShape(4.dp),
-      ) {
-        Text("Скасувати", color = Color(0xFF583E23))
-      }
     }
   )
 }
+
+
 

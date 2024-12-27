@@ -253,11 +253,13 @@ fun ProductCard(product: ProductDto, onClick: () -> Unit, snackbarHostState: Sna
       text = product.name,
       style = MaterialTheme.typography.bodyLarge,
       fontWeight = FontWeight.Bold,
+      maxLines = 1,
       color = if (isOutOfStock) Color.Gray else MaterialTheme.colorScheme.onSurface,
       modifier = Modifier.padding(bottom = 4.dp)
     )
     Text(
       text = product.description,
+      maxLines = 2,
       style = MaterialTheme.typography.bodyMedium,
       color = if (isOutOfStock) Color.Gray else Color.Black,
       modifier = Modifier.padding(bottom = 8.dp)
