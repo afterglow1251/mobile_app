@@ -43,7 +43,7 @@ import retrofit2.HttpException
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CartScreen(userId: Int, onBack: () -> Unit, showMain: () -> Unit, showOrders:() -> Unit, showProductDetails: (Int) -> Unit) {
+fun CartScreen(userId: Int, onBack: () -> Unit, showMain: () -> Unit, showProfile: () -> Unit, showOrders:() -> Unit, showProductDetails: (Int) -> Unit) {
   val context = LocalContext.current
   var cartItems by remember { mutableStateOf<List<CartItem>>(emptyList()) }
   var totalPrice by remember { mutableDoubleStateOf(0.0) }
@@ -127,7 +127,11 @@ fun CartScreen(userId: Int, onBack: () -> Unit, showMain: () -> Unit, showOrders
     topBar = {
       TopAppBar(
         title = { Text("Кошик", color = Color.White) },
-
+        actions = {
+          IconButton(onClick = { showProfile() }) {
+            Icon(imageVector = Icons.Default.Person, contentDescription = "Профіль", tint = Color.White)
+          }
+        },
         colors = TopAppBarDefaults.smallTopAppBarColors(containerColor = Color(0xFF583E23))
       )
     },

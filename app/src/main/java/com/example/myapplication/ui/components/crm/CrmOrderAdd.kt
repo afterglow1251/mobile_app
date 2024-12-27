@@ -219,7 +219,12 @@ fun CrmOrderAdd(onBack: () -> Unit, customerId: Int) {
             }
           }
 
-          OutlinedTextField(
+          CompositionLocalProvider(
+            LocalTextSelectionColors provides TextSelectionColors(
+              handleColor = Color(0xFF583E23),
+              backgroundColor = Color(0xFFFFEBCD)
+            )
+          ) {OutlinedTextField(
             value = productQuantity,
             onValueChange = { productQuantity = it },
             label = { Text("Кількість") },
@@ -234,7 +239,7 @@ fun CrmOrderAdd(onBack: () -> Unit, customerId: Int) {
               errorLabelColor = Color.Red
             ),
             isError = productQuantity.isEmpty()
-          )
+          )}
           if (productQuantity.isEmpty()) {
             Text(
               text = "Кількість не може бути порожньою",
@@ -244,7 +249,12 @@ fun CrmOrderAdd(onBack: () -> Unit, customerId: Int) {
             )
           }
 
-          OutlinedTextField(
+          CompositionLocalProvider(
+            LocalTextSelectionColors provides TextSelectionColors(
+              handleColor = Color(0xFF583E23),
+              backgroundColor = Color(0xFFFFEBCD)
+            )
+          ) {OutlinedTextField(
             value = productPrice,
             onValueChange = { productPrice = it },
             label = { Text("Ціна (необов'язково)") },
@@ -258,7 +268,7 @@ fun CrmOrderAdd(onBack: () -> Unit, customerId: Int) {
               unfocusedLabelColor = Color.Gray,
               errorLabelColor = Color.Red
             ),
-          )
+          )}
 
           Spacer(modifier = Modifier.height(4.dp))
           Row(
