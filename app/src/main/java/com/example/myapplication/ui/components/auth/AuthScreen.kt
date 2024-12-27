@@ -345,6 +345,15 @@ fun AuthScreen(onNavigateToProductsList: () -> Unit) {
                   unfocusedLabelColor = Color.Gray,
                   errorLabelColor = Color.Red
                 ),
+                keyboardOptions = KeyboardOptions.Default.copy(
+                  imeAction = ImeAction.Done
+                ),
+                keyboardActions = KeyboardActions(
+                  onDone = {
+                    keyboardController?.hide()
+                  }
+                ),
+                singleLine = true,
                 visualTransformation = if (confirmPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                 trailingIcon = {
                   IconButton(onClick = { confirmPasswordVisible = !confirmPasswordVisible }) {
