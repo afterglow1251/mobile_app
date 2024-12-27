@@ -22,8 +22,10 @@ import com.example.myapplication.api.network.NetworkModule
 import kotlinx.coroutines.launch
 import java.time.Instant
 import java.time.ZoneId
+import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 
+@SuppressLint("NewApi")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CrmOrderListScreen(
@@ -118,8 +120,11 @@ fun CrmOrderListScreen(
                 style = MaterialTheme.typography.bodyMedium,
                 modifier = Modifier.padding(bottom = 4.dp)
               )
+              val formattedDate = ZonedDateTime.parse(order.createdAt)
+                .withZoneSameInstant(ZoneId.of("Europe/Kiev"))
+                .format(DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm"))
               Text(
-                text = "Дата створення: ${formatUtcToKyivTime(order.createdAt)}",
+                text = "Дата створення: $formattedDate",
                 style = MaterialTheme.typography.bodyMedium
               )
             }
@@ -128,19 +133,4 @@ fun CrmOrderListScreen(
       }
     }
   }
-}
-
-
-@SuppressLint("NewApi")
-fun formatUtcToKyivTime(utcString: String): String {
-  // Перетворюємо стрічку в Instant
-  val utcTime = Instant.parse(utcString)
-
-  // Перетворюємо час на київський часовий пояс
-  val kyivZone = ZoneId.of("Europe/Kiev")
-  val kyivTime = utcTime.atZone(kyivZone)
-
-  // Форматуємо час у бажаний формат
-  val formatter = DateTimeFormatter.ofPattern("dd MMM yyyy, HH:mm")
-  return kyivTime.format(formatter)
 }
