@@ -241,7 +241,8 @@ fun MainNavigation() {
       OrderListScreen(
         cartDetails = cartDetails,
         showMain = navigateToProductsList,
-        onShowOrderDetails = showOrderDetails
+        onShowOrderDetails = showOrderDetails,
+        showProfile = showProfile,
       )
     }
 
@@ -272,6 +273,7 @@ fun MainNavigation() {
           showProductDetails = showProductDetails,
           showOrders = showOrders,
           showMain = navigateToProductsList,
+          showProfile = showProfile,
         )
       }
     }

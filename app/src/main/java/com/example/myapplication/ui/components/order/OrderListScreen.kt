@@ -35,7 +35,7 @@ import java.util.*
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun OrderListScreen(
-  cartDetails: (Int) -> Unit, showMain: () -> Unit, onShowOrderDetails: (Int) -> Unit
+  cartDetails: (Int) -> Unit, showMain: () -> Unit, showProfile: () -> Unit, onShowOrderDetails: (Int) -> Unit
 ) {
   val snackbarHostState = remember { SnackbarHostState() }
   val scope = rememberCoroutineScope()
@@ -64,6 +64,11 @@ fun OrderListScreen(
     topBar = {
       TopAppBar(
         title = { Text("Мої замовлення", color = Color.White) },
+        actions = {
+          IconButton(onClick = { showProfile() }) {
+            Icon(imageVector = Icons.Default.Person, contentDescription = "Профіль", tint = Color.White)
+          }
+        },
         colors = TopAppBarDefaults.smallTopAppBarColors(containerColor = Color(0xFF583E23)),
       )},
     bottomBar = {

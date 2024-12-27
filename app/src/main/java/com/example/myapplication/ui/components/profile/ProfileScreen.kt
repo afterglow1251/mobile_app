@@ -17,6 +17,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.example.myapplication.utils.LocalStorage
 import kotlinx.coroutines.delay
 
@@ -68,6 +69,16 @@ fun ProfileScreen(
         horizontalAlignment = Alignment.CenterHorizontally
       ) {
         Column(modifier = Modifier.fillMaxWidth()) {
+          Text("Актуальні дані:", style = MaterialTheme.typography.titleLarge, fontSize = 26.sp, color = Color(0xFF583E23))
+          Spacer(modifier = Modifier.height(8.dp))
+          Text(("Ім'я: ${if (user?.username.isNullOrEmpty() || user?.username == "") "Не вказано" else user?.username}"), style = MaterialTheme.typography.bodyLarge, fontSize = 20.sp, color = Color.Black)
+          Spacer(modifier = Modifier.height(8.dp))
+          Text("Телефон: ${user?.phoneNumber ?: "Не вказано"}", style = MaterialTheme.typography.bodyLarge, fontSize = 20.sp, color = Color.Black)
+          Spacer(modifier = Modifier.height(8.dp))
+          Text("Адреса: ${user?.address ?: "Не вказано"}", style = MaterialTheme.typography.bodyLarge, fontSize = 20.sp, color = Color.Black)
+
+          Spacer(modifier = Modifier.height(16.dp))
+
           Button(
             onClick = editProfile,
             modifier = Modifier
@@ -79,7 +90,7 @@ fun ProfileScreen(
               contentColor = Color.White         // Колір тексту кнопки
             ),
           ) {
-            Text("Редагувати профіль")
+            Text("Редагувати профіль", fontSize = 15.sp,)
             Spacer(modifier = Modifier.weight(1f))
             Icon(
               Icons.Filled.ChevronRight,
@@ -103,7 +114,7 @@ fun ProfileScreen(
                 contentColor = Color.White         // Колір тексту кнопки
               ),
             ) {
-              Text("До CRM")
+              Text("До CRM", fontSize = 15.sp,)
               Spacer(modifier = Modifier.weight(1f))
               Icon(
                 Icons.Filled.ChevronRight,
@@ -126,7 +137,7 @@ fun ProfileScreen(
               contentColor = Color.White         // Колір тексту кнопки
             ),
           ) {
-            Text("Вийти")
+            Text("Вийти", fontSize = 15.sp,)
             Spacer(modifier = Modifier.weight(1f))
             Icon(
               Icons.Filled.ChevronRight,
@@ -139,3 +150,4 @@ fun ProfileScreen(
     }
   }
 }
+
