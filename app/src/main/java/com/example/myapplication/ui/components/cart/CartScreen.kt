@@ -10,16 +10,21 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Remove
+import androidx.compose.material.icons.filled.ShoppingBag
+import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Color.Companion.Red
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.myapplication.api.dto.order.Order
@@ -38,7 +43,7 @@ import retrofit2.HttpException
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CartScreen(userId: Int, onBack: () -> Unit, showProductDetails: (Int) -> Unit) {
+fun CartScreen(userId: Int, onBack: () -> Unit, showMain: () -> Unit, showOrders:() -> Unit, showProductDetails: (Int) -> Unit) {
   val context = LocalContext.current
   var cartItems by remember { mutableStateOf<List<CartItem>>(emptyList()) }
   var totalPrice by remember { mutableDoubleStateOf(0.0) }
@@ -113,64 +118,119 @@ fun CartScreen(userId: Int, onBack: () -> Unit, showProductDetails: (Int) -> Uni
       }
     })
   }
+  //var showOrderDialog by remember { mutableStateOf(false) }
 
-  Scaffold(containerColor = Color(0xFFFDF8ED),topBar = {
-    TopAppBar(
-      title = { Text("Кошик", color = Color.White) },
-      navigationIcon = {
-        IconButton(onClick = { onBack() }) {
-          Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Назад", tint = Color.White)
-        }
-      },
-      colors = TopAppBarDefaults.smallTopAppBarColors(containerColor = Color(0xFF583E23))
-    )
-  }, bottomBar = {
-    if (cartItems.isNotEmpty()) {
-      Column(
-        modifier = Modifier
-          .fillMaxWidth()
-          .padding(16.dp)
-      ) {
-        Text(
-          text = "Загальна вартість: ${"%.2f".format(totalPrice)} грн",
-          fontSize = 18.sp,
-          modifier = Modifier.padding(bottom = 8.dp)
-        )
-        Button(
-          onClick = { showOrderDialog = true },
-          modifier = Modifier.fillMaxWidth(),
-          colors = ButtonDefaults.buttonColors(
-            containerColor = Color(0xFF583E23), // Колір фону кнопки
-            contentColor = Color.White         // Колір тексту кнопки
-          ),
-          shape = RoundedCornerShape(4.dp),
+  //var errorMessage by remember { mutableStateOf<String?>(null) }
+
+  Scaffold(
+    containerColor = Color(0xFFFDF8ED),
+    topBar = {
+      TopAppBar(
+        title = { Text("Кошик", color = Color.White) },
+
+        colors = TopAppBarDefaults.smallTopAppBarColors(containerColor = Color(0xFF583E23))
+      )
+    },
+    bottomBar = {
+      NavigationBar(
+          containerColor = Color(0xFF583E23), // Встановлюємо колір фону
+          contentColor = Color.White // Встановлюємо колір тексту та іконок
         ) {
-          Text("Оформити замовлення", fontSize = 18.sp)
-        }
+          NavigationBarItem(
+            icon = {
+              Icon(
+                Icons.Default.ShoppingCart,
+                contentDescription = "Продукти",
+                tint = Color.White // Явно задаємо колір іконки, хоча contentColor має це зробити
+              )
+            },
+            label = { Text("Продукти", color = Color.White) }, // Явно задаємо колір тексту, хоча contentColor має це зробити
+            selected = false,
+            onClick = { showMain() }
+          )
+        NavigationBarItem(
+          icon = {
+            Icon(
+              Icons.Default.ShoppingBag,
+              contentDescription = "Кошик",
+              tint = Color(0xFF583E23) // Явно задаємо колір іконки
+            )
+          },
+          label = { Text("Кошик", color = Color.White) }, // Явно задаємо колір тексту
+          selected = true,
+          onClick = { },
+          colors = NavigationBarItemDefaults
+            .colors(
+              selectedIconColor = Red,
+              indicatorColor = Color(0xFFFFFFFF)
+            )
+        )
+          NavigationBarItem(
+            icon = {
+              Icon(
+                Icons.Default.Person,
+                contentDescription = "Замовлення",
+                tint = Color.White // Явно задаємо колір іконки
+              )
+            },
+            label = { Text("Замовлення", color = Color.White) }, // Явно задаємо колір тексту
+            selected = false,
+            onClick = { showOrders() },
+          )
       }
     }
-  }) { innerPadding ->
-    if (cartItems.isEmpty()) {
-      Box(
-        modifier = Modifier
-          .fillMaxSize()
-          .padding(innerPadding), contentAlignment = Alignment.Center
-      ) {
-        Text("Кошик порожній", fontSize = 20.sp)
-      }
-    } else {
-      LazyColumn(
-        modifier = Modifier
-          .fillMaxSize()
-          .padding(innerPadding)
-      ) {
-        items(items = cartItems, key = { cartItem -> cartItem.productId }) { cartItem ->
-          CartItemRow(context = context, cartItem = cartItem, onRemove = {
-            LocalStorage.removeFromCart(context, cartItem.productId)
-            loadCart()
-          }, onQuantityChange = {
-            loadCart()
-          }, onShowProductDetails = { showProductDetails(cartItem.productId) })
+  ) { innerPadding -> // Ось тут отримуємо innerPadding
+    Column(
+      modifier = Modifier
+        .fillMaxSize()
+        .padding(innerPadding) // Застосовуємо padding
+    ) {
+      if (cartItems.isEmpty()) {
+        Box(
+          modifier = Modifier
+            .fillMaxSize()
+            .weight(1f), // Щоб контент займав весь доступний простір, окрім кнопок
+          contentAlignment = Alignment.Center
+        ) {
+          Text("Кошик порожній", fontSize = 20.sp)
+        }
+      } else {
+        LazyColumn(
+          modifier = Modifier
+            .weight(1f) // Щоб контент займав весь доступний простір, окрім кнопок
+        ) {
+          items(items = cartItems, key = { cartItem -> cartItem.productId }) { cartItem ->
+            CartItemRow(context = context, cartItem = cartItem, onRemove = {
+              LocalStorage.removeFromCart(context, cartItem.productId)
+              loadCart()
+            }, onQuantityChange = {
+              loadCart()
+            }, onShowProductDetails = { showProductDetails(cartItem.productId) })
+          }
+        }
+        Column(
+          modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp)
+            //.background(Color.White)
+
+        ) {
+          Text(
+            text = "Загальна вартість: ${"%.2f".format(totalPrice)} грн",
+            fontSize = 18.sp,
+            modifier = Modifier.padding(bottom = 8.dp)
+          )
+          Button(
+            onClick = { showOrderDialog = true },
+            modifier = Modifier.fillMaxWidth(),
+            colors = ButtonDefaults.buttonColors(
+              containerColor = Color(0xFF583E23),
+              contentColor = Color.White
+            ),
+            shape = RoundedCornerShape(4.dp),
+          ) {
+            Text("Оформити замовлення", fontSize = 18.sp)
+          }
         }
       }
     }
@@ -304,25 +364,32 @@ fun OrderDialog(
     name.isNotEmpty() && isValidPhoneNumber(phone) && address.isNotEmpty()
   }
 
-  AlertDialog(onDismissRequest = { onDismiss() },
-    modifier = Modifier.padding(16.dp).clip(RoundedCornerShape(8.dp)),
+  AlertDialog(
+    onDismissRequest = { onDismiss() },
+    modifier = Modifier
+      .padding(10.dp)
+      .clip(RoundedCornerShape(8.dp))
+      .size(width = 500.dp, height = Dp.Unspecified), // Фіксована ширина
     containerColor = Color(0xFFFBF1DA),
-    title = { Text("Підтвердження замовлення") },
+    title = {
+      Text("Підтвердження замовлення", fontSize = 20.sp, fontWeight = FontWeight.Bold)
+    },
     text = {
       Column {
-        OutlinedTextField(value = name,
+        OutlinedTextField(
+          value = name,
           onValueChange = { name = it },
           label = { Text("Ім'я") },
           isError = nameError != null,
           modifier = Modifier.fillMaxWidth(),
           colors = TextFieldDefaults.outlinedTextFieldColors(
             focusedBorderColor = Color(0xFF583E23),
-            unfocusedBorderColor = Color.Gray,       // Колір бордюру без фокусу
-            errorBorderColor = Color.Red,            // Колір бордюру при помилці
-            cursorColor = Color(0xFF583E23),         // Колір курсора
-            focusedLabelColor = Color(0xFF583E23),   // Колір мітки у фокусі
-            unfocusedLabelColor = Color.Gray,        // Колір мітки без фокусу
-            errorLabelColor = Color.Red              // Колір мітки при помилці
+            unfocusedBorderColor = Color.Gray,
+            errorBorderColor = Color.Red,
+            cursorColor = Color(0xFF583E23),
+            focusedLabelColor = Color(0xFF583E23),
+            unfocusedLabelColor = Color.Gray,
+            errorLabelColor = Color.Red
           )
         )
         if (nameError != null) {
@@ -334,7 +401,8 @@ fun OrderDialog(
         }
         Spacer(modifier = Modifier.height(8.dp))
 
-        OutlinedTextField(value = phone,
+        OutlinedTextField(
+          value = phone,
           onValueChange = {
             phone = if (it.startsWith("+38")) it else "+38"
           },
@@ -346,12 +414,12 @@ fun OrderDialog(
           ),
           colors = TextFieldDefaults.outlinedTextFieldColors(
             focusedBorderColor = Color(0xFF583E23),
-            unfocusedBorderColor = Color.Gray,       // Колір бордюру без фокусу
-            errorBorderColor = Color.Red,            // Колір бордюру при помилці
-            cursorColor = Color(0xFF583E23),         // Колір курсора
-            focusedLabelColor = Color(0xFF583E23),   // Колір мітки у фокусі
-            unfocusedLabelColor = Color.Gray,        // Колір мітки без фокусу
-            errorLabelColor = Color.Red              // Колір мітки при помилці
+            unfocusedBorderColor = Color.Gray,
+            errorBorderColor = Color.Red,
+            cursorColor = Color(0xFF583E23),
+            focusedLabelColor = Color(0xFF583E23),
+            unfocusedLabelColor = Color.Gray,
+            errorLabelColor = Color.Red
           )
         )
         if (phoneError != null) {
@@ -363,19 +431,20 @@ fun OrderDialog(
         }
         Spacer(modifier = Modifier.height(8.dp))
 
-        OutlinedTextField(value = address,
+        OutlinedTextField(
+          value = address,
           onValueChange = { address = it },
           label = { Text("Адреса") },
           isError = addressError != null,
           modifier = Modifier.fillMaxWidth(),
           colors = TextFieldDefaults.outlinedTextFieldColors(
             focusedBorderColor = Color(0xFF583E23),
-            unfocusedBorderColor = Color.Gray,       // Колір бордюру без фокусу
-            errorBorderColor = Color.Red,            // Колір бордюру при помилці
-            cursorColor = Color(0xFF583E23),         // Колір курсора
-            focusedLabelColor = Color(0xFF583E23),   // Колір мітки у фокусі
-            unfocusedLabelColor = Color.Gray,        // Колір мітки без фокусу
-            errorLabelColor = Color.Red              // Колір мітки при помилці
+            unfocusedBorderColor = Color.Gray,
+            errorBorderColor = Color.Red,
+            cursorColor = Color(0xFF583E23),
+            focusedLabelColor = Color(0xFF583E23),
+            unfocusedLabelColor = Color.Gray,
+            errorLabelColor = Color.Red
           )
         )
         if (addressError != null) {
@@ -393,11 +462,11 @@ fun OrderDialog(
           if (isFormValid) {
             onConfirm(name, phone, address)
           }
-        }, enabled = isFormValid,
+        },
+        enabled = isFormValid,
         colors = ButtonDefaults.buttonColors(
-          containerColor = Color(0xFF583E23), // Колір фону кнопки
-          contentColor = Color.White         // Колір тексту кнопки
-
+          containerColor = Color(0xFF583E23),
+          contentColor = Color.White
         ),
         shape = RoundedCornerShape(4.dp),
       ) {
@@ -405,15 +474,16 @@ fun OrderDialog(
       }
     },
     dismissButton = {
-      TextButton(onClick = { onDismiss() }, colors = ButtonDefaults.buttonColors(
-        containerColor = Color.LightGray, // Колір фону кнопки
-        // contentColor = Color.White
-        // Колір тексту кнопки
-      ),
-        shape = RoundedCornerShape(4.dp),) {
+      TextButton(
+        onClick = { onDismiss() },
+        colors = ButtonDefaults.buttonColors(
+          containerColor = Color.LightGray
+        ),
+        shape = RoundedCornerShape(4.dp),
+      ) {
         Text("Скасувати", color = Color(0xFF583E23))
       }
-    })
+    }
+  )
 }
-
 

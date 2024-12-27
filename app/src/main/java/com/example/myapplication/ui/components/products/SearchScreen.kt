@@ -5,9 +5,13 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.text.selection.LocalTextSelectionColors
+import androidx.compose.foundation.text.selection.TextSelectionColors
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.ArrowDropUp
@@ -26,6 +30,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.example.myapplication.api.dto.product.CartItem
 import com.example.myapplication.api.dto.product.ProductDto
 import com.example.myapplication.ui.components.products.models.SearchViewModel
@@ -50,15 +55,17 @@ fun SearchScreen(
     }
   }
 
-  Scaffold(
+
+  Scaffold(containerColor = Color(0xFFFDF8ED),
     topBar = {
       TopAppBar(
-        title = { Text("Пошук продуктів") },
+        title = { Text("Пошук продуктів", color = Color.White) },
         navigationIcon = {
           IconButton(onClick = onBack) {
-            Icon(imageVector = Icons.Filled.ArrowBack, contentDescription = "Назад")
+            Icon(imageVector = Icons.Filled.ArrowBack, contentDescription = "Назад", tint = Color.White)
           }
-        }
+        },
+        colors = TopAppBarDefaults.smallTopAppBarColors(containerColor = Color(0xFF583E23))
       )
     },
     snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
@@ -69,7 +76,12 @@ fun SearchScreen(
         .padding(innerPadding)
         .padding(16.dp)
     ) {
-      OutlinedTextField(
+      CompositionLocalProvider(
+        LocalTextSelectionColors provides TextSelectionColors(
+          handleColor = Color(0xFF583E23),
+          backgroundColor = Color(0xFFFFEBCD)
+        )
+      ) {OutlinedTextField(
         value = viewModel.searchText.value,
         onValueChange = { viewModel.searchText.value = it },
         placeholder = { Text("Введіть назву продукту...") },
@@ -83,12 +95,21 @@ fun SearchScreen(
         modifier = Modifier
           .fillMaxWidth()
           .focusRequester(focusRequester),
+        colors = TextFieldDefaults.outlinedTextFieldColors(
+          focusedBorderColor = Color(0xFF583E23),
+          unfocusedBorderColor = Color.Gray,       // Колір бордюру без фокусу
+          errorBorderColor = Color.Red,            // Колір бордюру при помилці
+          cursorColor = Color(0xFF583E23),         // Колір курсора
+          focusedLabelColor = Color(0xFF583E23),   // Колір мітки у фокусі
+          unfocusedLabelColor = Color.Gray,        // Колір мітки без фокусу
+          errorLabelColor = Color.Red,          // Колір підказки (placeholder)
+        ),
         trailingIcon = {
           IconButton(onClick = { viewModel.showFilters.value = true }) {
-            Icon(imageVector = Icons.Filled.FilterList, contentDescription = "Фільтри")
+            Icon(imageVector = Icons.Filled.FilterList, contentDescription = "Фільтри", tint = Color(0xFF583E23))
           }
         }
-      )
+      )}
 
       Spacer(modifier = Modifier.height(16.dp))
 
@@ -96,7 +117,7 @@ fun SearchScreen(
         Text(
           text = "Товарів не знайдено. Будь ласка, спробуйте пошукати інакше.",
           style = MaterialTheme.typography.bodyMedium,
-          color = MaterialTheme.colorScheme.onSurface,
+          color = Color(0xFF583E23),
           modifier = Modifier.padding(16.dp)
         )
       } else {
@@ -134,6 +155,7 @@ fun SearchScreen(
   }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FilterDialog(
   savedFilters: MutableMap<String, String?>,
@@ -198,21 +220,49 @@ fun FilterDialog(
           )
           if (sectionStates["price"] == true) {
             Row {
-              OutlinedTextField(
+              CompositionLocalProvider(
+                LocalTextSelectionColors provides TextSelectionColors(
+                  handleColor = Color(0xFF583E23),
+                  backgroundColor = Color(0xFFFFEBCD)
+                )
+              ) {OutlinedTextField(
                 value = minPrice,
                 onValueChange = { minPrice = it },
                 label = { Text("Ціна від") },
                 keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
-                modifier = Modifier.weight(1f)
-              )
+                modifier = Modifier.weight(1f),
+                colors = TextFieldDefaults.outlinedTextFieldColors(
+                  focusedBorderColor = Color(0xFF583E23),
+                  unfocusedBorderColor = Color.Gray,       // Колір бордюру без фокусу
+                  errorBorderColor = Color.Red,            // Колір бордюру при помилці
+                  cursorColor = Color(0xFF583E23),         // Колір курсора
+                  focusedLabelColor = Color(0xFF583E23),   // Колір мітки у фокусі
+                  unfocusedLabelColor = Color.Gray,        // Колір мітки без фокусу
+                  errorLabelColor = Color.Red,          // Колір підказки (placeholder)
+                ),
+              )}
               Spacer(modifier = Modifier.width(8.dp))
-              OutlinedTextField(
+              CompositionLocalProvider(
+                LocalTextSelectionColors provides TextSelectionColors(
+                  handleColor = Color(0xFF583E23),
+                  backgroundColor = Color(0xFFFFEBCD)
+                )
+              ) {OutlinedTextField(
                 value = maxPrice,
                 onValueChange = { maxPrice = it },
                 label = { Text("Ціна до") },
                 keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
-                modifier = Modifier.weight(1f)
-              )
+                modifier = Modifier.weight(1f),
+                colors = TextFieldDefaults.outlinedTextFieldColors(
+                  focusedBorderColor = Color(0xFF583E23),
+                  unfocusedBorderColor = Color.Gray,       // Колір бордюру без фокусу
+                  errorBorderColor = Color.Red,            // Колір бордюру при помилці
+                  cursorColor = Color(0xFF583E23),         // Колір курсора
+                  focusedLabelColor = Color(0xFF583E23),   // Колір мітки у фокусі
+                  unfocusedLabelColor = Color.Gray,        // Колір мітки без фокусу
+                  errorLabelColor = Color.Red,          // Колір підказки (placeholder)
+                ),
+              )}
             }
           }
         }
@@ -226,16 +276,24 @@ fun FilterDialog(
           )
           if (sectionStates["categories"] == true) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-              Checkbox(checked = categoryBeer, onCheckedChange = { categoryBeer = it })
+              Checkbox(
+                checked = categoryBeer,
+                onCheckedChange = { categoryBeer = it },
+                colors = CheckboxDefaults.colors(checkedColor = Color(0xFF583E23))
+              )
               Text("Пиво")
               Spacer(modifier = Modifier.width(16.dp))
-              Checkbox(checked = categorySnack, onCheckedChange = { categorySnack = it })
+              Checkbox(
+                checked = categorySnack,
+                onCheckedChange = { categorySnack = it },
+                colors = CheckboxDefaults.colors(checkedColor = Color(0xFF583E23))
+              )
               Text("Снек")
             }
           }
         }
 
-        // Section 3: Countries
+// Section 3: Countries
         item {
           SectionHeader(
             title = "Країна виробник",
@@ -247,7 +305,8 @@ fun FilterDialog(
               Row(verticalAlignment = Alignment.CenterVertically) {
                 Checkbox(
                   checked = selectedCountries[country] == true,
-                  onCheckedChange = { selectedCountries[country] = it }
+                  onCheckedChange = { selectedCountries[country] = it },
+                  colors = CheckboxDefaults.colors(checkedColor = Color(0xFF583E23))
                 )
                 Text(country)
               }
@@ -255,7 +314,7 @@ fun FilterDialog(
           }
         }
 
-        // Section 4: Manufacturers
+// Section 4: Manufacturers
         item {
           SectionHeader(
             title = "Виробник",
@@ -269,7 +328,8 @@ fun FilterDialog(
               Row(verticalAlignment = Alignment.CenterVertically) {
                 Checkbox(
                   checked = selectedManufacturers[manufacturer] == true,
-                  onCheckedChange = { selectedManufacturers[manufacturer] = it }
+                  onCheckedChange = { selectedManufacturers[manufacturer] = it },
+                  colors = CheckboxDefaults.colors(checkedColor = Color(0xFF583E23))
                 )
                 Text(manufacturer)
               }
@@ -277,7 +337,7 @@ fun FilterDialog(
           }
         }
 
-        // Section 5: Beer Types
+// Section 5: Beer Types
         item {
           SectionHeader(
             title = "Тип пива",
@@ -289,7 +349,8 @@ fun FilterDialog(
               Row(verticalAlignment = Alignment.CenterVertically) {
                 Checkbox(
                   checked = selectedBeerTypes[type] == true,
-                  onCheckedChange = { selectedBeerTypes[type] = it }
+                  onCheckedChange = { selectedBeerTypes[type] = it },
+                  colors = CheckboxDefaults.colors(checkedColor = Color(0xFF583E23))
                 )
                 Text(label)
               }
@@ -297,7 +358,7 @@ fun FilterDialog(
           }
         }
 
-        // Section 6: Unit Sizes
+// Section 6: Unit Sizes
         item {
           SectionHeader(
             title = "Розмір одиниці",
@@ -309,13 +370,15 @@ fun FilterDialog(
               Row(verticalAlignment = Alignment.CenterVertically) {
                 Checkbox(
                   checked = selectedUnitSizes[size] == true,
-                  onCheckedChange = { selectedUnitSizes[size] = it }
+                  onCheckedChange = { selectedUnitSizes[size] = it },
+                  colors = CheckboxDefaults.colors(checkedColor = Color(0xFF583E23))
                 )
                 Text(size)
               }
             }
           }
         }
+
       }
     },
     confirmButton = {
@@ -337,12 +400,18 @@ fun FilterDialog(
         appliedFilters["unitSize"] = selectedUnitSizes.filter { it.value }.keys.joinToString(",")
 
         onApplyFilters(appliedFilters)
-      }) {
+      },colors = ButtonDefaults.buttonColors(
+        containerColor = Color(0xFF583E23), // Колір фону кнопки
+        contentColor = Color.White         // Колір тексту кнопки
+      ),) {
         Text("Застосувати")
       }
     },
     dismissButton = {
-      Button(onClick = onDismiss) {
+      Button(onClick = onDismiss,colors = ButtonDefaults.buttonColors(
+        containerColor = Color(0xFF583E23), // Колір фону кнопки
+        contentColor = Color.White         // Колір тексту кнопки
+      ),) {
         Text("Скасувати")
       }
     }
@@ -382,7 +451,7 @@ fun VerticalProductCard(
       .clickable(onClick = onClick)
       .padding(8.dp)
       .background(
-        color = if (isOutOfStock) Color.Gray.copy(alpha = 0.2f) else MaterialTheme.colorScheme.surface,
+        color = if (isOutOfStock) Color.Gray.copy(alpha = 0.2f) else Color(0xFFFBF1DA),
         shape = MaterialTheme.shapes.medium
       )
       .padding(16.dp),
@@ -403,15 +472,15 @@ fun VerticalProductCard(
       Text(
         text = product.name,
         style = MaterialTheme.typography.bodyLarge,
-        color = if (isOutOfStock) Color.Gray else MaterialTheme.colorScheme.onSurface,
+        color = if (isOutOfStock) Color.Gray else Color(0xFF583E23),
         fontWeight = FontWeight.Bold
       )
       Text(
         text = product.description,
         style = MaterialTheme.typography.bodyMedium,
-        color = if (isOutOfStock) Color.Gray else Color.Gray.copy(alpha = 0.7f),
-        modifier = Modifier.padding(vertical = 4.dp),
-        maxLines = 1,
+        color = if (isOutOfStock) Color.Gray else Color.Black,
+        modifier = Modifier.padding(vertical = 4.dp).widthIn(max = 185.dp),
+        maxLines = 3,
         overflow = TextOverflow.Ellipsis
       )
       if (isOutOfStock) {
@@ -426,7 +495,7 @@ fun VerticalProductCard(
       Text(
         text = "Ціна: ${product.price} грн.",
         style = MaterialTheme.typography.bodyMedium,
-        color = if (isOutOfStock) Color.Gray else MaterialTheme.colorScheme.primary
+        color = if (isOutOfStock) Color.Gray else Color(0xFFFBF1DA)
       )
     }
     if (!isOutOfStock) {
@@ -472,17 +541,24 @@ fun VerticalProductCard(
             }
           }
         },
-        modifier = Modifier.size(48.dp),
+        modifier = Modifier
+          .width(48.dp), // Ширина кнопки
+          // .height(48.dp) // Висота кнопки збільшена до 90dp
+          //.padding(start = 8.dp), // Додатковий відступ зліва
+        shape = RoundedCornerShape(4.dp), // Закруглення 4dp
         contentPadding = PaddingValues(0.dp),
-        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF583E23))
       ) {
         Text(
           text = "+",
-          style = MaterialTheme.typography.bodyLarge,
+          style = MaterialTheme.typography.displayMedium.copy(fontSize = 36.sp), // Збільшено розмір тексту
           color = Color.White,
-          fontWeight = FontWeight.Bold
+          // fontWeight = FontWeight.Bold
         )
       }
+
+
+
     }
   }
 }

@@ -269,7 +269,9 @@ fun MainNavigation() {
         CartScreen(
           userId = userId,
           onBack = { navController.popBackStack() },
-          showProductDetails = showProductDetails
+          showProductDetails = showProductDetails,
+          showOrders = showOrders,
+          showMain = navigateToProductsList,
         )
       }
     }

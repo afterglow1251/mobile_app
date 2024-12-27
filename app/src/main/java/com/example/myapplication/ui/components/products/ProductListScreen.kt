@@ -6,7 +6,9 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.ShoppingCart
@@ -16,6 +18,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.*
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Color.Companion.Red
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.*
 import com.example.myapplication.api.dto.product.ProductDto
@@ -54,27 +57,64 @@ fun ProductListScreen(
     }
   }
 
-  Scaffold(topBar = {
-    TopAppBar(title = { Text("СПИСОК ПРОДУКТІВ") }, actions = {
+
+
+  Scaffold(containerColor = Color(0xFFFDF8ED), topBar = {
+    TopAppBar(title = { Text("Список продуктів", color = Color.White) },
+      actions = {
       IconButton(onClick = { showProfile() }) {
-        Icon(imageVector = Icons.Default.Person, contentDescription = "Профіль")
+        Icon(imageVector = Icons.Default.Person, contentDescription = "Профіль", tint = Color.White)
       }
-    })
+      }, colors = TopAppBarDefaults.smallTopAppBarColors(containerColor = Color(0xFF583E23))
+    )
   }, snackbarHost = { SnackbarHost(hostState = snackbarHostState) }, bottomBar = {
-    NavigationBar {
-      NavigationBarItem(icon = {
-        Icon(
-          Icons.Default.ShoppingCart, contentDescription = "Список продуктів"
-        )
-      }, label = { Text("Продукти") }, selected = true, onClick = {})
-      NavigationBarItem(icon = { Icon(Icons.Default.ShoppingBag, contentDescription = "Кошик") },
-        label = { Text("Кошик") },
+    NavigationBar(containerColor = Color(0xFF583E23), // Встановлюємо колір фону
+    contentColor = Color.White // Встановлюємо колір тексту та іконок)
+    ) {
+
+      NavigationBarItem(
+        icon = {
+          Icon(
+            Icons.Default.ShoppingCart,
+            contentDescription = "Продукти",
+            tint = Color(0xFF583E23) // Явно задаємо колір іконки, хоча contentColor має це зробити
+          )
+        },
+        label = { Text("Продукти", color = Color.White) }, // Явно задаємо колір тексту, хоча contentColor має це зробити
+        selected = true,
+        onClick = {},
+        colors = androidx.compose.material3.NavigationBarItemDefaults
+          .colors(
+            selectedIconColor = Red,
+            // indicatorColor = Color(0xFFFDF8ED)
+            indicatorColor = Color(0xFFFFFFFF)
+          )
+      )
+      NavigationBarItem(
+        icon = {
+          Icon(
+            Icons.Default.ShoppingBag,
+            contentDescription = "Кошик",
+            tint = Color.White // Явно задаємо колір іконки
+          )
+        },
+        label = { Text("Кошик", color = Color.White) }, // Явно задаємо колір тексту
         selected = false,
-        onClick = { LocalStorage.getUser(context)?.let { cartDetails(it.id) } })
-      NavigationBarItem(icon = { Icon(Icons.Default.Person, contentDescription = "Мої покупки") },
-        label = { Text("Замовлення") },
+        onClick = { LocalStorage.getUser(context)?.let { cartDetails(it.id) } }
+      )
+      NavigationBarItem(
+        icon = {
+          Icon(
+            Icons.Default.Person,
+            contentDescription = "Замовлення",
+            tint = Color.White // Явно задаємо колір іконки
+          )
+        },
+        label = { Text("Замовлення", color = Color.White) }, // Явно задаємо колір тексту
         selected = false,
-        onClick = { showOrders() })
+        onClick = { showOrders() },
+
+      )
     }
   }, content = { innerPadding ->
     Column(
@@ -90,13 +130,22 @@ fun ProductListScreen(
         OutlinedTextField(
           value = "",
           onValueChange = { },
-          placeholder = { Text("Пошук продуктів...") },
+          placeholder = { Text("Пошук продуктів...", color = Color(0xFF583E23)) },
           leadingIcon = {
-            Icon(imageVector = Icons.Default.Search, contentDescription = "Пошук")
+            Icon(imageVector = Icons.Default.Search, contentDescription = "Пошук", tint = Color(0xFF583E23))
           },
           readOnly = false,
           enabled = false,
-          modifier = Modifier.fillMaxWidth()
+          modifier = Modifier.fillMaxWidth(),
+          colors = TextFieldDefaults.outlinedTextFieldColors(
+            //focusedBorderColor = Color(0xFF583E23),
+            unfocusedBorderColor = Color(0xFF583E23),       // Колір бордюру без фокусу
+            //errorBorderColor = Color.Red,            // Колір бордюру при помилці
+            //cursorColor = Color(0xFF583E23),         // Колір курсора
+            //focusedLabelColor = Color(0xFF583E23),   // Колір мітки у фокусі
+            //unfocusedLabelColor = Color.Gray,        // Колір мітки без фокусу
+            //errorLabelColor = Color.Red,          // Колір підказки (placeholder)
+          ),
         )
       }
 
@@ -118,7 +167,7 @@ fun ProductListScreen(
                 text = "Пиво",
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.primary,
+                color = Color(0xFF583E23),
                 modifier = Modifier.padding(bottom = 8.dp)
               )
             }
@@ -145,7 +194,7 @@ fun ProductListScreen(
                 text = "Снеки",
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.primary,
+                color = Color(0xFF583E23),
                 modifier = Modifier.padding(bottom = 8.dp)
               )
             }
@@ -184,7 +233,7 @@ fun ProductCard(product: ProductDto, onClick: () -> Unit, snackbarHostState: Sna
       .padding(8.dp)
       .clickable(onClick = onClick)
       .background(
-        color = if (isOutOfStock) Color.Gray.copy(alpha = 0.2f) else MaterialTheme.colorScheme.surface,
+        color = if (isOutOfStock) Color.Gray.copy(alpha = 0.2f) else Color(0xFFFBF1DA),
         shape = MaterialTheme.shapes.medium
       )
       .padding(16.dp)
@@ -210,7 +259,7 @@ fun ProductCard(product: ProductDto, onClick: () -> Unit, snackbarHostState: Sna
     Text(
       text = product.description,
       style = MaterialTheme.typography.bodyMedium,
-      color = if (isOutOfStock) Color.Gray else Color.Gray.copy(alpha = 0.7f),
+      color = if (isOutOfStock) Color.Gray else Color.Black,
       modifier = Modifier.padding(bottom = 8.dp)
     )
 
@@ -227,7 +276,7 @@ fun ProductCard(product: ProductDto, onClick: () -> Unit, snackbarHostState: Sna
     Text(
       text = "Ціна: ${product.price} грн.",
       style = MaterialTheme.typography.bodyMedium,
-      color = if (isOutOfStock) Color.Gray else MaterialTheme.colorScheme.primary
+      color = if (isOutOfStock) Color.Gray else Color(0xFF583E23)
     )
 
     if (!isOutOfStock) {
@@ -274,14 +323,16 @@ fun ProductCard(product: ProductDto, onClick: () -> Unit, snackbarHostState: Sna
           }
         },
         modifier = Modifier
-          .size(48.dp)
-          .padding(4.dp)
-          .background(MaterialTheme.colorScheme.primary, MaterialTheme.shapes.small),
+          .fillMaxWidth() // Кнопка займає всю ширину блоку
+          .padding(4.dp),
+        shape = RoundedCornerShape(4.dp), // Закруглення кнопки 4 пікселі
         contentPadding = PaddingValues(0.dp),
-        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF583E23))
       ) {
-        Text("+", fontSize = 24.sp, color = Color.White)
+        Text("+", fontSize = 36.sp, color = Color.White)
       }
     }
+
+
   }
 }

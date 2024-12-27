@@ -1,6 +1,7 @@
 package com.example.myapplication.ui.components.profile
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ChevronRight
@@ -13,6 +14,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.example.myapplication.utils.LocalStorage
@@ -44,15 +46,16 @@ fun ProfileScreen(
       onLogout()
     }
   } else {
-    Scaffold(
+    Scaffold(containerColor = Color(0xFFFDF8ED),
       topBar = {
         TopAppBar(
-          title = { Text("Мій кабінет") },
+          title = { Text("Мій кабінет", color = Color.White) },
           navigationIcon = {
             IconButton(onClick = onBack) {
-              Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Назад")
+              Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Назад", tint = Color.White)
             }
-          }
+          },
+          colors = TopAppBarDefaults.smallTopAppBarColors(containerColor = Color(0xFF583E23))
         )
       }
     ) { innerPadding ->
@@ -70,7 +73,11 @@ fun ProfileScreen(
             modifier = Modifier
               .fillMaxWidth()
               .height(48.dp),
-            shape = MaterialTheme.shapes.medium
+            shape = RoundedCornerShape(4.dp),
+            colors = ButtonDefaults.buttonColors(
+              containerColor = Color(0xFF583E23), // Колір фону кнопки
+              contentColor = Color.White         // Колір тексту кнопки
+            ),
           ) {
             Text("Редагувати профіль")
             Spacer(modifier = Modifier.weight(1f))
@@ -89,7 +96,12 @@ fun ProfileScreen(
               modifier = Modifier
                 .fillMaxWidth()
                 .height(48.dp),
-              shape = MaterialTheme.shapes.medium
+
+              shape = RoundedCornerShape(4.dp),
+              colors = ButtonDefaults.buttonColors(
+                containerColor = Color(0xFF583E23), // Колір фону кнопки
+                contentColor = Color.White         // Колір тексту кнопки
+              ),
             ) {
               Text("До CRM")
               Spacer(modifier = Modifier.weight(1f))
@@ -108,7 +120,11 @@ fun ProfileScreen(
             modifier = Modifier
               .fillMaxWidth()
               .height(48.dp),
-            shape = MaterialTheme.shapes.medium
+            shape = RoundedCornerShape(4.dp),
+            colors = ButtonDefaults.buttonColors(
+              containerColor = Color(0xFF583E23), // Колір фону кнопки
+              contentColor = Color.White         // Колір тексту кнопки
+            ),
           ) {
             Text("Вийти")
             Spacer(modifier = Modifier.weight(1f))

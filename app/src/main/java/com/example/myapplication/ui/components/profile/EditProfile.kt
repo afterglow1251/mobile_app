@@ -1,12 +1,16 @@
 package com.example.myapplication.ui.components.profile
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.selection.LocalTextSelectionColors
+import androidx.compose.foundation.text.selection.TextSelectionColors
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.example.myapplication.utils.LocalStorage
 import androidx.compose.ui.platform.LocalContext
@@ -56,15 +60,16 @@ fun EditProfileScreen(
       CircularProgressIndicator()
     }
   } else {
-    Scaffold(
+    Scaffold(containerColor = Color(0xFFFDF8ED),
       topBar = {
         TopAppBar(
-          title = { Text("Редагувати профіль") },
+          title = { Text("Редагувати профіль", color = Color.White) },
           navigationIcon = {
             IconButton(onClick = onBack) {
-              Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Назад")
+              Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Назад", tint = Color.White)
             }
-          }
+          },
+          colors = TopAppBarDefaults.smallTopAppBarColors(containerColor = Color(0xFF583E23))
         )
       }
     ) { paddingValues ->
@@ -76,16 +81,35 @@ fun EditProfileScreen(
         verticalArrangement = Arrangement.Top,
         horizontalAlignment = Alignment.Start
       ) {
-        OutlinedTextField(
+        CompositionLocalProvider(
+          LocalTextSelectionColors provides TextSelectionColors(
+            handleColor = Color(0xFF583E23),
+            backgroundColor = Color(0xFFFFEBCD)
+          )
+        ) { OutlinedTextField(
           value = username,
           onValueChange = { username = it },
           label = { Text("Ім'я користувача") },
-          modifier = Modifier.fillMaxWidth()
-        )
+          modifier = Modifier.fillMaxWidth(),
+          colors = TextFieldDefaults.outlinedTextFieldColors(
+            focusedBorderColor = Color(0xFF583E23),
+            unfocusedBorderColor = Color.Gray,       // Колір бордюру без фокусу
+            errorBorderColor = Color.Red,            // Колір бордюру при помилці
+            cursorColor = Color(0xFF583E23),         // Колір курсора
+            focusedLabelColor = Color(0xFF583E23),   // Колір мітки у фокусі
+            unfocusedLabelColor = Color.Gray,        // Колір мітки без фокусу
+            errorLabelColor = Color.Red,          // Колір підказки (placeholder)
+          ),
+        )}
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        OutlinedTextField(
+        CompositionLocalProvider(
+          LocalTextSelectionColors provides TextSelectionColors(
+            handleColor = Color(0xFF583E23),
+            backgroundColor = Color(0xFFFFEBCD)
+          )
+        ) {OutlinedTextField(
           value = phoneNumber,
           onValueChange = {
             phoneNumber = it
@@ -93,8 +117,17 @@ fun EditProfileScreen(
           },
           label = { Text("Номер телефону") },
           isError = !isPhoneValid,
-          modifier = Modifier.fillMaxWidth()
-        )
+          modifier = Modifier.fillMaxWidth(),
+          colors = TextFieldDefaults.outlinedTextFieldColors(
+            focusedBorderColor = Color(0xFF583E23),
+            unfocusedBorderColor = Color.Gray,       // Колір бордюру без фокусу
+            errorBorderColor = Color.Red,            // Колір бордюру при помилці
+            cursorColor = Color(0xFF583E23),         // Колір курсора
+            focusedLabelColor = Color(0xFF583E23),   // Колір мітки у фокусі
+            unfocusedLabelColor = Color.Gray,        // Колір мітки без фокусу
+            errorLabelColor = Color.Red,          // Колір підказки (placeholder)
+          ),
+        )}
 
         if (!isPhoneValid) {
           Text(
@@ -106,12 +139,26 @@ fun EditProfileScreen(
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        OutlinedTextField(
+        CompositionLocalProvider(
+          LocalTextSelectionColors provides TextSelectionColors(
+            handleColor = Color(0xFF583E23),
+            backgroundColor = Color(0xFFFFEBCD)
+          )
+        ) {OutlinedTextField(
           value = address,
           onValueChange = { address = it },
           label = { Text("Адреса") },
-          modifier = Modifier.fillMaxWidth()
-        )
+          modifier = Modifier.fillMaxWidth(),
+          colors = TextFieldDefaults.outlinedTextFieldColors(
+            focusedBorderColor = Color(0xFF583E23),
+            unfocusedBorderColor = Color.Gray,       // Колір бордюру без фокусу
+            errorBorderColor = Color.Red,            // Колір бордюру при помилці
+            cursorColor = Color(0xFF583E23),         // Колір курсора
+            focusedLabelColor = Color(0xFF583E23),   // Колір мітки у фокусі
+            unfocusedLabelColor = Color.Gray,        // Колір мітки без фокусу
+            errorLabelColor = Color.Red,          // Колір підказки (placeholder)
+          ),
+        )}
 
         Spacer(modifier = Modifier.height(16.dp))
 
@@ -151,7 +198,12 @@ fun EditProfileScreen(
             }
           },
           enabled = isPhoneValid && phoneNumber.isNotEmpty() && username.isNotEmpty() && !isLoading,
-          modifier = Modifier.fillMaxWidth()
+          modifier = Modifier.fillMaxWidth(),
+          shape = RoundedCornerShape(4.dp),
+          colors = ButtonDefaults.buttonColors(
+            containerColor = Color(0xFF583E23), // Колір фону кнопки
+            contentColor = Color.White         // Колір тексту кнопки
+          ),
         ) {
           if (isLoading) {
             CircularProgressIndicator(modifier = Modifier.size(24.dp))

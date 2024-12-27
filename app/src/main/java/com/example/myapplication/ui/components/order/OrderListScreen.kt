@@ -5,7 +5,9 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material.icons.filled.ShoppingBag
@@ -13,7 +15,9 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Color.Companion.Red
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -55,29 +59,60 @@ fun OrderListScreen(
     }
   }
 
-  Scaffold(
+
+  Scaffold(containerColor = Color(0xFFFDF8ED),
     topBar = {
-      TopAppBar(title = { Text("Мої замовлення") })
-    },
+      TopAppBar(
+        title = { Text("Мої замовлення", color = Color.White) },
+        colors = TopAppBarDefaults.smallTopAppBarColors(containerColor = Color(0xFF583E23)),
+      )},
     bottomBar = {
-      NavigationBar {
-        NavigationBarItem(icon = {
-          Icon(
-            Icons.Default.ShoppingCart,
-            contentDescription = "Продукти"
-          )
-        },
-          label = { Text("Продукти") },
+      NavigationBar(
+        containerColor = Color(0xFF583E23), // Встановлюємо колір фону
+        contentColor = Color.White // Встановлюємо колір тексту та іконок
+      ) {
+        NavigationBarItem(
+          icon = {
+            Icon(
+              Icons.Default.ShoppingCart,
+              contentDescription = "Продукти",
+              tint = Color.White // Явно задаємо колір іконки, хоча contentColor має це зробити
+            )
+          },
+          label = { Text("Продукти", color = Color.White) }, // Явно задаємо колір тексту, хоча contentColor має це зробити
           selected = false,
-          onClick = { showMain() })
-        NavigationBarItem(icon = { Icon(Icons.Default.ShoppingBag, contentDescription = "Кошик") },
-          label = { Text("Кошик") },
+          onClick = { showMain() }
+        )
+        NavigationBarItem(
+          icon = {
+            Icon(
+              Icons.Default.ShoppingBag,
+              contentDescription = "Кошик",
+              tint = Color.White // Явно задаємо колір іконки
+            )
+          },
+          label = { Text("Кошик", color = Color.White) }, // Явно задаємо колір тексту
           selected = false,
-          onClick = { LocalStorage.getUser(context)?.let { cartDetails(it.id) } })
-        NavigationBarItem(icon = { Icon(Icons.Default.Person, contentDescription = "Замовлення") },
-          label = { Text("Замовлення") },
+          onClick = { LocalStorage.getUser(context)?.let { cartDetails(it.id) } }
+        )
+        NavigationBarItem(
+          icon = {
+            Icon(
+              Icons.Default.Person,
+              contentDescription = "Замовлення",
+              tint = Color(0xFF583E23) // Явно задаємо колір іконки
+            )
+          },
+          label = { Text("Замовлення", color = Color.White) }, // Явно задаємо колір тексту
           selected = true,
-          onClick = {})
+          onClick = {},
+          colors = androidx.compose.material3.NavigationBarItemDefaults
+            .colors(
+              selectedIconColor = Red,
+              // indicatorColor = Color(0xFFFDF8ED)
+              indicatorColor = Color(0xFFFFFFFF)
+            )
+        )
       }
     },
     snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
@@ -121,8 +156,8 @@ fun OrderListScreen(
                   text = date,
                   fontSize = 20.sp,
                   fontWeight = FontWeight.Bold,
-                  color = MaterialTheme.colorScheme.primary,
-                  modifier = Modifier.padding(vertical = 8.dp)
+                  color = Color(0xFF583E23),
+                  modifier = Modifier.padding(vertical = 4.dp)
                 )
               }
 
@@ -156,8 +191,10 @@ fun OrderSummaryCard(order: GetOrdersResponse, onShowOrderDetails: () -> Unit) {
     modifier = Modifier
       .fillMaxWidth()
       .clickable(onClick = onShowOrderDetails)
-      .background(MaterialTheme.colorScheme.surface, shape = MaterialTheme.shapes.medium)
-      .padding(16.dp), horizontalArrangement = Arrangement.SpaceBetween
+      .clip(RoundedCornerShape(8.dp)) // Add rounded corners here
+      .background(Color(0xFFFBF1DA))
+      .padding(16.dp),
+    horizontalArrangement = Arrangement.SpaceBetween
   ) {
     Text(
       text = "Сума: ${order.totalPrice} грн.",
@@ -166,7 +203,9 @@ fun OrderSummaryCard(order: GetOrdersResponse, onShowOrderDetails: () -> Unit) {
     )
 
     Text(
-      text = "Час: $formattedTime", style = MaterialTheme.typography.bodyMedium, color = Color.Gray
+      text = "Час: $formattedTime",
+      style = MaterialTheme.typography.bodyMedium,
+      color = Color.Gray
     )
   }
 }

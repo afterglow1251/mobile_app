@@ -3,6 +3,8 @@ package com.example.myapplication.ui.components.auth
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.selection.LocalTextSelectionColors
+import androidx.compose.foundation.text.selection.TextSelectionColors
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
@@ -90,6 +92,12 @@ fun AuthScreen(onNavigateToProductsList: () -> Unit) {
         Spacer(modifier = Modifier.height(32.dp))
 
         if (!isEmailChecked) {
+          CompositionLocalProvider(
+            LocalTextSelectionColors provides TextSelectionColors(
+              handleColor = Color(0xFF583E23),
+              backgroundColor = Color(0xFFFFEBCD)
+            )
+          ) {
           OutlinedTextField(
             value = email,
             onValueChange = {
@@ -108,7 +116,7 @@ fun AuthScreen(onNavigateToProductsList: () -> Unit) {
               unfocusedLabelColor = Color.Gray,        // Колір мітки без фокусу
               errorLabelColor = Color.Red,          // Колір підказки (placeholder)
             )
-          )
+          )}
 
           emailError?.let {
             Text(
@@ -153,7 +161,12 @@ fun AuthScreen(onNavigateToProductsList: () -> Unit) {
           }
         } else {
           if (userExists) {
-            OutlinedTextField(
+            CompositionLocalProvider(
+              LocalTextSelectionColors provides TextSelectionColors(
+                handleColor = Color(0xFF583E23),
+                backgroundColor = Color(0xFFFFEBCD)
+              )
+            ) { OutlinedTextField(
               value = password,
               onValueChange = {
                 password = it
@@ -180,7 +193,7 @@ fun AuthScreen(onNavigateToProductsList: () -> Unit) {
                 }
               },
               isError = passwordError != null
-            )
+            )}
 
             passwordError?.let {
               Text(
@@ -237,6 +250,12 @@ fun AuthScreen(onNavigateToProductsList: () -> Unit) {
               Text("Увійти")
             }
           } else {
+            CompositionLocalProvider(
+              LocalTextSelectionColors provides TextSelectionColors(
+                handleColor = Color(0xFF583E23),
+                backgroundColor = Color(0xFFFFEBCD)
+              )
+            ) {
             OutlinedTextField(
               value = password,
               onValueChange = {
@@ -284,6 +303,15 @@ fun AuthScreen(onNavigateToProductsList: () -> Unit) {
               },
               label = { Text("Підтвердіть пароль") },
               modifier = Modifier.fillMaxWidth(),
+              colors = TextFieldDefaults.outlinedTextFieldColors(
+                focusedBorderColor = Color(0xFF583E23),
+                unfocusedBorderColor = Color.Gray,
+                errorBorderColor = Color.Red,
+                cursorColor = Color(0xFF583E23),
+                focusedLabelColor = Color(0xFF583E23),
+                unfocusedLabelColor = Color.Gray,
+                errorLabelColor = Color.Red
+              ),
               visualTransformation = if (confirmPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
               trailingIcon = {
                 IconButton(onClick = { confirmPasswordVisible = !confirmPasswordVisible }) {
@@ -294,7 +322,7 @@ fun AuthScreen(onNavigateToProductsList: () -> Unit) {
                 }
               },
               isError = passwordError != null
-            )
+            )}
 
             passwordError?.let {
               Text(
@@ -337,7 +365,10 @@ fun AuthScreen(onNavigateToProductsList: () -> Unit) {
                   }
                 }
               },
-              modifier = Modifier.fillMaxWidth(),
+              modifier = Modifier.fillMaxWidth(),colors = ButtonDefaults.buttonColors(
+                containerColor = Color(0xFF583E23), // Колір фону кнопки
+                contentColor = Color.White         // Колір тексту кнопки
+              ),
               shape = RoundedCornerShape(4.dp),
               enabled = passwordError == null
             ) {

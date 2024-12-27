@@ -46,15 +46,16 @@ fun ProductDetailsScreen(productId: Int, onBack: () -> Unit) {
     }
   }
 
-  Scaffold(
+  Scaffold(containerColor = Color(0xFFFDF8ED),
     topBar = {
       TopAppBar(
-        title = { Text("Деталі продукту") },
+        title = { Text("Деталі продукту", color = Color.White) },
         navigationIcon = {
           IconButton(onClick = { onBack() }) {
-            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Назад")
+            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Назад", tint = Color.White)
           }
-        }
+        },
+        colors = TopAppBarDefaults.smallTopAppBarColors(containerColor = Color(0xFF583E23))
       )
     },
     snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
@@ -111,7 +112,7 @@ fun ProductDetailsScreen(productId: Int, onBack: () -> Unit) {
               ) {
                 repeat(it.images.size) { iteration ->
                   val color =
-                    if (pagerState.currentPage == iteration) Color.DarkGray else Color.LightGray
+                    if (pagerState.currentPage == iteration) Color(0xFF583E23) else Color.LightGray
                   Box(
                     modifier = Modifier
                       .padding(4.dp)
@@ -133,14 +134,14 @@ fun ProductDetailsScreen(productId: Int, onBack: () -> Unit) {
               fontSize = 28.sp,
               fontWeight = FontWeight.Bold,
               modifier = Modifier.padding(bottom = 8.dp),
-              color = MaterialTheme.colorScheme.primary
+              color = Color(0xFF583E23)
             )
 
             Text(
               text = "${it.price} грн",
               fontSize = 24.sp,
               fontWeight = FontWeight.SemiBold,
-              color = MaterialTheme.colorScheme.secondary,
+              color = Color(0xFF583E23),
               modifier = Modifier.padding(bottom = 16.dp)
             )
 
@@ -192,7 +193,11 @@ fun ProductDetailsScreen(productId: Int, onBack: () -> Unit) {
                   }
                 }
               },
-              modifier = Modifier.fillMaxWidth(),
+              modifier = Modifier.fillMaxWidth(),colors = ButtonDefaults.buttonColors(
+                containerColor = Color(0xFF583E23), // Колір фону кнопки
+                contentColor = Color.White         // Колір тексту кнопки
+              ),
+              shape = RoundedCornerShape(4.dp),
               enabled = it.quantity > 0
             ) {
               Text("Додати в кошик")

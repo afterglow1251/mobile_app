@@ -44,15 +44,16 @@ fun OrderDetailsScreen(orderId: Int, onBack: () -> Unit) {
     }
   }
 
-  Scaffold(
+  Scaffold(containerColor = Color(0xFFFDF8ED),
     topBar = {
       TopAppBar(
-        title = { Text("Деталі замовлення") },
+        title = { Text("Деталі замовлення", color = Color.White) },
         navigationIcon = {
           IconButton(onClick = onBack) {
-            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Назад")
+            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Назад", tint = Color.White)
           }
-        }
+        },
+        colors = TopAppBarDefaults.smallTopAppBarColors(containerColor = Color(0xFF583E23))
       )
     },
     snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
@@ -91,57 +92,53 @@ fun OrderCard(order: GetOrdersResponse, index: Int) {
   Column(
     modifier = Modifier
       .fillMaxWidth()
-      .background(MaterialTheme.colorScheme.surface, shape = MaterialTheme.shapes.medium)
+      .background(Color(0xFFFDF8ED), shape = MaterialTheme.shapes.medium) // Set background color here
       .padding(16.dp)
   ) {
     Text(
       text = "Замовлення",
-      fontSize = 18.sp,
+      fontSize = 24.sp,
       fontWeight = FontWeight.Bold,
       modifier = Modifier.padding(bottom = 8.dp)
     )
     Text(
       text = "Дата створення: $formattedDate",
-      style = MaterialTheme.typography.bodyMedium,
-      color = Color.Gray,
+      style = MaterialTheme.typography.bodyLarge,
       modifier = Modifier.padding(bottom = 4.dp)
     )
     Text(
       text = "Загальна сума: ${order.totalPrice} грн.",
-      style = MaterialTheme.typography.bodyMedium,
-      color = MaterialTheme.colorScheme.primary,
+      style = MaterialTheme.typography.bodyLarge,
+      color = Color(0xFF583E23),
       modifier = Modifier.padding(bottom = 8.dp)
     )
     Text(
       text = "Адреса доставки: ${order.shippingAddress}",
-      style = MaterialTheme.typography.bodyMedium,
-      color = Color.Gray,
+      style = MaterialTheme.typography.bodyLarge,
       modifier = Modifier.padding(bottom = 4.dp)
     )
     Text(
       text = "Отримувач: ${order.username}",
-      style = MaterialTheme.typography.bodyMedium,
-      color = Color.Gray,
+      style = MaterialTheme.typography.bodyLarge,
       modifier = Modifier.padding(bottom = 4.dp)
     )
     Text(
       text = "Номер телефону отримувача: ${order.phoneNumber}",
-      style = MaterialTheme.typography.bodyMedium,
-      color = Color.Gray,
+      style = MaterialTheme.typography.bodyLarge,
       modifier = Modifier.padding(bottom = 4.dp)
     )
 
     Column(modifier = Modifier.padding(top = 8.dp)) {
       Text(
         text = "Товари:",
-        fontSize = 16.sp,
+        fontSize = 24.sp,
         fontWeight = FontWeight.Bold,
         modifier = Modifier.padding(bottom = 4.dp)
       )
       order.orderItems.forEach { item ->
         Text(
           text = "- ${item.product.name} (x${item.quantity}): ${item.price} грн.",
-          style = MaterialTheme.typography.bodyMedium,
+          style = MaterialTheme.typography.bodyLarge,
           modifier = Modifier.padding(bottom = 4.dp)
         )
       }
