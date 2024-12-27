@@ -11,10 +11,10 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.selection.LocalTextSelectionColors
 import androidx.compose.foundation.text.selection.TextSelectionColors
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.ArrowDropUp
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -62,7 +62,11 @@ fun SearchScreen(
         title = { Text("Пошук продуктів", color = Color.White) },
         navigationIcon = {
           IconButton(onClick = onBack) {
-            Icon(imageVector = Icons.Filled.ArrowBack, contentDescription = "Назад", tint = Color.White)
+            Icon(
+              imageVector = Icons.Filled.ArrowBack,
+              contentDescription = "Назад",
+              tint = Color.White
+            )
           }
         },
         colors = TopAppBarDefaults.smallTopAppBarColors(containerColor = Color(0xFF583E23))
@@ -81,35 +85,41 @@ fun SearchScreen(
           handleColor = Color(0xFF583E23),
           backgroundColor = Color(0xFFFFEBCD)
         )
-      ) {OutlinedTextField(
-        value = viewModel.searchText.value,
-        onValueChange = { viewModel.searchText.value = it },
-        placeholder = { Text("Введіть назву продукту...") },
-        keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Search),
-        keyboardActions = KeyboardActions(
-          onSearch = {
-            viewModel.fetchFilteredProducts(context)
-            focusRequester.freeFocus()
+      ) {
+        OutlinedTextField(
+          value = viewModel.searchText.value,
+          onValueChange = { viewModel.searchText.value = it },
+          placeholder = { Text("Введіть назву продукту...") },
+          keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Search),
+          keyboardActions = KeyboardActions(
+            onSearch = {
+              viewModel.fetchFilteredProducts(context)
+              focusRequester.freeFocus()
+            }
+          ),
+          modifier = Modifier
+            .fillMaxWidth()
+            .focusRequester(focusRequester),
+          colors = TextFieldDefaults.outlinedTextFieldColors(
+            focusedBorderColor = Color(0xFF583E23),
+            unfocusedBorderColor = Color.Gray,       // Колір бордюру без фокусу
+            errorBorderColor = Color.Red,            // Колір бордюру при помилці
+            cursorColor = Color(0xFF583E23),         // Колір курсора
+            focusedLabelColor = Color(0xFF583E23),   // Колір мітки у фокусі
+            unfocusedLabelColor = Color.Gray,        // Колір мітки без фокусу
+            errorLabelColor = Color.Red,          // Колір підказки (placeholder)
+          ),
+          trailingIcon = {
+            IconButton(onClick = { viewModel.showFilters.value = true }) {
+              Icon(
+                imageVector = Icons.Filled.FilterList,
+                contentDescription = "Фільтри",
+                tint = Color(0xFF583E23)
+              )
+            }
           }
-        ),
-        modifier = Modifier
-          .fillMaxWidth()
-          .focusRequester(focusRequester),
-        colors = TextFieldDefaults.outlinedTextFieldColors(
-          focusedBorderColor = Color(0xFF583E23),
-          unfocusedBorderColor = Color.Gray,       // Колір бордюру без фокусу
-          errorBorderColor = Color.Red,            // Колір бордюру при помилці
-          cursorColor = Color(0xFF583E23),         // Колір курсора
-          focusedLabelColor = Color(0xFF583E23),   // Колір мітки у фокусі
-          unfocusedLabelColor = Color.Gray,        // Колір мітки без фокусу
-          errorLabelColor = Color.Red,          // Колір підказки (placeholder)
-        ),
-        trailingIcon = {
-          IconButton(onClick = { viewModel.showFilters.value = true }) {
-            Icon(imageVector = Icons.Filled.FilterList, contentDescription = "Фільтри", tint = Color(0xFF583E23))
-          }
-        }
-      )}
+        )
+      }
 
       Spacer(modifier = Modifier.height(16.dp))
 
@@ -208,7 +218,22 @@ fun FilterDialog(
 
   AlertDialog(
     onDismissRequest = onDismiss,
-    title = { Text("Фільтри") },
+    title = {
+      Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+      ) {
+        Text("Фільтри")
+        IconButton(onClick = onDismiss) {
+          Icon(
+            imageVector = Icons.Default.Close, // Іконка хрестика
+            contentDescription = "Закрити",
+            tint = Color(0xFF583E23)
+          )
+        }
+      }
+    },
     text = {
       LazyColumn {
         // Section 1: Price
@@ -225,44 +250,48 @@ fun FilterDialog(
                   handleColor = Color(0xFF583E23),
                   backgroundColor = Color(0xFFFFEBCD)
                 )
-              ) {OutlinedTextField(
-                value = minPrice,
-                onValueChange = { minPrice = it },
-                label = { Text("Ціна від") },
-                keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
-                modifier = Modifier.weight(1f),
-                colors = TextFieldDefaults.outlinedTextFieldColors(
-                  focusedBorderColor = Color(0xFF583E23),
-                  unfocusedBorderColor = Color.Gray,       // Колір бордюру без фокусу
-                  errorBorderColor = Color.Red,            // Колір бордюру при помилці
-                  cursorColor = Color(0xFF583E23),         // Колір курсора
-                  focusedLabelColor = Color(0xFF583E23),   // Колір мітки у фокусі
-                  unfocusedLabelColor = Color.Gray,        // Колір мітки без фокусу
-                  errorLabelColor = Color.Red,          // Колір підказки (placeholder)
-                ),
-              )}
+              ) {
+                OutlinedTextField(
+                  value = minPrice,
+                  onValueChange = { minPrice = it },
+                  label = { Text("Ціна від") },
+                  keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
+                  modifier = Modifier.weight(1f),
+                  colors = TextFieldDefaults.outlinedTextFieldColors(
+                    focusedBorderColor = Color(0xFF583E23),
+                    unfocusedBorderColor = Color.Gray,       // Колір бордюру без фокусу
+                    errorBorderColor = Color.Red,            // Колір бордюру при помилці
+                    cursorColor = Color(0xFF583E23),         // Колір курсора
+                    focusedLabelColor = Color(0xFF583E23),   // Колір мітки у фокусі
+                    unfocusedLabelColor = Color.Gray,        // Колір мітки без фокусу
+                    errorLabelColor = Color.Red,          // Колір підказки (placeholder)
+                  ),
+                )
+              }
               Spacer(modifier = Modifier.width(8.dp))
               CompositionLocalProvider(
                 LocalTextSelectionColors provides TextSelectionColors(
                   handleColor = Color(0xFF583E23),
                   backgroundColor = Color(0xFFFFEBCD)
                 )
-              ) {OutlinedTextField(
-                value = maxPrice,
-                onValueChange = { maxPrice = it },
-                label = { Text("Ціна до") },
-                keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
-                modifier = Modifier.weight(1f),
-                colors = TextFieldDefaults.outlinedTextFieldColors(
-                  focusedBorderColor = Color(0xFF583E23),
-                  unfocusedBorderColor = Color.Gray,       // Колір бордюру без фокусу
-                  errorBorderColor = Color.Red,            // Колір бордюру при помилці
-                  cursorColor = Color(0xFF583E23),         // Колір курсора
-                  focusedLabelColor = Color(0xFF583E23),   // Колір мітки у фокусі
-                  unfocusedLabelColor = Color.Gray,        // Колір мітки без фокусу
-                  errorLabelColor = Color.Red,          // Колір підказки (placeholder)
-                ),
-              )}
+              ) {
+                OutlinedTextField(
+                  value = maxPrice,
+                  onValueChange = { maxPrice = it },
+                  label = { Text("Ціна до") },
+                  keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
+                  modifier = Modifier.weight(1f),
+                  colors = TextFieldDefaults.outlinedTextFieldColors(
+                    focusedBorderColor = Color(0xFF583E23),
+                    unfocusedBorderColor = Color.Gray,       // Колір бордюру без фокусу
+                    errorBorderColor = Color.Red,            // Колір бордюру при помилці
+                    cursorColor = Color(0xFF583E23),         // Колір курсора
+                    focusedLabelColor = Color(0xFF583E23),   // Колір мітки у фокусі
+                    unfocusedLabelColor = Color.Gray,        // Колір мітки без фокусу
+                    errorLabelColor = Color.Red,          // Колір підказки (placeholder)
+                  ),
+                )
+              }
             }
           }
         }
@@ -382,37 +411,35 @@ fun FilterDialog(
       }
     },
     confirmButton = {
-      Button(onClick = {
-        val appliedFilters = mutableMapOf<String, String?>()
-        if (minPrice.isNotBlank()) appliedFilters["minPrice"] = minPrice
-        if (maxPrice.isNotBlank()) appliedFilters["maxPrice"] = maxPrice
+      Button(
+        onClick = {
+          val appliedFilters = mutableMapOf<String, String?>()
+          if (minPrice.isNotBlank()) appliedFilters["minPrice"] = minPrice
+          if (maxPrice.isNotBlank()) appliedFilters["maxPrice"] = maxPrice
 
-        appliedFilters["category"] = listOfNotNull(
-          if (categoryBeer) "beer" else null,
-          if (categorySnack) "snack" else null
-        ).joinToString(",")
+          appliedFilters["category"] = listOfNotNull(
+            if (categoryBeer) "beer" else null,
+            if (categorySnack) "snack" else null
+          ).joinToString(",")
 
-        appliedFilters["manufacturerCountry"] =
-          selectedCountries.filter { it.value }.keys.joinToString(",")
-        appliedFilters["manufacturerName"] =
-          selectedManufacturers.filter { it.value }.keys.joinToString(",")
-        appliedFilters["beerType"] = selectedBeerTypes.filter { it.value }.keys.joinToString(",")
-        appliedFilters["unitSize"] = selectedUnitSizes.filter { it.value }.keys.joinToString(",")
+          appliedFilters["manufacturerCountry"] =
+            selectedCountries.filter { it.value }.keys.joinToString(",")
+          appliedFilters["manufacturerName"] =
+            selectedManufacturers.filter { it.value }.keys.joinToString(",")
+          appliedFilters["beerType"] = selectedBeerTypes.filter { it.value }.keys.joinToString(",")
+          appliedFilters["unitSize"] = selectedUnitSizes.filter { it.value }.keys.joinToString(",")
 
-        onApplyFilters(appliedFilters)
-      },colors = ButtonDefaults.buttonColors(
-        containerColor = Color(0xFF583E23), // Колір фону кнопки
-        contentColor = Color.White         // Колір тексту кнопки
-      ),) {
+          onApplyFilters(appliedFilters)
+        },
+        modifier = Modifier
+          .fillMaxWidth(),
+        colors = ButtonDefaults.buttonColors(
+          containerColor = Color(0xFF583E23), // Колір фону кнопки
+          contentColor = Color.White         // Колір тексту кнопки
+        ),
+        shape = RoundedCornerShape(4.dp)
+      ) {
         Text("Застосувати")
-      }
-    },
-    dismissButton = {
-      Button(onClick = onDismiss,colors = ButtonDefaults.buttonColors(
-        containerColor = Color(0xFF583E23), // Колір фону кнопки
-        contentColor = Color.White         // Колір тексту кнопки
-      ),) {
-        Text("Скасувати")
       }
     }
   )
@@ -479,7 +506,9 @@ fun VerticalProductCard(
         text = product.description,
         style = MaterialTheme.typography.bodyMedium,
         color = if (isOutOfStock) Color.Gray else Color.Black,
-        modifier = Modifier.padding(vertical = 4.dp).widthIn(max = 185.dp),
+        modifier = Modifier
+          .padding(vertical = 4.dp)
+          .widthIn(max = 185.dp),
         maxLines = 3,
         overflow = TextOverflow.Ellipsis
       )
@@ -543,8 +572,8 @@ fun VerticalProductCard(
         },
         modifier = Modifier
           .width(48.dp), // Ширина кнопки
-          // .height(48.dp) // Висота кнопки збільшена до 90dp
-          //.padding(start = 8.dp), // Додатковий відступ зліва
+        // .height(48.dp) // Висота кнопки збільшена до 90dp
+        //.padding(start = 8.dp), // Додатковий відступ зліва
         shape = RoundedCornerShape(4.dp), // Закруглення 4dp
         contentPadding = PaddingValues(0.dp),
         colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF583E23))
@@ -556,7 +585,6 @@ fun VerticalProductCard(
           // fontWeight = FontWeight.Bold
         )
       }
-
 
 
     }
