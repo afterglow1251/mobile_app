@@ -21,6 +21,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Color.Companion.Red
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -270,9 +271,10 @@ fun CartItemRow(
     Row(
       modifier = Modifier
         .fillMaxWidth()
-        .padding(16.dp)
+        .padding(16.dp),
+      verticalAlignment = Alignment.CenterVertically
     ) {
-      if (cartItem.imageUrl.isNotEmpty()) {
+      if (cartItem.imageUrl.isNotEmpty() && LocalConfiguration.current.screenWidthDp > 720) {
         PicassoImage(
           url = cartItem.imageUrl, modifier = Modifier
             .size(120.dp)
@@ -329,12 +331,12 @@ fun CartItemRow(
 
       Button(
         onClick = onRemove,
-        modifier = Modifier.align(Alignment.Bottom),
+        modifier = Modifier
+          .align(Alignment.Bottom),
         colors = ButtonDefaults.buttonColors(
           containerColor = Color(0xFF583E23), // Колір фону кнопки
           contentColor = Color.White         // Колір тексту кнопки
-        )
-        ,
+        ),
         shape = RoundedCornerShape(4.dp),
       ) {
         Text("Видалити")
@@ -342,6 +344,8 @@ fun CartItemRow(
     }
   }
 }
+
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
